@@ -1,13 +1,12 @@
 services:
   - type: web
     name: content-pipeline-api
-    runtime: python
+    runtime: docker
     region: oregon
     plan: free
     branch: main
-    rootDir: packages/content-pipeline
-    buildCommand: pip install -e .
-    startCommand: uvicorn content_pipeline.web.app:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
@@ -23,19 +22,3 @@ services:
         sync: false
       - key: BITRIX24_WEBHOOK_URL
         sync: false
-
-  - type: web
-    name: content-studio-frontend
-    runtime: static
-    branch: main
-    rootDir: packages/content-studio-frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html

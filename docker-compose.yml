@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  api:
+    build: ./packages/content-pipeline
+    container_name: content-studio-api
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./squads:/app/squads:ro
+      - ./docs_user:/app/docs_user:ro
+      - studio-data:/app/output
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    image: nginx:alpine
+    container_name: content-studio-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./packages/content-studio-frontend:/usr/share/nginx/html:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  studio-data:

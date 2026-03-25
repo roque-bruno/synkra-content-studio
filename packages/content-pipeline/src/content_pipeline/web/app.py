@@ -127,17 +127,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_allowed_origins = os.getenv(
-    "ALLOWED_ORIGINS",
-    "https://studio.salk.com,http://localhost:8080,http://localhost:3000,http://127.0.0.1:8080",
-).split(",")
+# Parse CORS origins from env or use defaults
+_default_origins = [
+    "https://studio.salk.com",
+    "http://localhost:8080",
+    "http://localhost:3000",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:3000",
+]
+_env_origins = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [o.strip() for o in _env_origins.split(",") if o.strip()] if _env_origins else _default_origins
+# In production, Render sets RENDER=true
+if os.getenv("RENDER"):
+    allowed_origins.append("https://*.onrender.com")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_allowed_origins,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_credentials=True,
 )
 
 # Rate limiting (slowapi)
@@ -169,12 +178,14 @@ async def root():
 @app.get("/api/health")
 async def health():
     svc = get_service()
+    db_backend = getattr(svc, "_db_backend", "sqlite")
     return {
         "status": "ok",
         "version": "2.0.0",
         "preview_mode": svc.preview_mode,
         "api_key_configured": not svc.preview_mode,
-        "allowed_origins": _allowed_origins,
+        "database_backend": db_backend,
+        "allowed_origins": allowed_origins,
     }
 
 
@@ -1189,6 +1200,26 @@ async def weekly_report_html(
     svc = get_service()
     html = svc.weekly_report.generate_html(week_id=week_id, brand=brand)
     return HTMLResponse(html)
+
+
+# =========================================================================
+# FRONTEND STATIC FILES (SPA) — Render single-service deployment
+# =========================================================================
+
+# Serve frontend static files if the built frontend directory exists.
+# API routes above take precedence; this catch-all handles SPA client-side routing.
+frontend_dir = Path(__file__).parent.parent.parent.parent.parent / "content-studio-frontend"
+if not frontend_dir.exists():
+    # Try relative to project root candidates
+    for candidate in [Path.cwd(), Path.cwd().parent, Path.cwd().parent.parent]:
+        test = candidate / "packages" / "content-studio-frontend"
+        if test.exists():
+            frontend_dir = test
+            break
+
+if frontend_dir.exists():
+    logger.info("Frontend found at %s — mounting static files", frontend_dir)
+    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 
 # =========================================================================

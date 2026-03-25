@@ -1,0 +1,17 @@
+.git/
+.github/
+.aiox-core/
+.aiox/
+.claude/
+docs/
+node_modules/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.env
+.env.local
+*.db
+*.db-wal
+output/
+tools/
