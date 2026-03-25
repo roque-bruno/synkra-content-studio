@@ -23,7 +23,7 @@ import base64
 import hmac
 import json
 
-_JWT_SECRET = os.getenv("STUDIO_JWT_SECRET", "synkra-content-studio-secret-2026")
+_JWT_SECRET = os.getenv("STUDIO_JWT_SECRET", "salk-content-studio-secret-2026")
 _STUDIO_USER = os.getenv("STUDIO_USER", "admin")
 _STUDIO_PASS = os.getenv("STUDIO_PASS", "studio2026")
 _TOKEN_EXPIRY = 86400  # 24 horas

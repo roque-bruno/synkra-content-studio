@@ -229,7 +229,7 @@ class WeeklyReport:
     <p>Total mensal: <strong>${costs.get('month_total_usd', 0):.2f} USD</strong> ({costs.get('budget_used_pct', 0):.1f}% do orcamento)</p>
 
     <div class="footer">
-        Synkra Content Studio v2.0 — Manager Grupo | Relatorio gerado automaticamente
+        Salk Content Studio v2.0 — Manager Grupo | Relatorio gerado automaticamente
     </div>
 </body>
 </html>"""

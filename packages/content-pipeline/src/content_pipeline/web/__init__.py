@@ -1,1 +1,1 @@
-"""Synkra Content Studio — interface web para produção de conteúdo."""
+"""Salk Content Studio — interface web para produção de conteúdo."""

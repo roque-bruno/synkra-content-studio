@@ -173,7 +173,7 @@ class SettingsStore:
 
     def _get_key(self) -> bytes:
         """Deriva chave de ofuscação do JWT secret."""
-        secret = os.getenv("STUDIO_JWT_SECRET", "synkra-content-studio-2026-secret-key")
+        secret = os.getenv("STUDIO_JWT_SECRET", "salk-content-studio-2026-secret-key")
         return hashlib.sha256(secret.encode()).digest()
 
     def _obfuscate(self, data: str) -> str:

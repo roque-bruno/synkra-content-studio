@@ -194,7 +194,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     """Inicia o Content Studio (interface web)."""
     console.print(
         Panel(
-            f"[bold]Synkra Content Studio[/bold]\n"
+            f"[bold]Salk Content Studio[/bold]\n"
             f"http://{args.host}:{args.port}",
             title="Content Studio",
             border_style="cyan",

@@ -192,7 +192,7 @@ class OpenRouterClient:
                 headers={
                     "Authorization": f"Bearer {self.api_key}",
                     "HTTP-Referer": "https://studio.salk.com",
-                    "X-Title": "Synkra Content Studio",
+                    "X-Title": "Salk Content Studio",
                     "Content-Type": "application/json",
                 },
                 json={

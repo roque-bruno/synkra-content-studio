@@ -1,5 +1,5 @@
 """
-Synkra Content Studio v2.0 — FastAPI application.
+Salk Content Studio v2.0 — FastAPI application.
 
 Servidor web completo para a gestora de marketing planejar e produzir conteúdo.
 """
@@ -131,7 +131,7 @@ def _mount_static_dirs(app: FastAPI, config) -> None:
 # --- App ---
 
 app = FastAPI(
-    title="Synkra Content Studio",
+    title="Salk Content Studio",
     description="Sistema de Produção de Conteúdo v2.0 — Manager Grupo",
     version="2.0.0",
     lifespan=lifespan,
@@ -177,7 +177,7 @@ async def root():
     if html_path.exists():
         return HTMLResponse(html_path.read_text(encoding="utf-8"))
     return JSONResponse({
-        "service": "Synkra Content Studio API",
+        "service": "Salk Content Studio API",
         "version": "2.0.0",
         "docs": "/docs",
         "health": "/api/health",
@@ -1246,7 +1246,7 @@ else:
 def run_server(host: str = "127.0.0.1", port: int = 8080) -> None:
     import uvicorn
 
-    print(f"\n  Synkra Content Studio v2.0")
+    print(f"\n  Salk Content Studio v2.0")
     print(f"  http://{host}:{port}")
     print(f"  Ctrl+C para parar\n")
 

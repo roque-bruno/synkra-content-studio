@@ -1,5 +1,5 @@
 /**
- * Synkra Content Studio — Configuracao
+ * Salk Content Studio — Configuracao
  *
  * Auto-detecta API URL baseado no ambiente:
  * - docker-compose: frontend na porta 3000, API na porta 8080
