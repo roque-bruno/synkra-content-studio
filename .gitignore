@@ -40,8 +40,8 @@ venv/
 .venv/
 *.so
 
-# Content Pipeline
-output/
+# Content Pipeline — only ignore root output dir (not src/content_pipeline/output/)
+/output/
 *.db
 *.db-wal
 *.db-shm
