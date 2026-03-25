@@ -56,12 +56,14 @@ def get_service() -> StudioService:
 async def lifespan(app: FastAPI):
     global _service
 
+    config = None
     try:
         from content_pipeline.config import load_config
         config = load_config()
         _service = StudioService(config, preview_mode=False)
         logger.info("Content Studio v2.0 — MODO PRODUCAO")
-    except ValueError:
+    except Exception as exc:
+        logger.warning("Config completa indisponível (%s) — tentando modo preview", exc)
         from content_pipeline.config import (
             GeminiConfig,
             NB2Config,
@@ -82,10 +84,18 @@ async def lifespan(app: FastAPI):
             gemini=GeminiConfig(api_key="preview"),
             nb2=NB2Config(),
         )
-        _service = StudioService(config, preview_mode=True)
-        logger.info("Content Studio v2.0 — MODO PREVIEW (sem API key)")
+        try:
+            _service = StudioService(config, preview_mode=True)
+            logger.info("Content Studio v2.0 — MODO PREVIEW (sem API key)")
+        except Exception as exc2:
+            logger.error("Falha ao inicializar StudioService: %s", exc2)
+            _service = None
 
-    _mount_static_dirs(app, config)
+    if config and _service:
+        try:
+            _mount_static_dirs(app, config)
+        except Exception as exc:
+            logger.warning("Falha ao montar diretórios estáticos: %s", exc)
     yield
     _service = None
 
@@ -177,13 +187,14 @@ async def root():
 
 @app.get("/api/health")
 async def health():
-    svc = get_service()
-    db_backend = getattr(svc, "_db_backend", "sqlite")
+    if _service is None:
+        return {"status": "degraded", "version": "2.0.0", "detail": "Service initializing"}
+    db_backend = getattr(_service, "_db_backend", "sqlite")
     return {
         "status": "ok",
         "version": "2.0.0",
-        "preview_mode": svc.preview_mode,
-        "api_key_configured": not svc.preview_mode,
+        "preview_mode": _service.preview_mode,
+        "api_key_configured": not _service.preview_mode,
         "database_backend": db_backend,
         "allowed_origins": allowed_origins,
     }
