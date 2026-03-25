@@ -1208,18 +1208,24 @@ async def weekly_report_html(
 
 # Serve frontend static files if the built frontend directory exists.
 # API routes above take precedence; this catch-all handles SPA client-side routing.
-frontend_dir = Path(__file__).parent.parent.parent.parent.parent / "content-studio-frontend"
-if not frontend_dir.exists():
-    # Try relative to project root candidates
-    for candidate in [Path.cwd(), Path.cwd().parent, Path.cwd().parent.parent]:
-        test = candidate / "packages" / "content-studio-frontend"
-        if test.exists():
-            frontend_dir = test
-            break
+frontend_dir = None
+_candidates = [
+    Path("/app/frontend"),  # Docker container layout
+    Path(__file__).parent.parent.parent.parent.parent / "content-studio-frontend",
+    Path.cwd() / "frontend",
+    Path.cwd() / "packages" / "content-studio-frontend",
+    Path.cwd().parent / "content-studio-frontend",
+]
+for _c in _candidates:
+    if _c.exists():
+        frontend_dir = _c
+        break
 
-if frontend_dir.exists():
+if frontend_dir and frontend_dir.exists():
     logger.info("Frontend found at %s — mounting static files", frontend_dir)
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+else:
+    logger.info("No frontend directory found — API-only mode")
 
 
 # =========================================================================
