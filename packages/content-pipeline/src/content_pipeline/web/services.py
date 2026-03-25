@@ -339,53 +339,125 @@ class StudioService:
     # ASSETS — Imagens de produto, logos, claims
     # =========================================================================
 
+    def _supabase_storage_url(self, bucket: str, path: str) -> str:
+        """Retorna URL pública do Supabase Storage."""
+        from urllib.parse import quote
+        supabase_url = self.settings.get("SUPABASE_URL") or ""
+        return f"{supabase_url}/storage/v1/object/public/{bucket}/{quote(path, safe='/')}"
+
     def scan_product_images(self) -> dict[str, list[dict]]:
         result: dict[str, list[dict]] = {}
         images_dir = self.config.product_images_dir
 
-        if not images_dir.exists():
+        if images_dir.exists():
+            # Local mode — serve from filesystem
+            for category_dir in sorted(images_dir.iterdir()):
+                if not category_dir.is_dir():
+                    continue
+                items = []
+                for img_file in sorted(category_dir.iterdir()):
+                    if img_file.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
+                        items.append({
+                            "name": img_file.stem,
+                            "path": str(img_file.relative_to(self.config.project_root)),
+                            "url": f"/assets/produtos/{category_dir.name}/{img_file.name}",
+                            "size_kb": round(img_file.stat().st_size / 1024, 1),
+                            "category": category_dir.name,
+                        })
+                if items:
+                    result[category_dir.name] = items
+        elif self.settings.get("SUPABASE_URL"):
+            # Cloud mode — list from Supabase Storage
+            result = self._scan_supabase_bucket("produtos")
+
+        return result
+
+    def _scan_supabase_bucket(self, bucket: str, prefix: str = "") -> dict[str, list[dict]]:
+        """Lista arquivos de um bucket do Supabase Storage."""
+        import httpx
+        result: dict[str, list[dict]] = {}
+        supabase_url = self.settings.get("SUPABASE_URL")
+        supabase_key = self.settings.get("SUPABASE_SERVICE_KEY")
+        if not supabase_url or not supabase_key:
             return result
-
-        for category_dir in sorted(images_dir.iterdir()):
-            if not category_dir.is_dir():
-                continue
-
-            items = []
-            for img_file in sorted(category_dir.iterdir()):
-                if img_file.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
-                    items.append({
-                        "name": img_file.stem,
-                        "path": str(img_file.relative_to(self.config.project_root)),
-                        "url": f"/assets/produtos/{category_dir.name}/{img_file.name}",
-                        "size_kb": round(img_file.stat().st_size / 1024, 1),
-                        "category": category_dir.name,
-                    })
-
-            if items:
-                result[category_dir.name] = items
-
+        try:
+            headers = {"Authorization": f"Bearer {supabase_key}"}
+            # List top-level folders
+            resp = httpx.post(
+                f"{supabase_url}/storage/v1/object/list/{bucket}",
+                headers=headers,
+                json={"prefix": prefix, "limit": 1000},
+                timeout=10,
+            )
+            if resp.status_code != 200:
+                return result
+            for item in resp.json():
+                name = item.get("name", "")
+                if item.get("id") is None:
+                    # It's a folder — list contents
+                    folder_resp = httpx.post(
+                        f"{supabase_url}/storage/v1/object/list/{bucket}",
+                        headers=headers,
+                        json={"prefix": name, "limit": 1000},
+                        timeout=10,
+                    )
+                    if folder_resp.status_code == 200:
+                        items = []
+                        for f in folder_resp.json():
+                            fname = f.get("name", "")
+                            if any(fname.lower().endswith(ext) for ext in (".png", ".jpg", ".jpeg", ".webp")):
+                                fpath = f"{name}/{fname}"
+                                items.append({
+                                    "name": Path(fname).stem,
+                                    "url": self._supabase_storage_url(bucket, fpath),
+                                    "size_kb": round((f.get("metadata", {}).get("size", 0)) / 1024, 1),
+                                    "category": name,
+                                })
+                        if items:
+                            result[name] = items
+                else:
+                    # It's a file at root level
+                    if any(name.lower().endswith(ext) for ext in (".png", ".jpg", ".jpeg", ".webp")):
+                        cat = "geral"
+                        result.setdefault(cat, []).append({
+                            "name": Path(name).stem,
+                            "url": self._supabase_storage_url(bucket, name),
+                            "size_kb": round((item.get("metadata", {}).get("size", 0)) / 1024, 1),
+                            "category": cat,
+                        })
+        except Exception as e:
+            logger.warning("Failed to list Supabase bucket %s: %s", bucket, e)
         return result
 
     def scan_logos(self) -> list[dict]:
         logos_dir = self.config.assets_dir / "logomarcas"
         if not logos_dir.exists():
             logos_dir = self.config.assets_dir / "logos"
-        if not logos_dir.exists():
-            return []
 
-        logos = []
-        for logo_file in sorted(logos_dir.rglob("*")):
-            if logo_file.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg"):
-                rel = logo_file.relative_to(logos_dir)
-                logos.append({
-                    "name": logo_file.stem,
-                    "path": str(logo_file.relative_to(self.config.project_root)),
-                    "url": f"/assets/logos/{str(rel).replace(chr(92), '/')}",
-                    "size_kb": round(logo_file.stat().st_size / 1024, 1),
-                    "category": logo_file.parent.name if logo_file.parent != logos_dir else "geral",
-                })
+        if logos_dir.exists():
+            # Local mode
+            logos = []
+            for logo_file in sorted(logos_dir.rglob("*")):
+                if logo_file.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg"):
+                    rel = logo_file.relative_to(logos_dir)
+                    logos.append({
+                        "name": logo_file.stem,
+                        "path": str(logo_file.relative_to(self.config.project_root)),
+                        "url": f"/assets/logos/{str(rel).replace(chr(92), '/')}",
+                        "size_kb": round(logo_file.stat().st_size / 1024, 1),
+                        "category": logo_file.parent.name if logo_file.parent != logos_dir else "geral",
+                    })
+            return logos
 
-        return logos
+        # Cloud mode — Supabase Storage
+        if self.settings.get("SUPABASE_URL"):
+            bucket_data = self._scan_supabase_bucket("logos")
+            logos = []
+            for items in bucket_data.values():
+                logos.extend(items)
+            return logos
+
+        return []
 
     def load_claims_bank(self) -> list[dict]:
         claims_file = self._data_dir() / "claims-bank.yaml"
