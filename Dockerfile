@@ -31,11 +31,6 @@ RUN mkdir -p /app/output/studio /app/output/video /app/output/logs && \
 # Switch to non-root user
 USER appuser
 
-ENV PORT=8080
-EXPOSE ${PORT}
+EXPOSE 10000
 
-# Render manages health checks externally; only use Docker healthcheck for local dev
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/api/health || exit 1
-
-CMD uvicorn content_pipeline.web.app:app --host 0.0.0.0 --port ${PORT}
+CMD ["sh", "-c", "uvicorn content_pipeline.web.app:app --host 0.0.0.0 --port ${PORT:-10000}"]
