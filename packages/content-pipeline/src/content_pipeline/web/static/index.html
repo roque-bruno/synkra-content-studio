@@ -1862,27 +1862,43 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
     <div class="card">
       <div class="card-title">Narracao (opcional)</div>
       <div class="form-group">
+        <label class="form-label">Voz</label>
+        <select class="form-select" x-model="videoVoiceId">
+          <template x-if="videoVoices.length === 0">
+            <option value="">Carregando vozes...</option>
+          </template>
+          <template x-for="v in videoVoices">
+            <option :value="v.voice_id" x-text="v.name"></option>
+          </template>
+        </select>
+        <div style="margin-top: 6px; font-size: 0.7rem; color: var(--text-muted);" x-show="videoVoices.length > 0">
+          <span x-text="videoVoices.length"></span> vozes disponiveis na sua conta ElevenLabs
+        </div>
+      </div>
+      <div class="form-group">
         <label class="form-label">Roteiro de Narracao</label>
-        <textarea class="form-input" x-model="videoNarration" rows="6" placeholder="Texto que sera narrado sobre o video (voz Bill, portugues)"></textarea>
+        <textarea class="form-input" x-model="videoNarration" rows="6" placeholder="Texto que sera narrado sobre o video"></textarea>
       </div>
       <div class="form-group">
         <label class="form-label">Caracteres: <span x-text="(videoNarration || '').length"></span></label>
       </div>
-      <div class="form-group">
-        <label class="form-label">Musica de Fundo</label>
-        <select class="form-select" x-model="videoBGM">
-          <option value="">Sem musica</option>
-          <option value="corporate">Corporativo</option>
-          <option value="tech">Tecnologia</option>
-          <option value="medical">Medico/Clean</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Legendas</label>
-        <select class="form-select" x-model="videoSubtitles">
-          <option value="none">Sem legendas</option>
-          <option value="burn">Gravar no video</option>
-        </select>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Musica de Fundo</label>
+          <select class="form-select" x-model="videoBGM">
+            <option value="">Sem musica</option>
+            <option value="corporate">Corporativo</option>
+            <option value="tech">Tecnologia</option>
+            <option value="medical">Medico/Clean</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Legendas</label>
+          <select class="form-select" x-model="videoSubtitles">
+            <option value="none">Sem legendas</option>
+            <option value="burn">Gravar no video</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -2502,6 +2518,8 @@ function studioApp() {
     videoPrompt: '',
     videoAspect: '9:16',
     videoDuration: '5',
+    videoVoices: [],
+    videoVoiceId: '',
     videoNarration: '',
     videoBGM: '',
     videoSubtitles: 'none',
@@ -2727,6 +2745,17 @@ function studioApp() {
     // Video
     async loadVideoStatus() {
       this.videoStatus = await this.api('/api/video/status') || {};
+      this.loadVoices();
+    },
+
+    async loadVoices() {
+      try {
+        const data = await this.api('/api/video/voices') || {};
+        this.videoVoices = data.voices || [];
+        if (this.videoVoices.length > 0 && !this.videoVoiceId) {
+          this.videoVoiceId = this.videoVoices[0].voice_id;
+        }
+      } catch(e) { console.warn('Vozes nao carregadas:', e); }
     },
 
     async generateVideo() {
@@ -2739,6 +2768,7 @@ function studioApp() {
           aspect_ratio: this.videoAspect,
           duration: parseInt(this.videoDuration),
           narration_text: this.videoNarration || undefined,
+          voice_id: this.videoVoiceId || undefined,
           bgm: this.videoBGM || undefined,
         };
         if (this.videoType === 'i2v') payload.image_path = this.videoImagePath;

@@ -1,12 +1,13 @@
 """
-ElevenLabs TTS — Narracao com voz Bill, multilingual_v2.
+ElevenLabs TTS — Narracao com vozes dinamicas, multilingual_v2.
 
-Voice: Bill (pqHfZKP75CvOlQylNhV4)
 Model: eleven_multilingual_v2
+Default voice: Bill (pqHfZKP75CvOlQylNhV4) — pode ser alterado via seletor na UI.
 
 Uso:
     tts = ElevenLabsTTS(api_key="...")
-    result = await tts.generate("Conheça o novo LEV da Salk Medical", output_path="narr.mp3")
+    voices = await tts.get_voices()  # Lista todas as vozes disponiveis
+    result = await tts.generate("Texto", voice_id=voices[0]["voice_id"])
 """
 
 from __future__ import annotations

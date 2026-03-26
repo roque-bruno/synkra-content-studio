@@ -898,6 +898,16 @@ async def kling_text_to_video(request: Request, user: dict = Depends(require_aut
 # VIDEO — ElevenLabs TTS
 # =========================================================================
 
+@app.get("/api/video/voices")
+async def list_voices(user: dict = Depends(require_auth)):
+    """Lista vozes disponiveis no ElevenLabs."""
+    svc = get_service()
+    if not svc.tts_client:
+        return {"voices": [], "configured": False}
+    voices = await svc.tts_client.get_voices()
+    return {"voices": voices, "configured": svc.tts_client.configured}
+
+
 @app.post("/api/video/tts")
 async def generate_tts(request: Request, user: dict = Depends(require_auth)):
     """Gera narracao via ElevenLabs TTS."""
@@ -907,7 +917,7 @@ async def generate_tts(request: Request, user: dict = Depends(require_auth)):
         raise HTTPException(503, "ElevenLabs nao configurado. Adicione ELEVENLABS_API_KEY nas configuracoes.")
     result = await svc.tts_client.generate(
         text=data.get("text", ""),
-        voice_id=data.get("voice_id", "pqHfZKP75CvOlQylNhV4"),
+        voice_id=data.get("voice_id", ""),
         output_path=data.get("output_path", ""),
     )
     return result
@@ -991,7 +1001,7 @@ async def video_pipeline(request: Request, user: dict = Depends(require_auth)):
         try:
             narration_result = await svc.tts_client.generate(
                 text=data["narration_text"],
-                voice_id=data.get("voice_id", "pqHfZKP75CvOlQylNhV4"),
+                voice_id=data.get("voice_id", ""),
             )
             results["steps"].append({"step": "narration", "status": "ok"})
         except Exception as e:
