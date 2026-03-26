@@ -21,7 +21,7 @@
   --bg-input: #121520;
   --text-primary: #e8eaef;
   --text-secondary: #8b8fa6;
-  --text-muted: #555872;
+  --text-muted: #7a7e96;
   --accent: #3b82f6;
   --accent-hover: #60a5fa;
   --accent-dim: rgba(59,130,246,0.12);
@@ -46,8 +46,11 @@
   --sidebar-w: 240px;
   --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  --bg-tertiary: #1a1d2e;
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+[x-cloak] { display: none !important; }
 
 html { font-size: 14px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 body {
@@ -73,7 +76,7 @@ a:hover { color: var(--accent-hover); }
 .sidebar {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
-  background: var(--bg-secondary);
+  background: linear-gradient(180deg, #0c0e15 0%, var(--bg-secondary) 100%);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -83,42 +86,56 @@ a:hover { color: var(--accent-hover); }
 }
 
 .sidebar-brand {
-  padding: 20px 18px 16px;
+  padding: 24px 20px 20px;
   border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.sidebar-brand .brand-logo {
+  height: 44px;
+  width: auto;
+  opacity: 0.95;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 2px 8px rgba(59,130,246,0.15));
 }
 
 .sidebar-brand h1 {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: -0.3px;
   color: var(--text-primary);
 }
 
 .sidebar-brand .version {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: var(--text-muted);
-  margin-top: 1px;
+  margin-top: 3px;
   font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .sidebar-section {
-  padding: 14px 0 4px;
+  padding: 16px 0 4px;
 }
+
+.sidebar-section:first-of-type { padding-top: 12px; }
 
 .sidebar-section-title {
   font-size: 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: var(--text-muted);
-  padding: 0 18px 8px;
-  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  padding: 0 20px 8px;
+  font-weight: 700;
+  opacity: 0.6;
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 18px;
+  gap: 11px;
+  padding: 10px 20px;
   cursor: pointer;
   transition: var(--transition);
   font-size: 0.82rem;
@@ -126,10 +143,11 @@ a:hover { color: var(--accent-hover); }
   border-left: 3px solid transparent;
   font-weight: 450;
   position: relative;
+  margin: 1px 0;
 }
 
 .sidebar-item:hover {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.04);
   color: var(--text-primary);
 }
 
@@ -140,7 +158,11 @@ a:hover { color: var(--accent-hover); }
   font-weight: 600;
 }
 
-.sidebar-item .icon { font-size: 1rem; width: 20px; text-align: center; opacity: 0.7; }
+.sidebar-item .icon {
+  font-size: 1.05rem; width: 22px; text-align: center;
+  opacity: 0.6; transition: var(--transition);
+}
+.sidebar-item:hover .icon { opacity: 0.85; }
 .sidebar-item.active .icon { opacity: 1; }
 
 .sidebar-badge {
@@ -155,10 +177,13 @@ a:hover { color: var(--accent-hover); }
 
 .sidebar-footer {
   margin-top: auto;
-  padding: 14px 18px;
+  padding: 16px 20px;
   border-top: 1px solid var(--border);
   font-size: 0.7rem;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .preview-badge {
@@ -298,6 +323,8 @@ a:hover { color: var(--accent-hover); }
 .btn:active { transform: translateY(0); }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 12px var(--accent-glow); }
+.btn-ab { background: linear-gradient(135deg, var(--purple), var(--accent)); color: #fff; border-color: transparent; font-weight: 600; }
+.btn-ab:hover { box-shadow: 0 4px 12px rgba(139,92,246,0.3); }
 .btn-danger { border-color: var(--red); color: var(--red); }
 .btn-danger:hover { background: var(--red-bg); }
 .btn-success { border-color: var(--green); color: var(--green); }
@@ -395,7 +422,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 }
 
 .badge-green { background: var(--green-bg); color: var(--green); }
-.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-yellow, .badge-amber { background: var(--amber-bg); color: var(--amber); }
 .badge-red { background: var(--red-bg); color: var(--red); }
 .badge-blue { background: var(--blue-bg); color: var(--accent); }
 .badge-purple { background: var(--purple-bg); color: var(--purple); }
@@ -748,6 +775,333 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 }
 .login-card .btn-login:hover { background: var(--accent-hover); box-shadow: 0 4px 16px var(--accent-glow); }
 .login-card .error { color: var(--red); font-size: 0.8rem; margin-top: 12px; }
+.login-card .btn-login:disabled { opacity: 0.6; cursor: wait; }
+
+/* === ACCESSIBILITY — Focus Visible === */
+.btn:focus-visible, .form-input:focus-visible, .form-select:focus-visible, .form-textarea:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+.sidebar-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.kanban-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* === STAT BOX (Calendar production summary) === */
+.stat-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+.stat-value { font-size: 1.4rem; font-weight: 700; line-height: 1; color: var(--text-primary); }
+.stat-label { font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* === SELECT ARROW (dark theme fix) === */
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b8fa6' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* === CHECKBOX DARK THEME === */
+input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+/* === TABLE ZEBRA STRIPING === */
+tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+
+/* === EMPTY STATE === */
+.empty-state {
+  text-align: center; padding: 48px 24px; color: var(--text-muted);
+}
+.empty-state .empty-icon { font-size: 2.5rem; opacity: 0.3; margin-bottom: 12px; }
+.empty-state .empty-text { font-size: 0.85rem; }
+
+/* === MOBILE HAMBURGER === */
+.sidebar-toggle {
+  display: none;
+  background: none; border: 1px solid var(--border); color: var(--text-primary);
+  padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 1.2rem;
+  transition: var(--transition);
+}
+.sidebar-toggle:hover { border-color: var(--accent); }
+
+@media (max-width: 900px) {
+  .sidebar-toggle { display: inline-flex; }
+  .sidebar { position: fixed; left: -260px; z-index: 100; height: 100vh; transition: left 0.3s ease; box-shadow: none; }
+  .sidebar.open { left: 0; box-shadow: 8px 0 32px rgba(0,0,0,0.5); }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+  .sidebar-overlay.active { display: block; }
+}
+
+/* === LOADING SKELETON === */
+.loading-bar {
+  text-align: center; padding: 60px; color: var(--text-muted); font-size: 0.85rem;
+}
+.loading-bar::before { content: ''; display: block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* === TOAST DISMISS === */
+.toast-container { cursor: pointer; }
+
+/* === LOGOUT BUTTON === */
+.btn-logout {
+  background: none; border: 1px solid var(--border); color: var(--text-muted);
+  padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.7rem;
+  font-family: var(--font); transition: var(--transition);
+}
+.btn-logout:hover { border-color: var(--accent); color: var(--text-primary); }
+
+/* === WELCOME BANNER === */
+.welcome-banner {
+  background: linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(139,92,246,0.08) 50%, rgba(6,182,212,0.06) 100%);
+  border: 1px solid rgba(59,130,246,0.18);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* === PIPELINE FUNNEL === */
+.pipeline-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+.pipeline-stage:hover {
+  background: var(--bg-card-hover);
+}
+.pipeline-count {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.pipeline-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: center;
+}
+.pipeline-bar {
+  height: 4px;
+  border-radius: 2px;
+  min-width: 8%;
+  transition: width 0.5s ease;
+  opacity: 0.7;
+}
+.pipeline-arrow {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* === KPI CARDS === */
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: var(--transition);
+}
+.kpi-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+.kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.kpi-data {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kpi-value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.kpi-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* === ACTION BUTTONS === */
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  color: var(--text-primary);
+  font-family: var(--font);
+}
+.action-btn:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.1);
+}
+.action-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.action-text {
+  flex: 1;
+  min-width: 0;
+}
+.action-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.action-desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+.action-arrow {
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+.action-btn:hover .action-arrow {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+/* === BRAND CARDS === */
+.brand-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.brand-card:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
+.brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.brand-count {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.brand-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.brand-stage-tag {
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  letter-spacing: 0.2px;
+}
+
+/* === DASHBOARD GRIDS === */
+.pipeline-funnel {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+/* === DASHBOARD RESPONSIVE === */
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1100px) {
+  .kpi-card { padding: 14px; }
+  .kpi-icon { width: 36px; height: 36px; font-size: 1rem; }
+  .kpi-value { font-size: 1.3rem; }
+  .actions-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .welcome-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+    gap: 12px;
+  }
+  .welcome-banner > div:last-child {
+    width: 100%;
+    justify-content: center;
+  }
+  .pipeline-funnel { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .pipeline-funnel { grid-template-columns: repeat(2, 1fr); }
+  .pipeline-stage { padding: 10px 4px; }
+  .pipeline-count { font-size: 1.2rem; }
+  .pipeline-label { font-size: 0.55rem; }
+  .pipeline-arrow { display: none !important; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .pipeline-funnel { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -756,7 +1110,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 <div x-show="toastVisible" x-transition:enter="transition ease-out duration-200" x-transition:leave="transition ease-in duration-150"
      style="position: fixed; top: 24px; right: 24px; z-index: 10000; padding: 14px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);"
      :style="toastType === 'error' ? 'background: #dc2626; color: white;' : 'background: #16a34a; color: white;'"
-     x-text="toastMessage" x-cloak></div>
+     x-text="toastMessage" x-cloak @click="toastVisible = false" class="toast-container"></div>
 
 <!-- ============================================= -->
 <!-- LOGIN SCREEN -->
@@ -769,7 +1123,10 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
     <form @submit.prevent="doLogin()">
       <input type="text" x-model="loginUser" placeholder="Usuario" autocomplete="username">
       <input type="password" x-model="loginPass" placeholder="Senha" autocomplete="current-password">
-      <button type="submit" class="btn-login">Entrar</button>
+      <button type="submit" class="btn-login" :disabled="loginLoading">
+        <span x-show="!loginLoading">Entrar</span>
+        <span x-show="loginLoading">Entrando...</span>
+      </button>
     </form>
     <div class="error" x-show="loginError" x-text="loginError"></div>
     <div style="margin-top: 20px; font-size: 0.65rem; color: var(--text-muted);">Manager Grupo &mdash; v2.0</div>
@@ -779,101 +1136,98 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 <!-- ============================================= -->
 <!-- SIDEBAR -->
 <!-- ============================================= -->
-<aside class="sidebar">
+<div class="sidebar-overlay" :class="{ active: sidebarOpen }" @click="sidebarOpen = false"></div>
+<aside class="sidebar" :class="{ open: sidebarOpen }">
   <div class="sidebar-brand">
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-      <img src="https://uottkdywmxbwiogxzaqa.supabase.co/storage/v1/object/public/logos/Salk%20Medical/LogSalkMedicalPNG%20-%20W.png" alt="Salk Medical" style="height: 28px; width: auto; opacity: 0.9;">
-    </div>
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-      <div>
-        <h1>Content Studio</h1>
-        <div class="version">v2.0</div>
-      </div>
-      <button @click="logout()" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.7rem;transition:var(--transition);" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text-primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">Sair</button>
-    </div>
+    <img src="https://uottkdywmxbwiogxzaqa.supabase.co/storage/v1/object/public/logos/Salk%20Medical/LogSalkMedicalPNG%20-%20W.png" alt="Salk Medical" class="brand-logo">
+    <h1>Content Studio</h1>
+    <div class="version">Manager Grupo &bull; v2.0</div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Principal</div>
-    <div class="sidebar-item" :class="{ active: tab === 'dashboard' }" @click="tab='dashboard'">
+    <div class="sidebar-item" :class="{ active: tab === 'dashboard' }" @click="tab='dashboard'; sidebarOpen=false">
       <span class="icon">&#9632;</span> Painel
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'board' }" @click="tab='board'">
+    <div class="sidebar-item" :class="{ active: tab === 'board' }" @click="tab='board'; sidebarOpen=false">
       <span class="icon">&#9638;</span> Pecas em Producao
       <span class="sidebar-badge badge-blue" x-show="stats.pieces_in_production > 0" x-text="stats.pieces_in_production"></span>
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'calendar' }" @click="tab='calendar'">
+    <div class="sidebar-item" :class="{ active: tab === 'calendar' }" @click="tab='calendar'; sidebarOpen=false">
       <span class="icon">&#9783;</span> Planejar Semana
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Criar Conteudo</div>
-    <div class="sidebar-item" :class="{ active: tab === 'copy' }" @click="tab='copy'">
+    <div class="sidebar-item" :class="{ active: tab === 'copy' }" @click="tab='copy'; sidebarOpen=false">
       <span class="icon">&#9998;</span> Escrever Textos
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'">
+    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'; sidebarOpen=false">
       <span class="icon">&#9881;</span> Fichas de Produto
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'studio' }" @click="tab='studio'">
+    <div class="sidebar-item" :class="{ active: tab === 'studio' }" @click="tab='studio'; sidebarOpen=false">
       <span class="icon">&#10070;</span> Gerar Imagens
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'video' }" @click="tab='video'">
+    <div class="sidebar-item" :class="{ active: tab === 'video' }" @click="tab='video'; sidebarOpen=false">
       <span class="icon">&#9654;</span> Criar Video
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Qualidade</div>
-    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'">
+    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'; sidebarOpen=false">
       <span class="icon">&#9888;</span> Verificar Regras
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'review' }" @click="tab='review'">
+    <div class="sidebar-item" :class="{ active: tab === 'review' }" @click="tab='review'; sidebarOpen=false">
       <span class="icon">&#10003;</span> Aprovar Conteudo
       <span class="sidebar-badge badge-amber" x-show="pendingReviews > 0" x-text="pendingReviews"></span>
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'publish' }" @click="tab='publish'">
+    <div class="sidebar-item" :class="{ active: tab === 'publish' }" @click="tab='publish'; sidebarOpen=false">
       <span class="icon">&#9992;</span> Publicar
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Consultar</div>
-    <div class="sidebar-item" :class="{ active: tab === 'assets' }" @click="tab='assets'">
+    <div class="sidebar-item" :class="{ active: tab === 'assets' }" @click="tab='assets'; sidebarOpen=false">
       <span class="icon">&#9733;</span> Biblioteca
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'claims' }" @click="tab='claims'">
+    <div class="sidebar-item" :class="{ active: tab === 'claims' }" @click="tab='claims'; sidebarOpen=false">
       <span class="icon">&#9875;</span> Argumentos de Venda
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" @click="tab='hashtags'">
+    <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" @click="tab='hashtags'; sidebarOpen=false">
       <span class="icon">#</span> Hashtags
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'personas' }" @click="tab='personas'">
+    <div class="sidebar-item" :class="{ active: tab === 'personas' }" @click="tab='personas'; sidebarOpen=false">
       <span class="icon">&#9673;</span> Perfis de Cliente
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Resultados</div>
-    <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'">
+    <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'; sidebarOpen=false">
       <span class="icon">&#9650;</span> Desempenho
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Sistema</div>
-    <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'">
+    <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'; sidebarOpen=false">
       <span class="icon">&#9881;</span> Configuracoes
     </div>
   </div>
 
   <div class="sidebar-footer">
-    <template x-if="stats.preview_mode">
-      <span class="preview-badge">PREVIEW MODE</span>
-    </template>
-    <template x-if="!stats.preview_mode">
-      <span class="badge badge-green">PRODUCAO</span>
-    </template>
+    <div>
+      <template x-if="stats.preview_mode">
+        <span class="preview-badge">PREVIEW</span>
+      </template>
+      <template x-if="!stats.preview_mode">
+        <span class="badge badge-green">PRODUCAO</span>
+      </template>
+    </div>
+    <button class="btn-logout" @click="logout()">Sair</button>
   </div>
 </aside>
 
@@ -884,9 +1238,12 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 
 <!-- ===== HEADER ===== -->
 <div class="main-header">
-  <div>
-    <h2 x-text="tabTitles[tab]"></h2>
-    <div class="subtitle" x-text="tabSubtitles[tab]"></div>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <button class="sidebar-toggle" @click="sidebarOpen = !sidebarOpen">&#9776;</button>
+    <div>
+      <h2 x-text="tabTitles[tab]"></h2>
+      <div class="subtitle" x-text="tabSubtitles[tab]"></div>
+    </div>
   </div>
   <div class="btn-group">
     <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'">+ Nova Peca</button>
@@ -897,95 +1254,129 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 
 <div class="main-content">
 
+<!-- Loading Indicator -->
+<div x-show="dataLoading" class="loading-bar" x-cloak>Carregando dados...</div>
+
 <!-- ===================================================== -->
 <!-- TAB: DASHBOARD -->
 <!-- ===================================================== -->
-<div x-show="tab === 'dashboard'">
+<div x-show="tab === 'dashboard' && !dataLoading">
+
+  <!-- Welcome Banner -->
+  <div class="welcome-banner">
+    <div>
+      <div style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">Pipeline de Producao</div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px;">Acompanhe o fluxo de conteudo em tempo real</div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-primary" @click="showQuickProduce = true" :disabled="quickProducing">
+        <span x-show="!quickProducing">&#9889; Producao Express</span>
+        <span x-show="quickProducing">Produzindo...</span>
+      </button>
+      <button class="btn btn-ab" @click="showABTest = true" :disabled="abTestRunning">
+        <span x-show="!abTestRunning">&#9878; Teste A/B</span>
+        <span x-show="abTestRunning">Gerando...</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Pipeline Funnel -->
   <div class="card" style="margin-bottom: 20px;">
-    <div class="card-title">Pipeline de Producao</div>
-    <div style="display: flex; gap: 4px; align-items: stretch; min-height: 100px;">
-      <template x-for="stage in stages" :key="stage">
-        <div style="flex: 1; background: var(--bg-secondary); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: var(--transition); position: relative;"
-             @click="boardBrandFilter = ''; tab = 'board';"
-             @mouseenter="$el.style.background='var(--bg-tertiary)'"
-             @mouseleave="$el.style.background='var(--bg-secondary)'">
-          <div style="font-size: 2rem; font-weight: 700; line-height: 1;" :style="'color:' + stageColors[stage]" x-text="piecesInStage(stage).length"></div>
-          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;" x-text="stageLabels[stage]"></div>
-          <div x-show="stages.indexOf(stage) < stages.length - 1" style="position: absolute; right: -8px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem; z-index: 1;">&#8594;</div>
+    <div class="pipeline-funnel">
+      <template x-for="(stage, idx) in stages" :key="stage">
+        <div class="pipeline-stage" @click="boardBrandFilter = ''; tab = 'board';">
+          <div class="pipeline-count" :style="'color:' + stageColors[stage]" x-text="piecesInStage(stage).length"></div>
+          <div class="pipeline-label" x-text="stageLabels[stage]"></div>
+          <div class="pipeline-bar" :style="'background:' + stageColors[stage] + '; width:' + Math.min(100, Math.max(8, piecesInStage(stage).length * 15)) + '%'"></div>
+          <div x-show="idx < stages.length - 1" class="pipeline-arrow">&#8250;</div>
         </div>
       </template>
     </div>
   </div>
 
-  <div class="form-row" style="grid-template-columns: 1fr 1fr;">
-    <!-- Producao Rapida -->
-    <div class="card">
-      <div class="card-title">Producao Rapida</div>
-      <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">Gere conteudo automaticamente com um clique.</p>
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 0.95rem;" @click="tab='calendar'">
-          Planejar e Produzir Semana
-        </button>
-        <button class="btn btn-success" style="width: 100%; padding: 12px;" @click="showQuickProduce = true" :disabled="quickProducing">
-          <span x-show="!quickProducing">Produzir Peca Express (Briefing + Copy + Prompt)</span>
-          <span x-show="quickProducing">Produzindo...</span>
-        </button>
-        <button class="btn" style="width: 100%; background: linear-gradient(135deg, var(--purple), var(--accent)); color: #fff;" @click="showABTest = true" :disabled="abTestRunning">
-          <span x-show="!abTestRunning">Teste A/B — Gerar Variacoes em Massa</span>
-          <span x-show="abTestRunning">Gerando variacoes...</span>
-        </button>
-        <button class="btn" style="width: 100%;" @click="tab='copy'">
-          Gerar Copy Individual
-        </button>
-        <button class="btn" style="width: 100%;" @click="tab='board'; showNewPiece=true">
-          + Nova Peca Manual
-        </button>
+  <!-- Stats Grid — 4 KPI cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--blue-bg); color: var(--accent);">&#9638;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" x-text="pieces.length">0</div>
+        <div class="kpi-label">Total Pecas</div>
       </div>
     </div>
-
-    <!-- Metricas Resumo -->
-    <div class="card">
-      <div class="card-title">Metricas do Sistema</div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px;">
-          <div style="font-size: 0.7rem; color: var(--text-muted);">Total Pecas</div>
-          <div style="font-size: 1.4rem; font-weight: 700;" x-text="pieces.length"></div>
-        </div>
-        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px;">
-          <div style="font-size: 0.7rem; color: var(--text-muted);">Aprovadas</div>
-          <div style="font-size: 1.4rem; font-weight: 700; color: var(--green);" x-text="pieces.filter(p => p.stage === 'approved' || p.stage === 'published').length"></div>
-        </div>
-        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px;">
-          <div style="font-size: 0.7rem; color: var(--text-muted);">Fichas (VDPs)</div>
-          <div style="font-size: 1.4rem; font-weight: 700;" x-text="stats.total_vdps || 0"></div>
-        </div>
-        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px;">
-          <div style="font-size: 0.7rem; color: var(--text-muted);">Argumentos</div>
-          <div style="font-size: 1.4rem; font-weight: 700;" x-text="stats.claims_available || 0"></div>
-        </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--green-bg); color: var(--green);">&#10003;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" style="color: var(--green);" x-text="pieces.filter(p => p.stage === 'approved' || p.stage === 'published').length">0</div>
+        <div class="kpi-label">Aprovadas</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--purple-bg); color: var(--purple);">&#9783;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" x-text="stats.total_vdps || 0">0</div>
+        <div class="kpi-label">Fichas VDP</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: var(--cyan-bg); color: var(--cyan);">&#9875;</div>
+      <div class="kpi-data">
+        <div class="kpi-value" x-text="stats.claims_available || 0">0</div>
+        <div class="kpi-label">Argumentos</div>
       </div>
     </div>
   </div>
 
-  <!-- Brand Distribution -->
-  <div class="card">
-    <div class="card-title">Distribuicao por Marca</div>
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-      <template x-for="b in ['salk', 'mendel', 'manager', 'dayho']">
-        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 12px; cursor: pointer; transition: var(--transition);"
-             @click="boardBrandFilter = b; tab = 'board';"
-             @mouseenter="$el.style.background='var(--bg-tertiary)'"
-             @mouseleave="$el.style.background='var(--bg-secondary)'">
-          <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;" x-text="b"></div>
-          <div style="font-size: 1.6rem; font-weight: 700;" x-text="pieces.filter(p => p.brand === b).length"></div>
-          <div style="display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap;">
-            <template x-for="s in stages.filter(s => pieces.filter(p => p.brand === b && p.stage === s).length > 0)">
-              <span style="font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; background: var(--bg-primary);" :style="'color:' + stageColors[s]" x-text="stageLabels[s] + ': ' + pieces.filter(p => p.brand === b && p.stage === s).length"></span>
-            </template>
+  <div class="actions-grid">
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-title">Acoes Rapidas</div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <button class="action-btn" @click="tab='calendar'; sidebarOpen=false">
+          <span class="action-icon" style="background: var(--blue-bg); color: var(--accent);">&#9783;</span>
+          <div class="action-text">
+            <div class="action-title">Planejar e Produzir Semana</div>
+            <div class="action-desc">Calendario + briefings + copy automatica</div>
           </div>
-        </div>
-      </template>
+          <span class="action-arrow">&#8250;</span>
+        </button>
+        <button class="action-btn" @click="tab='copy'; sidebarOpen=false">
+          <span class="action-icon" style="background: var(--green-bg); color: var(--green);">&#9998;</span>
+          <div class="action-text">
+            <div class="action-title">Escrever Copy</div>
+            <div class="action-desc">Gerar textos para redes sociais</div>
+          </div>
+          <span class="action-arrow">&#8250;</span>
+        </button>
+        <button class="action-btn" @click="tab='board'; showNewPiece=true">
+          <span class="action-icon" style="background: var(--purple-bg); color: var(--purple);">+</span>
+          <div class="action-text">
+            <div class="action-title">Nova Peca Manual</div>
+            <div class="action-desc">Criar peca com configuracao personalizada</div>
+          </div>
+          <span class="action-arrow">&#8250;</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Brand Distribution -->
+    <div class="card">
+      <div class="card-title">Distribuicao por Marca</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <template x-for="b in ['salk', 'mendel', 'manager', 'dayho']">
+          <div class="brand-card" @click="boardBrandFilter = b; tab = 'board';">
+            <div class="brand-header">
+              <span class="badge" :class="'badge-' + b" x-text="b" style="text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.8px;"></span>
+              <span class="brand-count" x-text="pieces.filter(p => p.brand === b).length"></span>
+            </div>
+            <div class="brand-stages">
+              <template x-for="s in stages.filter(s => pieces.filter(p => p.brand === b && p.stage === s).length > 0)">
+                <span class="brand-stage-tag" :style="'color:' + stageColors[s]" x-text="stageLabels[s] + ' ' + pieces.filter(p => p.brand === b && p.stage === s).length"></span>
+              </template>
+              <span x-show="pieces.filter(p => p.brand === b).length === 0" style="font-size: 0.68rem; color: var(--text-muted);">Nenhuma peca</span>
+            </div>
+          </div>
+        </template>
+      </div>
     </div>
   </div>
 
@@ -2741,8 +3132,6 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 </div>
 
 
-</div> <!-- /body wrapper -->
-
 <script>
 function studioApp() {
   return {
@@ -2751,6 +3140,11 @@ function studioApp() {
     loginUser: '',
     loginPass: '',
     loginError: '',
+    loginLoading: false,
+
+    // UI state
+    sidebarOpen: false,
+    dataLoading: true,
 
     // Toast notifications
     toastMessage: '',
@@ -2962,6 +3356,7 @@ function studioApp() {
 
     async doLogin() {
       this.loginError = '';
+      this.loginLoading = true;
       try {
         const data = await this.api('/api/auth/login', {
           method: 'POST',
@@ -2974,6 +3369,8 @@ function studioApp() {
         await this.refreshData();
       } catch (e) {
         this.loginError = 'Usuario ou senha incorretos';
+      } finally {
+        this.loginLoading = false;
       }
     },
 
@@ -2983,6 +3380,7 @@ function studioApp() {
     },
 
     async refreshData() {
+      this.dataLoading = true;
       const [dashboard, piecesRes, vdpsRes, claimsRes, logosRes, productsRes, presetsRes, reviewsRes, metricsRes, metricsSumRes, personasRes] = await Promise.allSettled([
         this.api('/api/dashboard'),
         this.api('/api/production/pieces'),
@@ -3013,6 +3411,7 @@ function studioApp() {
       if (personasRes.status === 'fulfilled') this.personas = personasRes.value || [];
       this.loadVideoStatus();
       this.loadPublishStatus();
+      this.dataLoading = false;
     },
 
     async api(url, opts = {}) {
@@ -3150,17 +3549,24 @@ function studioApp() {
     },
 
     async loadPieces() {
-      const url = '/api/production/pieces' + (this.boardBrandFilter ? '?brand=' + this.boardBrandFilter : '');
-      this.pieces = await this.api(url);
+      try {
+        const url = '/api/production/pieces' + (this.boardBrandFilter ? '?brand=' + this.boardBrandFilter : '');
+        this.pieces = await this.api(url);
+      } catch(e) {
+        console.error('Erro ao carregar pecas:', e);
+        this.pieces = [];
+      }
     },
 
     async movePieceStage(id, stage) {
-      await this.api(`/api/production/pieces/${id}/stage`, {
-        method: 'PUT',
-        body: JSON.stringify({ stage }),
-      });
-      await this.loadPieces();
-      if (this.selectedPiece) this.selectedPiece.stage = stage;
+      try {
+        await this.api(`/api/production/pieces/${id}/stage`, {
+          method: 'PUT',
+          body: JSON.stringify({ stage }),
+        });
+        await this.loadPieces();
+        if (this.selectedPiece) this.selectedPiece.stage = stage;
+      } catch(e) { this.notify('Erro ao mover peca: ' + e.message, 'error'); }
     },
 
     async batchMoveStage(fromStage, toStage) {
@@ -3220,18 +3626,25 @@ function studioApp() {
     },
 
     async deletePiece(id) {
-      await this.api(`/api/production/pieces/${id}`, { method: 'DELETE' });
-      this.showPieceDetail = false;
-      await this.loadPieces();
+      if (!confirm('Excluir esta peca permanentemente?')) return;
+      try {
+        await this.api(`/api/production/pieces/${id}`, { method: 'DELETE' });
+        this.showPieceDetail = false;
+        await this.loadPieces();
+        this.notify('Peca excluida');
+      } catch(e) { this.notify('Erro ao excluir: ' + e.message, 'error'); }
     },
 
     async sendToReview(pieceId) {
-      await this.api('/api/reviews', {
-        method: 'POST',
-        body: JSON.stringify({ piece_id: pieceId, review_type: 'editorial' }),
-      });
-      await this.movePieceStage(pieceId, 'review');
-      this.reviews = await this.api('/api/reviews');
+      try {
+        await this.api('/api/reviews', {
+          method: 'POST',
+          body: JSON.stringify({ piece_id: pieceId, review_type: 'editorial' }),
+        });
+        await this.movePieceStage(pieceId, 'review');
+        this.reviews = await this.api('/api/reviews');
+        this.notify('Enviado para revisao');
+      } catch(e) { this.notify('Erro ao enviar para revisao: ' + e.message, 'error'); }
     },
 
     getPieceTitle(pieceId) {
@@ -3246,13 +3659,16 @@ function studioApp() {
     },
 
     async createVDP() {
-      await this.api('/api/vdp/create', {
-        method: 'POST',
-        body: JSON.stringify(this.newVDP),
-      });
-      this.showNewVDP = false;
-      this.newVDP = { produto: '', marca: 'salk', conceito: '', formato: '1080x1350', png_referencia: '', prompt_nb2: '', canva_headline: '', canva_spec_line: '', canva_anvisa: '' };
-      this.vdps = await this.api('/api/vdp');
+      try {
+        await this.api('/api/vdp/create', {
+          method: 'POST',
+          body: JSON.stringify(this.newVDP),
+        });
+        this.showNewVDP = false;
+        this.newVDP = { produto: '', marca: 'salk', conceito: '', formato: '1080x1350', png_referencia: '', prompt_nb2: '', canva_headline: '', canva_spec_line: '', canva_anvisa: '' };
+        this.vdps = await this.api('/api/vdp');
+        this.notify('VDP criado com sucesso');
+      } catch(e) { this.notify('Erro ao criar VDP: ' + e.message, 'error'); }
     },
 
     // Studio
@@ -3377,43 +3793,53 @@ function studioApp() {
 
     // Settings
     async loadSettings() {
-      const data = await this.api('/api/settings') || {};
-      this.settingsList = (data.settings || []).map(s => ({
-        key: s.key,
-        label: s.label || s.key,
-        description: s.description || '',
-        configured: s.configured || false,
-        placeholder: s.placeholder || '',
-        value: '',
-      }));
+      try {
+        const data = await this.api('/api/settings') || {};
+        this.settingsList = (data.settings || []).map(s => ({
+          key: s.key,
+          label: s.label || s.key,
+          description: s.description || '',
+          configured: s.configured || false,
+          placeholder: s.placeholder || '',
+          value: '',
+        }));
+      } catch(e) { console.error('Erro ao carregar settings:', e); }
     },
 
     async saveSetting(setting) {
-      if (!setting.value) return;
-      await this.api('/api/settings', {
-        method: 'PUT',
-        body: JSON.stringify({ [setting.key]: setting.value }),
-      });
-      setting.configured = true;
-      setting.value = '';
-      await this.loadSettings();
+      if (!setting.value) { this.notify('Digite um valor', 'error'); return; }
+      try {
+        await this.api('/api/settings', {
+          method: 'PUT',
+          body: JSON.stringify({ [setting.key]: setting.value }),
+        });
+        setting.configured = true;
+        setting.value = '';
+        await this.loadSettings();
+        this.notify('Configuracao salva');
+      } catch(e) { this.notify('Erro ao salvar: ' + e.message, 'error'); }
     },
 
     async testConnections() {
-      this.connectionTestResult = await this.api('/api/settings/test') || {};
+      try {
+        this.connectionTestResult = await this.api('/api/settings/test') || {};
+      } catch(e) { this.notify('Erro ao testar conexoes: ' + e.message, 'error'); }
     },
 
     async updateAuth() {
       if (!this.settingsUser || !this.settingsPass) return;
-      await this.api('/api/settings', {
-        method: 'PUT',
-        body: JSON.stringify({
-          STUDIO_USER: this.settingsUser,
-          STUDIO_PASS: this.settingsPass,
-        }),
-      });
-      this.settingsUser = '';
-      this.settingsPass = '';
+      try {
+        await this.api('/api/settings', {
+          method: 'PUT',
+          body: JSON.stringify({
+            STUDIO_USER: this.settingsUser,
+            STUDIO_PASS: this.settingsPass,
+          }),
+        });
+        this.settingsUser = '';
+        this.settingsPass = '';
+        this.notify('Credenciais atualizadas');
+      } catch(e) { this.notify('Erro ao atualizar auth: ' + e.message, 'error'); }
     },
 
     // Compliance
@@ -3568,11 +3994,13 @@ function studioApp() {
     },
 
     async checkCopyCompliance() {
-      const fullText = [this.copyHeadline, this.copyText, this.copyCTA].filter(Boolean).join(' ');
-      this.copyComplianceResult = await this.api('/api/compliance/check', {
-        method: 'POST',
-        body: JSON.stringify({ text: fullText }),
-      });
+      try {
+        const fullText = [this.copyHeadline, this.copyText, this.copyCTA].filter(Boolean).join(' ');
+        this.copyComplianceResult = await this.api('/api/compliance/check', {
+          method: 'POST',
+          body: JSON.stringify({ text: fullText }),
+        });
+      } catch(e) { this.notify('Erro ao verificar compliance: ' + e.message, 'error'); }
     },
 
     // Claims
@@ -3613,26 +4041,36 @@ function studioApp() {
 
     // Calendar
     async loadCalendar() {
-      const data = await this.api(`/api/calendar/${this.calWeekId}`);
-      this.calSlots = data.slots || [];
+      try {
+        const data = await this.api(`/api/calendar/${this.calWeekId}`);
+        this.calSlots = data.slots || [];
+      } catch(e) { this.notify('Erro ao carregar calendario: ' + e.message, 'error'); }
     },
 
     async generateCalendar() {
-      const data = await this.api(`/api/calendar/${this.calWeekId}/generate?brand=${this.calBrand}`, { method: 'POST' });
-      this.calSlots = data.slots || [];
+      try {
+        const data = await this.api(`/api/calendar/${this.calWeekId}/generate?brand=${this.calBrand}`, { method: 'POST' });
+        this.calSlots = data.slots || [];
+        this.notify('Calendario gerado');
+      } catch(e) { this.notify('Erro ao gerar calendario: ' + e.message, 'error'); }
     },
 
     async saveCalendar() {
-      await this.api(`/api/calendar/${this.calWeekId}`, {
-        method: 'POST',
-        body: JSON.stringify({ week_id: this.calWeekId, brand: this.calBrand, slots: this.calSlots }),
-      });
+      try {
+        await this.api(`/api/calendar/${this.calWeekId}`, {
+          method: 'POST',
+          body: JSON.stringify({ week_id: this.calWeekId, brand: this.calBrand, slots: this.calSlots }),
+        });
+        this.notify('Calendario salvo');
+      } catch(e) { this.notify('Erro ao salvar: ' + e.message, 'error'); }
     },
 
     async autoFillCalendar() {
-      const data = await this.api(`/api/calendar/${this.calWeekId}/auto-fill?brand=${this.calBrand}`, { method: 'POST' });
-      this.calSlots = data.slots || [];
-      this.notify('Calendario preenchido automaticamente');
+      try {
+        const data = await this.api(`/api/calendar/${this.calWeekId}/auto-fill?brand=${this.calBrand}`, { method: 'POST' });
+        this.calSlots = data.slots || [];
+        this.notify('Calendario preenchido automaticamente');
+      } catch(e) { this.notify('Erro ao preencher: ' + e.message, 'error'); }
     },
 
     async produceWeek() {
@@ -3657,8 +4095,10 @@ function studioApp() {
 
     // Hashtags
     async loadHashtags() {
-      this.hashtagData = await this.api(`/api/data/hashtags/${this.hashtagBrand}?platform=${this.hashtagPlatform}`);
-      this.selectedHashtags = [];
+      try {
+        this.hashtagData = await this.api(`/api/data/hashtags/${this.hashtagBrand}?platform=${this.hashtagPlatform}`);
+        this.selectedHashtags = [];
+      } catch(e) { this.notify('Erro ao carregar hashtags: ' + e.message, 'error'); }
     },
 
     toggleHashtag(h) {
@@ -3673,29 +4113,32 @@ function studioApp() {
 
     // Performance
     async saveMetric() {
-      await this.api('/api/metrics', {
-        method: 'POST',
-        body: JSON.stringify({
-          piece_id: this.metricPieceId,
-          platform: this.metricPlatform,
-          published_at: this.metricDate,
-          impressions: this.metricImpressions,
-          reach: this.metricReach,
-          engagement: this.metricEngagement,
-          clicks: this.metricClicks,
-          saves: this.metricSaves,
-          shares: this.metricShares,
-        }),
-      });
-      this.metrics = await this.api('/api/metrics');
-      this.perfSummary = await this.api('/api/metrics/summary');
-      this.metricPieceId = '';
-      this.metricImpressions = 0;
-      this.metricReach = 0;
-      this.metricEngagement = 0;
-      this.metricClicks = 0;
-      this.metricSaves = 0;
-      this.metricShares = 0;
+      try {
+        await this.api('/api/metrics', {
+          method: 'POST',
+          body: JSON.stringify({
+            piece_id: this.metricPieceId,
+            platform: this.metricPlatform,
+            published_at: this.metricDate,
+            impressions: this.metricImpressions,
+            reach: this.metricReach,
+            engagement: this.metricEngagement,
+            clicks: this.metricClicks,
+            saves: this.metricSaves,
+            shares: this.metricShares,
+          }),
+        });
+        this.metrics = await this.api('/api/metrics');
+        this.perfSummary = await this.api('/api/metrics/summary');
+        this.metricPieceId = '';
+        this.metricImpressions = 0;
+        this.metricReach = 0;
+        this.metricEngagement = 0;
+        this.metricClicks = 0;
+        this.metricSaves = 0;
+        this.metricShares = 0;
+        this.notify('Metrica salva');
+      } catch(e) { this.notify('Erro ao salvar metrica: ' + e.message, 'error'); }
     },
 
     formatNumber(n) {

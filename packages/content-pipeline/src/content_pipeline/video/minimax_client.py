@@ -100,11 +100,11 @@ class MinimaxClient:
             result_data = await self._poll(task_id, timeout=300)
 
             # Download video
-            video_url = result_data.get("file_id", "") or result_data.get("video_url", "")
+            # file_id is an opaque ID, not a URL — always get download URL
+            video_url = result_data.get("video_url", "")
             if not video_url:
-                # Try to get download URL
-                download_url = await self._get_download_url(task_id)
-                video_url = download_url
+                file_id = result_data.get("file_id", "")
+                video_url = await self._get_download_url(file_id or task_id)
 
             video_path = await self._download(video_url, task_id)
             elapsed = time.time() - start

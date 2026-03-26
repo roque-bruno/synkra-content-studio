@@ -210,31 +210,40 @@ class StudioDatabase:
         return self._piece_to_dict(row) if row else None
 
     def update_piece_stage(self, piece_id: str, stage: str, notes: str = "") -> Optional[dict]:
-        now = datetime.now().isoformat()
+        now = datetime.utcnow().isoformat()
         with self._get_conn() as conn:
             if notes:
-                conn.execute(
+                cursor = conn.execute(
                     "UPDATE pieces SET stage=?, notes=?, updated_at=? WHERE id=?",
                     (stage, notes, now, piece_id),
                 )
             else:
-                conn.execute(
+                cursor = conn.execute(
                     "UPDATE pieces SET stage=?, updated_at=? WHERE id=?",
                     (stage, now, piece_id),
                 )
-            if conn.total_changes == 0:
+            if cursor.rowcount == 0:
                 return None
         return self.get_piece(piece_id)
+
+    # Whitelist of columns allowed in update operations
+    ALLOWED_PIECE_COLUMNS = {
+        "title", "brand", "product", "pillar", "platform", "format",
+        "persona_target", "copy_text", "hashtags", "claims_used",
+        "nb2_prompt", "image_url", "stage", "notes",
+        "is_derivative", "parent_piece_id", "calendar_slot_id",
+        "published_at",
+    }
 
     def update_piece(self, piece_id: str, data: dict) -> Optional[dict]:
         existing = self.get_piece(piece_id)
         if not existing:
             return None
-        now = datetime.now().isoformat()
+        now = datetime.utcnow().isoformat()
         updates = []
         params = []
         for key, value in data.items():
-            if key == "id":
+            if key == "id" or key not in self.ALLOWED_PIECE_COLUMNS:
                 continue
             col = key
             if col in ("claims_used", "hashtags") and isinstance(value, list):

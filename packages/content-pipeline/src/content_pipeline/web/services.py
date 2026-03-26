@@ -198,7 +198,13 @@ class StudioService:
             brandbook_loader=self.load_brandbook,
         )
 
-        # Publishers
+        # Atualizar preview_mode baseado em chaves disponíveis (antes dos publishers)
+        has_gemini = bool(self.settings.get("GOOGLE_API_KEY"))
+        if has_gemini and self.preview_mode:
+            self.preview_mode = False
+            logger.info("Gemini API key detectada — modo produção ativado")
+
+        # Publishers (usam o preview_mode já atualizado)
         preview = self.preview_mode
         self.publishers: dict[str, PublisherBase] = {
             "instagram": InstagramPublisher(preview_mode=preview),
@@ -220,12 +226,6 @@ class StudioService:
             budget_tracker=self.budget_tracker,
             feedback_loop=self.feedback_loop,
         )
-
-        # Atualizar preview_mode baseado em chaves disponíveis
-        has_gemini = bool(self.settings.get("GOOGLE_API_KEY"))
-        if has_gemini and self.preview_mode:
-            self.preview_mode = False
-            logger.info("Gemini API key detectada — modo produção ativado")
 
     def reload_settings(self) -> dict:
         """Recarrega settings e reinicializa clientes que dependem de API keys."""

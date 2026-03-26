@@ -149,7 +149,10 @@ _env_origins = os.getenv("ALLOWED_ORIGINS", "")
 allowed_origins = [o.strip() for o in _env_origins.split(",") if o.strip()] if _env_origins else _default_origins
 # In production, Render sets RENDER=true
 if os.getenv("RENDER"):
-    allowed_origins.append("https://*.onrender.com")
+    render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME", "")
+    if render_hostname:
+        allowed_origins.append(f"https://{render_hostname}")
+    allowed_origins.append("https://studio.salkmedical.com")
 
 app.add_middleware(
     CORSMiddleware,
@@ -168,9 +171,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
     logger.error("Unhandled error on %s %s: %s", request.method, request.url.path, exc, exc_info=True)
+    detail = str(exc) if os.getenv("STUDIO_DEBUG") else "Internal server error"
     return JSONResponse(
         status_code=500,
-        content={"detail": str(exc), "type": type(exc).__name__},
+        content={"detail": detail, "type": type(exc).__name__},
     )
 
 
@@ -184,7 +188,10 @@ async def root():
     # Tenta frontend embutido (modo dev / compatibilidade)
     html_path = Path(__file__).parent / "static" / "index.html"
     if html_path.exists():
-        return HTMLResponse(html_path.read_text(encoding="utf-8"))
+        return HTMLResponse(
+            html_path.read_text(encoding="utf-8"),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache"},
+        )
     return JSONResponse({
         "service": "Salk Content Studio API",
         "version": "2.0.0",
@@ -702,11 +709,7 @@ async def update_review(review_id: str, req: ReviewItem):
     result = svc.update_review(review_id, req.verdict, req.comments)
     if result is None:
         raise HTTPException(404, f"Review não encontrado: {review_id}")
-    # Auto-advance piece stage on approval
-    if req.verdict == "approved" and result.get("piece_id"):
-        svc.update_piece_stage(result["piece_id"], "approved")
-    elif req.verdict == "rejected" and result.get("piece_id"):
-        svc.update_piece_stage(result["piece_id"], "copy", notes=f"Rejeitado: {req.comments}")
+    # Stage update already handled inside svc.update_review()
     return result
 
 
@@ -903,7 +906,7 @@ async def veo3_models(user: dict = Depends(require_auth)):
 async def veo3_text_to_video(request: Request, user: dict = Depends(require_auth)):
     """Gera vídeo a partir de texto via Veo 3."""
     svc = get_service()
-    if not svc.veo3_client.configured:
+    if not svc.veo3_client or not svc.veo3_client.configured:
         raise HTTPException(400, "Veo 3 não configurado — adicione GOOGLE_API_KEY nas configurações")
     data = await request.json()
     result = await svc.veo3_client.text_to_video(
@@ -924,7 +927,7 @@ async def veo3_text_to_video(request: Request, user: dict = Depends(require_auth
 async def veo3_image_to_video(request: Request, user: dict = Depends(require_auth)):
     """Gera vídeo a partir de imagem via Veo 3."""
     svc = get_service()
-    if not svc.veo3_client.configured:
+    if not svc.veo3_client or not svc.veo3_client.configured:
         raise HTTPException(400, "Veo 3 não configurado — adicione GOOGLE_API_KEY nas configurações")
     data = await request.json()
     image_path = data.get("image_path", "")
@@ -1448,7 +1451,7 @@ async def list_atomize_platforms():
 async def generate_image(request: Request, user: dict = Depends(require_auth)):
     """Gera imagem via fal.ai FLUX a partir de prompt."""
     svc = get_service()
-    if not svc.image_generator.configured:
+    if not svc.image_generator or not svc.image_generator.configured:
         raise HTTPException(400, "FAL_API_KEY não configurada. Vá em Configurações.")
     data = await request.json()
     result = await svc.image_generator.generate_image(
@@ -1468,7 +1471,7 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
     """Gera imagem para uma peça existente usando o prompt NB2 salvo."""
     import json as _json
     svc = get_service()
-    if not svc.image_generator.configured:
+    if not svc.image_generator or not svc.image_generator.configured:
         raise HTTPException(400, "FAL_API_KEY não configurada. Vá em Configurações.")
     piece = svc.get_piece(piece_id)
     if not piece:
@@ -1523,7 +1526,7 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
 async def animate_image(request: Request, user: dict = Depends(require_auth)):
     """Anima imagem estática em vídeo de 6s."""
     svc = get_service()
-    if not svc.video_animator.configured:
+    if not svc.video_animator or not svc.video_animator.configured:
         raise HTTPException(400, "Nenhum engine de vídeo configurado (Minimax, Kling ou Veo3)")
     data = await request.json()
     result = await svc.video_animator.animate(
@@ -1541,7 +1544,7 @@ async def animate_piece_image(piece_id: str, request: Request, user: dict = Depe
     """Anima a imagem de uma peça existente para vídeo."""
     import json as _json
     svc = get_service()
-    if not svc.video_animator.configured:
+    if not svc.video_animator or not svc.video_animator.configured:
         raise HTTPException(400, "Nenhum engine de vídeo configurado")
     piece = svc.get_piece(piece_id)
     if not piece:
@@ -1580,8 +1583,8 @@ async def list_video_engines():
     """Lista engines de vídeo disponíveis."""
     svc = get_service()
     return {
-        "engines": svc.video_animator.available_engines(),
-        "image_generator": svc.image_generator.configured,
+        "engines": svc.video_animator.available_engines() if svc.video_animator else [],
+        "image_generator": svc.image_generator.configured if svc.image_generator else False,
     }
 
 
@@ -1673,7 +1676,8 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
             variation["steps"].append("piece_created")
 
             # Step 5: Image (if fal.ai configured)
-            if generate_images and nb2_prompt:
+            img_result = None
+            if generate_images and nb2_prompt and svc.image_generator and svc.image_generator.configured:
                 img_result = await svc.image_generator.generate_image(
                     prompt=nb2_prompt,
                     format_preset="feed",
@@ -1691,7 +1695,7 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
                     results["total_cost_usd"] += img_result.cost_usd
 
             # Step 6: Video animation (if configured and requested)
-            if generate_videos and img_result and img_result.success:
+            if generate_videos and img_result and img_result.success and svc.video_animator and svc.video_animator.configured:
                 vid_result = await svc.video_animator.animate(
                     image_path=img_result.image_path,
                     prompt=f"Subtle camera dolly forward, cinematic lighting on {product}",

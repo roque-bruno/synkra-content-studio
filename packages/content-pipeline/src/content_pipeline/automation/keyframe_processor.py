@@ -115,13 +115,19 @@ class KeyframeProcessor:
             "ffmpeg", "-y",
             "-framerate", str(fps),
             "-i", str(temp_dir / "frame_%04d.png"),
-            "-c:v", "libx264",
-            "-pix_fmt", "yuv420p",
-            "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
         ]
 
         if audio_source:
-            cmd.extend(["-i", audio_source, "-c:a", "aac", "-shortest"])
+            cmd.extend(["-i", str(audio_source)])
+
+        cmd.extend([
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+        ])
+
+        if audio_source:
+            cmd.extend(["-c:a", "aac", "-shortest"])
 
         cmd.append(str(output_path))
 
