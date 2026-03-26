@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -1437,6 +1437,287 @@ async def list_atomize_platforms():
         "master_types": SemanticAtomizer.list_master_types(),
         "platforms": SemanticAtomizer.list_platforms(),
     }
+
+
+# =========================================================================
+# IMAGE GENERATION (fal.ai FLUX)
+# =========================================================================
+
+@app.post("/api/automation/generate-image")
+@limiter.limit("10/minute")
+async def generate_image(request: Request, user: dict = Depends(require_auth)):
+    """Gera imagem via fal.ai FLUX a partir de prompt."""
+    svc = get_service()
+    if not svc.image_generator.configured:
+        raise HTTPException(400, "FAL_API_KEY não configurada. Vá em Configurações.")
+    data = await request.json()
+    result = await svc.image_generator.generate_image(
+        prompt=data.get("prompt", ""),
+        width=data.get("width", 1080),
+        height=data.get("height", 1350),
+        negative_prompt=data.get("negative_prompt", ""),
+        model=data.get("model", "flux-dev"),
+        format_preset=data.get("format_preset", ""),
+    )
+    return result.to_dict()
+
+
+@app.post("/api/production/pieces/{piece_id}/generate-image")
+@limiter.limit("10/minute")
+async def generate_image_for_piece(piece_id: str, request: Request, user: dict = Depends(require_auth)):
+    """Gera imagem para uma peça existente usando o prompt NB2 salvo."""
+    import json as _json
+    svc = get_service()
+    if not svc.image_generator.configured:
+        raise HTTPException(400, "FAL_API_KEY não configurada. Vá em Configurações.")
+    piece = svc.get_piece(piece_id)
+    if not piece:
+        raise HTTPException(404, f"Peça não encontrada: {piece_id}")
+
+    data = await request.json()
+    # Extrair prompt NB2 das notes da peça
+    notes = piece.get("notes", "")
+    try:
+        notes_data = _json.loads(notes) if notes else {}
+    except (ValueError, TypeError):
+        notes_data = {}
+    prompt = data.get("prompt") or notes_data.get("nb2_prompt", "")
+    if not prompt:
+        raise HTTPException(400, "Nenhum prompt NB2 disponível. Gere o prompt primeiro.")
+
+    # Determinar dimensões baseado na plataforma
+    platform = piece.get("platform", "instagram")
+    fmt = piece.get("format", "post")
+    format_preset = "feed"
+    if "stories" in platform or "reels" in platform or fmt in ("reel", "story"):
+        format_preset = "stories"
+    elif fmt == "carousel":
+        format_preset = "square"
+
+    result = await svc.image_generator.generate_image(
+        prompt=prompt,
+        format_preset=format_preset,
+        negative_prompt=data.get("negative_prompt", "text, logo, watermark, blurry, low quality"),
+        model=data.get("model", "flux-dev"),
+    )
+
+    if result.success:
+        # Salvar image_url nas notes e avançar stage
+        notes_data["image_url"] = result.image_url
+        notes_data["image_path"] = result.image_path
+        notes_data["image_cost_usd"] = result.cost_usd
+        update_data = {"notes": _json.dumps(notes_data)}
+        if piece.get("stage") in ("briefing", "copy", "visual"):
+            update_data["stage"] = "review"
+        svc.update_piece(piece_id, update_data)
+
+    return {**result.to_dict(), "piece_id": piece_id}
+
+
+# =========================================================================
+# VIDEO ANIMATION (Minimax/Kling/Veo3)
+# =========================================================================
+
+@app.post("/api/automation/animate-image")
+@limiter.limit("5/minute")
+async def animate_image(request: Request, user: dict = Depends(require_auth)):
+    """Anima imagem estática em vídeo de 6s."""
+    svc = get_service()
+    if not svc.video_animator.configured:
+        raise HTTPException(400, "Nenhum engine de vídeo configurado (Minimax, Kling ou Veo3)")
+    data = await request.json()
+    result = await svc.video_animator.animate(
+        image_path=data.get("image_path", ""),
+        prompt=data.get("prompt", "Subtle camera movement, cinematic lighting"),
+        duration=data.get("duration", 6),
+        engine=data.get("engine", "auto"),
+    )
+    return result.to_dict()
+
+
+@app.post("/api/production/pieces/{piece_id}/animate")
+@limiter.limit("5/minute")
+async def animate_piece_image(piece_id: str, request: Request, user: dict = Depends(require_auth)):
+    """Anima a imagem de uma peça existente para vídeo."""
+    import json as _json
+    svc = get_service()
+    if not svc.video_animator.configured:
+        raise HTTPException(400, "Nenhum engine de vídeo configurado")
+    piece = svc.get_piece(piece_id)
+    if not piece:
+        raise HTTPException(404, f"Peça não encontrada: {piece_id}")
+
+    notes = piece.get("notes", "")
+    try:
+        notes_data = _json.loads(notes) if notes else {}
+    except (ValueError, TypeError):
+        notes_data = {}
+
+    image_path = notes_data.get("image_path", "")
+    if not image_path:
+        raise HTTPException(400, "Peça não tem imagem gerada. Gere a imagem primeiro.")
+
+    data = await request.json()
+    result = await svc.video_animator.animate(
+        image_path=image_path,
+        prompt=data.get("prompt", "Subtle camera dolly forward, cinematic lighting shift"),
+        duration=data.get("duration", 6),
+        engine=data.get("engine", "auto"),
+    )
+
+    if result.success:
+        notes_data["video_url"] = result.video_url
+        notes_data["video_path"] = result.video_path
+        notes_data["video_cost_usd"] = result.cost_usd
+        notes_data["video_engine"] = result.engine
+        svc.update_piece(piece_id, {"notes": _json.dumps(notes_data)})
+
+    return {**result.to_dict(), "piece_id": piece_id}
+
+
+@app.get("/api/automation/video-engines")
+async def list_video_engines():
+    """Lista engines de vídeo disponíveis."""
+    svc = get_service()
+    return {
+        "engines": svc.video_animator.available_engines(),
+        "image_generator": svc.image_generator.configured,
+    }
+
+
+# =========================================================================
+# A/B TEST PIPELINE — Geração em massa de variações
+# =========================================================================
+
+@app.post("/api/automation/ab-test")
+@limiter.limit("2/minute")
+async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user: dict = Depends(require_auth)):
+    """Pipeline A/B test: gera N variações completas (briefing+copy+prompt+imagem)."""
+    import json as _json
+    svc = get_service()
+    data = await request.json()
+
+    product = data.get("product", "")
+    brand = data.get("brand", "salk")
+    num_variations = min(data.get("num_variations", 5), 20)
+    platforms = data.get("platforms", ["instagram"])
+    concept = data.get("concept", "")
+    pillar = data.get("pillar", "produto")
+    generate_images = data.get("generate_images", True) and svc.image_generator.configured
+    generate_videos = data.get("generate_videos", False) and svc.video_animator.configured
+
+    # Conceitos visuais para variações
+    concepts = [
+        "dramatic_studio", "clinical_modern", "premium_clean",
+        "warm_ambient", "hero_closeup", "environment_wide",
+        "tech_detail", "action_use", "atmospheric_mood",
+        "minimalist_white", "dark_contrast", "golden_hour",
+        "architectural", "reflection_glass", "depth_of_field",
+        "symmetry", "silhouette_backlit", "macro_detail",
+        "editorial_spread", "brand_lifestyle",
+    ]
+
+    results = {"piece_ids": [], "errors": [], "variations": [], "total_cost_usd": 0}
+
+    for i in range(num_variations):
+        variation_concept = concepts[i % len(concepts)] if not concept else f"{concept}_v{i+1}"
+        platform = platforms[i % len(platforms)]
+        variation = {"index": i + 1, "concept": variation_concept, "platform": platform, "steps": []}
+
+        try:
+            # Step 1: Briefing
+            br = await svc.auto_briefing.generate(
+                product=product, brand=brand, pillar=pillar, platform=platform,
+            )
+            briefing_text = br.get("briefing_text", "")
+            variation["steps"].append("briefing")
+
+            # Step 2: Copy
+            cw = BrandCopywriter(svc.llm_client, brand=brand)
+            copy_result = await cw.write_copy(
+                briefing=briefing_text, platform=platform, format_type="post",
+            )
+            copy_text = copy_result.get("copy_text", "")
+            variation["steps"].append("copy")
+            variation["copywriter"] = copy_result.get("copywriter", "")
+
+            # Step 3: NB2 Prompt
+            prompt_result = await svc.auto_prompt.generate_prompt(
+                product=product or "lev", brand=brand,
+                concept=variation_concept, platform=platform,
+            )
+            nb2_prompt = prompt_result.get("prompt", prompt_result.get("nb2_prompt", ""))
+            variation["steps"].append("prompt")
+
+            # Step 4: Create piece
+            piece_data = {
+                "title": f"A/B #{i+1}: {variation_concept.replace('_', ' ').title()} — {product.upper() or brand.upper()} ({platform})",
+                "brand": brand, "product": product, "pillar": pillar,
+                "platform": platform, "format": "post",
+                "stage": "visual" if not generate_images else "review",
+                "copy_text": copy_text,
+                "notes": _json.dumps({
+                    "briefing": briefing_text,
+                    "nb2_prompt": nb2_prompt,
+                    "ab_test": True,
+                    "variation_index": i + 1,
+                    "variation_concept": variation_concept,
+                    "copywriter": copy_result.get("copywriter", ""),
+                    "cost_usd": copy_result.get("cost_usd", 0) + br.get("cost_usd", 0),
+                }),
+            }
+            piece = svc.create_piece(piece_data)
+            piece_id = piece.get("id", "")
+            results["piece_ids"].append(piece_id)
+            variation["piece_id"] = piece_id
+            variation["steps"].append("piece_created")
+
+            # Step 5: Image (if fal.ai configured)
+            if generate_images and nb2_prompt:
+                img_result = await svc.image_generator.generate_image(
+                    prompt=nb2_prompt,
+                    format_preset="feed",
+                    negative_prompt="text, logo, watermark, blurry, low quality, medical equipment other than the target product",
+                    model="flux-dev",
+                )
+                if img_result.success:
+                    notes = _json.loads(piece_data["notes"])
+                    notes["image_url"] = img_result.image_url
+                    notes["image_path"] = img_result.image_path
+                    notes["image_cost_usd"] = img_result.cost_usd
+                    svc.update_piece(piece_id, {"notes": _json.dumps(notes), "stage": "review"})
+                    variation["steps"].append("image")
+                    variation["image_url"] = img_result.image_url
+                    results["total_cost_usd"] += img_result.cost_usd
+
+            # Step 6: Video animation (if configured and requested)
+            if generate_videos and img_result and img_result.success:
+                vid_result = await svc.video_animator.animate(
+                    image_path=img_result.image_path,
+                    prompt=f"Subtle camera dolly forward, cinematic lighting on {product}",
+                    duration=6,
+                )
+                if vid_result.success:
+                    notes = _json.loads(svc.get_piece(piece_id).get("notes", "{}"))
+                    notes["video_url"] = vid_result.video_url
+                    notes["video_path"] = vid_result.video_path
+                    notes["video_cost_usd"] = vid_result.cost_usd
+                    svc.update_piece(piece_id, {"notes": _json.dumps(notes)})
+                    variation["steps"].append("video")
+                    results["total_cost_usd"] += vid_result.cost_usd
+
+            results["total_cost_usd"] += copy_result.get("cost_usd", 0) + br.get("cost_usd", 0)
+
+        except Exception as e:
+            logger.error("Erro na variação %d: %s", i + 1, e, exc_info=True)
+            results["errors"].append(f"Variação {i+1}: {str(e)}")
+            variation["error"] = str(e)
+
+        results["variations"].append(variation)
+
+    results["total_variations"] = len(results["piece_ids"])
+    results["total_cost_usd"] = round(results["total_cost_usd"], 4)
+    return results
 
 
 # =========================================================================

@@ -47,7 +47,11 @@ from content_pipeline.automation.auto_prompt import AutoPromptNB2
 from content_pipeline.automation.atomizer import SemanticAtomizer
 from content_pipeline.automation.copywriter import BrandCopywriter, PersonaClone
 from content_pipeline.automation.disaster_check import DisasterCheck
+from content_pipeline.automation.image_generator import FalImageGenerator
+from content_pipeline.automation.video_animator import VideoAnimator
+from content_pipeline.automation.keyframe_processor import KeyframeProcessor
 from content_pipeline.automation.week_orchestrator import WeekOrchestrator
+from content_pipeline.video.minimax_client import MinimaxClient
 from content_pipeline.web.database import StudioDatabase
 from content_pipeline.web.settings_store import SettingsStore
 
@@ -145,6 +149,29 @@ class StudioService:
             budget_tracker=self.budget_tracker,
         )
         self.video_assembler = VideoAssembler(output_dir=video_dir / "final")
+        self.minimax_client = MinimaxClient(
+            output_dir=video_dir / "minimax",
+            budget_tracker=self.budget_tracker,
+        )
+
+        # Image Generation (fal.ai)
+        self.image_generator = FalImageGenerator(
+            output_dir=config.output_dir / "generated",
+            budget_tracker=self.budget_tracker,
+        )
+
+        # Video Animator (facade)
+        self.video_animator = VideoAnimator(
+            minimax_client=self.minimax_client,
+            kling_client=self.kling_client,
+            veo3_client=self.veo3_client,
+        )
+
+        # Keyframe Processor
+        self.keyframe_processor = KeyframeProcessor(
+            image_generator=self.image_generator,
+            output_dir=config.output_dir / "keyframes",
+        )
 
         # Automation agents
         self.auto_briefing = AutoBriefing(

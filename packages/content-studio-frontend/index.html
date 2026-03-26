@@ -931,6 +931,10 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
           <span x-show="!quickProducing">Produzir Peca Express (Briefing + Copy + Prompt)</span>
           <span x-show="quickProducing">Produzindo...</span>
         </button>
+        <button class="btn" style="width: 100%; background: linear-gradient(135deg, var(--purple), var(--accent)); color: #fff;" @click="showABTest = true" :disabled="abTestRunning">
+          <span x-show="!abTestRunning">Teste A/B — Gerar Variacoes em Massa</span>
+          <span x-show="abTestRunning">Gerando variacoes...</span>
+        </button>
         <button class="btn" style="width: 100%;" @click="tab='copy'">
           Gerar Copy Individual
         </button>
@@ -2358,10 +2362,26 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
         </div>
       </template>
 
+      <!-- Generated Image Preview -->
+      <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
+        <div class="card" style="margin-bottom: 12px;">
+          <div class="card-title" style="font-size: 0.75rem;">Imagem Gerada</div>
+          <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 300px; object-fit: contain;">
+        </div>
+      </template>
+
+      <!-- Generated Video Preview -->
+      <template x-if="parsePieceNotes(selectedPiece?.notes).video_url">
+        <div class="card" style="margin-bottom: 12px;">
+          <div class="card-title" style="font-size: 0.75rem;">Video Animado</div>
+          <video :src="parsePieceNotes(selectedPiece?.notes).video_url" controls style="max-width: 100%; border-radius: 8px; max-height: 200px;"></video>
+        </div>
+      </template>
+
       <!-- Automation Actions -->
       <div class="card" style="margin-bottom: 12px; border-left: 2px solid var(--accent);">
         <div class="card-title" style="font-size: 0.75rem;">Automacao</div>
-        <div class="btn-group">
+        <div class="btn-group" style="flex-wrap: wrap;">
           <button class="btn btn-sm btn-primary" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="!selectedPiece?.copy_text">
             Gerar Copy com IA
           </button>
@@ -2370,6 +2390,12 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
           </button>
           <button class="btn btn-sm" @click="generatePromptForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
             Gerar Prompt NB2
+          </button>
+          <button class="btn btn-sm" style="background: var(--purple); color: #fff;" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).nb2_prompt">
+            Gerar Imagem (fal.ai)
+          </button>
+          <button class="btn btn-sm" style="background: var(--cyan); color: #000;" @click="animatePieceImage(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).image_path">
+            Animar para Video
           </button>
           <span x-show="pieceActionLoading" style="font-size: 0.75rem; color: var(--amber);">Processando...</span>
         </div>
@@ -2449,6 +2475,88 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
       <button class="btn btn-primary" @click="runQuickProduce()" :disabled="quickProducing">
         <span x-show="!quickProducing">Produzir Tudo</span>
         <span x-show="quickProducing">Processando (3 etapas)...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- A/B Test Modal -->
+<div class="modal-overlay" x-show="showABTest" @click.self="showABTest = false" x-cloak>
+  <div class="modal" style="max-width: 580px;">
+    <div class="modal-header">
+      <h3>Teste A/B — Variacoes em Massa</h3>
+      <button class="modal-close" @click="showABTest = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px;">Gera N variacoes do mesmo produto com conceitos visuais diferentes. Cada variacao recebe: briefing, copy, prompt NB2, e opcionalmente imagem e video.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Marca</label>
+          <select class="form-select" x-model="abTestConfig.brand">
+            <option value="salk">Salk Medical</option>
+            <option value="mendel">Mendel Medical</option>
+            <option value="manager">Manager Grupo</option>
+            <option value="dayho">Dayho</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Produto</label>
+          <input class="form-input" x-model="abTestConfig.product" placeholder="ex: LEV 4LEV">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Variacoes</label>
+          <input type="number" class="form-input" x-model.number="abTestConfig.num_variations" min="2" max="20">
+        </div>
+        <div class="form-group">
+          <label>Pilar</label>
+          <select class="form-select" x-model="abTestConfig.pillar">
+            <option value="produto">Produto</option>
+            <option value="educacional">Educacional</option>
+            <option value="institucional">Institucional</option>
+            <option value="social_proof">Social Proof</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Plataformas</label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="instagram" x-model="abTestConfig.platforms"> Instagram</label>
+          <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="linkedin" x-model="abTestConfig.platforms"> LinkedIn</label>
+          <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="facebook" x-model="abTestConfig.platforms"> Facebook</label>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 8px;">
+        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" x-model="abTestConfig.generate_images"> Gerar Imagens (fal.ai ~$0.04/un)</label>
+        <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" x-model="abTestConfig.generate_videos"> Gerar Videos (~$0.12/un)</label>
+      </div>
+      <div class="card" style="margin-top: 12px; background: var(--bg-secondary);">
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Custo estimado:
+          <strong style="color: var(--green);" x-text="'$' + ((abTestConfig.num_variations * 0.01) + (abTestConfig.generate_images ? abTestConfig.num_variations * 0.04 : 0) + (abTestConfig.generate_videos ? abTestConfig.num_variations * 0.12 : 0)).toFixed(2)"></strong>
+          para <span x-text="abTestConfig.num_variations"></span> variacoes
+        </div>
+      </div>
+
+      <!-- Results -->
+      <template x-if="abTestResults">
+        <div class="card" style="margin-top: 12px; border-left: 3px solid var(--green);">
+          <div class="card-title" style="font-size: 0.75rem; color: var(--green);">Resultado do Teste A/B</div>
+          <div style="font-size: 0.8rem;">
+            <span x-text="abTestResults.total_variations"></span> variacoes criadas | Custo: $<span x-text="(abTestResults.total_cost_usd || 0).toFixed(4)"></span>
+          </div>
+          <div x-show="abTestResults.errors?.length > 0" style="color: var(--red); font-size: 0.75rem; margin-top: 6px;">
+            <template x-for="e in abTestResults.errors"><div x-text="e"></div></template>
+          </div>
+          <button class="btn btn-sm" style="margin-top: 8px;" @click="boardBrandFilter = abTestConfig.brand; tab = 'board'; showABTest = false;">Ver no Board</button>
+        </div>
+      </template>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" @click="showABTest = false">Fechar</button>
+      <button class="btn btn-primary" @click="runABTest()" :disabled="abTestRunning || !abTestConfig.product">
+        <span x-show="!abTestRunning">Iniciar Teste A/B</span>
+        <span x-show="abTestRunning">Gerando (<span x-text="abTestConfig.num_variations"></span> variacoes)...</span>
       </button>
     </div>
   </div>
@@ -2717,6 +2825,10 @@ function studioApp() {
     showQuickProduce: false,
     quickProducing: false,
     quickProduce: { brand: 'salk', product: '', platform: 'instagram', pillar: 'produto', format: 'post' },
+    showABTest: false,
+    abTestRunning: false,
+    abTestResults: null,
+    abTestConfig: { brand: 'salk', product: '', num_variations: 5, platforms: ['instagram'], pillar: 'produto', generate_images: true, generate_videos: false },
     showNewVDP: false,
     showVDPDetail: false,
     showCalSlotModal: false,
@@ -2960,6 +3072,59 @@ function studioApp() {
         this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
       } catch(e) { this.notify('Erro ao gerar prompt: ' + e.message, 'error'); }
       this.pieceActionLoading = false;
+    },
+
+    async generateImageForPiece(pieceId) {
+      if (!pieceId) return;
+      this.pieceActionLoading = true;
+      try {
+        const result = await this.api(`/api/production/pieces/${pieceId}/generate-image`, {
+          method: 'POST', body: JSON.stringify({}),
+        });
+        if (result.success) {
+          this.notify('Imagem gerada com sucesso!');
+        } else {
+          this.notify('Erro: ' + (result.error || 'falha na geracao'), 'error');
+        }
+        await this.loadPieces();
+        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+      } catch(e) { this.notify('Erro ao gerar imagem: ' + e.message, 'error'); }
+      this.pieceActionLoading = false;
+    },
+
+    async animatePieceImage(pieceId) {
+      if (!pieceId) return;
+      this.pieceActionLoading = true;
+      try {
+        const result = await this.api(`/api/production/pieces/${pieceId}/animate`, {
+          method: 'POST', body: JSON.stringify({ prompt: 'Subtle camera dolly forward, cinematic lighting' }),
+        });
+        if (result.success) {
+          this.notify('Video animado gerado!');
+        } else {
+          this.notify('Erro: ' + (result.error || 'falha na animacao'), 'error');
+        }
+        await this.loadPieces();
+        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+      } catch(e) { this.notify('Erro ao animar: ' + e.message, 'error'); }
+      this.pieceActionLoading = false;
+    },
+
+    async runABTest() {
+      this.abTestRunning = true;
+      this.abTestResults = null;
+      try {
+        const result = await this.api('/api/automation/ab-test', {
+          method: 'POST',
+          body: JSON.stringify(this.abTestConfig),
+        });
+        this.abTestResults = result;
+        await this.loadPieces();
+        this.notify(`A/B Test: ${result.total_variations} variacoes criadas! Custo: $${(result.total_cost_usd || 0).toFixed(4)}`);
+      } catch(e) {
+        this.notify('Erro no A/B Test: ' + e.message, 'error');
+      }
+      this.abTestRunning = false;
     },
 
     // Board helpers

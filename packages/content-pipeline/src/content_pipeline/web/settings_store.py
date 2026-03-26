@@ -45,12 +45,28 @@ API_KEY_DEFINITIONS = [
         "placeholder": "my-project-id",
     },
     {
+        "key": "FAL_API_KEY",
+        "label": "fal.ai API Key",
+        "group": "geracao",
+        "description": "Geração de imagens FLUX/NB2 via fal.ai (~$0.04-0.08/imagem)",
+        "required": False,
+        "placeholder": "fal_...",
+    },
+    {
         "key": "KLING_API_KEY",
         "label": "Kling 3.0 API Key",
         "group": "video",
         "description": "Geração de vídeo Image-to-Video",
         "required": False,
         "placeholder": "kling_...",
+    },
+    {
+        "key": "MINIMAX_API_KEY",
+        "label": "Minimax/Hailuo API Key",
+        "group": "video",
+        "description": "Animação Image-to-Video 6s (~$0.12/vídeo)",
+        "required": False,
+        "placeholder": "eyJ...",
     },
     {
         "key": "ELEVENLABS_API_KEY",
