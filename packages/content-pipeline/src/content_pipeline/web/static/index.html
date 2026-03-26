@@ -927,6 +927,10 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
         <button class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 0.95rem;" @click="tab='calendar'">
           Planejar e Produzir Semana
         </button>
+        <button class="btn btn-success" style="width: 100%; padding: 12px;" @click="showQuickProduce = true" :disabled="quickProducing">
+          <span x-show="!quickProducing">Produzir Peca Express (Briefing + Copy + Prompt)</span>
+          <span x-show="quickProducing">Produzindo...</span>
+        </button>
         <button class="btn" style="width: 100%;" @click="tab='copy'">
           Gerar Copy Individual
         </button>
@@ -2387,6 +2391,69 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   </div>
 </div>
 
+<!-- Quick Produce Modal -->
+<div class="modal-overlay" x-show="showQuickProduce" @click.self="showQuickProduce = false" x-cloak>
+  <div class="modal" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3>Produzir Peca Express</h3>
+      <button class="modal-close" @click="showQuickProduce = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px;">Cria uma peca completa automaticamente: briefing, copy e prompt NB2 em um clique.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Marca</label>
+          <select class="form-select" x-model="quickProduce.brand">
+            <option value="salk">Salk Medical</option>
+            <option value="mendel">Mendel Medical</option>
+            <option value="manager">Manager Grupo</option>
+            <option value="dayho">Dayho</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Produto</label>
+          <input class="form-input" x-model="quickProduce.product" placeholder="ex: LEV 4LEV">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Plataforma</label>
+          <select class="form-select" x-model="quickProduce.platform">
+            <option value="instagram">Instagram</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="facebook">Facebook</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pilar</label>
+          <select class="form-select" x-model="quickProduce.pillar">
+            <option value="produto">Produto</option>
+            <option value="educacional">Educacional</option>
+            <option value="institucional">Institucional</option>
+            <option value="social_proof">Social Proof</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Formato</label>
+        <select class="form-select" x-model="quickProduce.format">
+          <option value="post">Post</option>
+          <option value="carousel">Carrossel</option>
+          <option value="reel">Reel/Video</option>
+          <option value="story">Story</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" @click="showQuickProduce = false">Cancelar</button>
+      <button class="btn btn-primary" @click="runQuickProduce()" :disabled="quickProducing">
+        <span x-show="!quickProducing">Produzir Tudo</span>
+        <span x-show="quickProducing">Processando (3 etapas)...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- New VDP Modal -->
 <div class="modal-overlay" x-show="showNewVDP" @click.self="showNewVDP = false" x-cloak>
   <div class="modal">
@@ -2647,6 +2714,9 @@ function studioApp() {
     showPieceDetail: false,
     pieceActionLoading: false,
     batchProcessing: false,
+    showQuickProduce: false,
+    quickProducing: false,
+    quickProduce: { brand: 'salk', product: '', platform: 'instagram', pillar: 'produto', format: 'post' },
     showNewVDP: false,
     showVDPDetail: false,
     showCalSlotModal: false,
@@ -2944,6 +3014,25 @@ function studioApp() {
       }
       await this.loadPieces();
       this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}`);
+    },
+
+    async runQuickProduce() {
+      this.quickProducing = true;
+      try {
+        const result = await this.api('/api/automation/produce-piece', {
+          method: 'POST',
+          body: JSON.stringify(this.quickProduce),
+        });
+        this.showQuickProduce = false;
+        await this.loadPieces();
+        const steps = result.total_steps || 0;
+        const errors = (result.errors || []).length;
+        this.notify(`Peca produzida! ${steps} etapas OK${errors ? `, ${errors} erros` : ''}. ID: ${result.piece_id}`);
+        if (errors) console.warn('Erros na producao:', result.errors);
+      } catch(e) {
+        this.notify('Erro na producao express: ' + e.message, 'error');
+      }
+      this.quickProducing = false;
     },
 
     async batchGenerateCopy() {

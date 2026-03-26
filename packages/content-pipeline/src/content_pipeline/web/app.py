@@ -1174,6 +1174,81 @@ async def generate_smart_briefing(request: Request, user: dict = Depends(require
 
 
 # =========================================================================
+# AUTOMATION — Pipeline Completo (Briefing → Copy → Prompt em sequencia)
+# =========================================================================
+
+@app.post("/api/automation/produce-piece")
+@limiter.limit("5/minute")
+async def produce_single_piece(request: Request, user: dict = Depends(require_auth)):
+    """Pipeline completo: cria peca + briefing + copy + prompt NB2 em um clique."""
+    svc = get_service()
+    data = await request.json()
+    import json as _json
+
+    brand = data.get("brand", "salk")
+    product = data.get("product", "")
+    platform = data.get("platform", "instagram")
+    pillar = data.get("pillar", "produto")
+    format_type = data.get("format", "post")
+    result = {"steps": [], "errors": []}
+
+    # Step 1: Create piece
+    piece_data = {
+        "title": data.get("title", f"{pillar.title()} — {product.upper() or brand.upper()} ({platform})"),
+        "brand": brand, "product": product, "pillar": pillar,
+        "platform": platform, "format": format_type, "stage": "briefing",
+        "persona_target": data.get("persona_target", ""),
+    }
+    piece = svc.create_piece(piece_data)
+    piece_id = piece.get("id", "")
+    result["piece_id"] = piece_id
+    result["steps"].append({"step": "create_piece", "status": "ok"})
+
+    # Step 2: Briefing
+    try:
+        br = await svc.auto_briefing.generate(
+            product=product, brand=brand, pillar=pillar, platform=platform,
+        )
+        briefing_text = br.get("briefing_text", "")
+        result["briefing"] = briefing_text
+        result["steps"].append({"step": "briefing", "status": "ok"})
+    except Exception as e:
+        result["errors"].append(f"Briefing: {e}")
+        briefing_text = data.get("briefing", f"Post {pillar} sobre {product} para {platform}")
+
+    # Step 3: Copy
+    try:
+        cw = BrandCopywriter(svc.llm_client, brand=brand)
+        copy_result = await cw.write_copy(
+            briefing=briefing_text, platform=platform, format_type=format_type,
+        )
+        copy_text = copy_result.get("copy_text", "")
+        result["copy"] = copy_result
+        result["steps"].append({"step": "copy", "status": "ok"})
+        svc.update_piece(piece_id, {"copy_text": copy_text, "stage": "copy"})
+    except Exception as e:
+        result["errors"].append(f"Copy: {e}")
+        copy_text = ""
+
+    # Step 4: NB2 Prompt
+    try:
+        prompt_result = await svc.auto_prompt.generate_prompt(
+            product=product or "lev", brand=brand,
+            concept=data.get("concept", "dramatic_studio"), platform=platform,
+        )
+        nb2_prompt = prompt_result.get("prompt", prompt_result.get("nb2_prompt", ""))
+        result["nb2_prompt"] = nb2_prompt
+        result["steps"].append({"step": "nb2_prompt", "status": "ok"})
+        notes_data = {"briefing": briefing_text, "nb2_prompt": nb2_prompt}
+        svc.update_piece(piece_id, {"notes": _json.dumps(notes_data), "stage": "visual"})
+    except Exception as e:
+        result["errors"].append(f"NB2 Prompt: {e}")
+
+    result["total_steps"] = len(result["steps"])
+    return result
+
+
+# =========================================================================
 # AUTOMATION — Copywriter (Squad)
 # =========================================================================
 
