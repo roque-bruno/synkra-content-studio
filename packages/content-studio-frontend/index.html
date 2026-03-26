@@ -947,7 +947,32 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
     <button class="btn" @click="loadCalendar()">Carregar</button>
     <button class="btn btn-primary" @click="generateCalendar()">Gerar do Template</button>
     <button class="btn btn-success" @click="saveCalendar()" x-show="calSlots.length > 0">Salvar</button>
+    <button class="btn" style="background: var(--purple); color: white;" @click="autoFillCalendar()" x-show="calSlots.length > 0">Auto-Fill</button>
+    <button class="btn" style="background: var(--green); color: #000; font-weight: 600;" @click="produceWeek()" x-show="calSlots.length > 0" :disabled="weekProducing">
+      <span x-show="!weekProducing">Produzir Semana</span>
+      <span x-show="weekProducing">Produzindo...</span>
+    </button>
   </div>
+
+  <!-- Production Summary -->
+  <template x-if="weekResult">
+    <div class="card" style="margin-bottom: 16px; border-left: 3px solid var(--green);">
+      <div class="card-title" style="color: var(--green);">Producao Completa</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+        <div class="stat-box"><div class="stat-value" x-text="weekResult.pieces_created"></div><div class="stat-label">Pecas Criadas</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="weekResult.briefings_generated"></div><div class="stat-label">Briefings</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="weekResult.copies_generated"></div><div class="stat-label">Copies</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="weekResult.prompts_generated"></div><div class="stat-label">Prompts NB2</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="weekResult.atomizations"></div><div class="stat-label">Atomizacoes</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="'$' + (weekResult.total_cost_usd || 0).toFixed(4)"></div><div class="stat-label">Custo LLM</div></div>
+      </div>
+      <div x-show="weekResult.errors && weekResult.errors.length > 0" style="margin-top: 10px; color: var(--red); font-size: 0.75rem;">
+        <template x-for="err in weekResult.errors">
+          <div x-text="err.day + ' ' + err.platform + ': ' + err.error"></div>
+        </template>
+      </div>
+    </div>
+  </template>
 
   <template x-if="calSlots.length > 0">
     <div class="cal-grid">
@@ -956,10 +981,12 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
           <div class="cal-day-header" x-text="day"></div>
           <div class="cal-day-body">
             <template x-for="slot in calSlots.filter(s => s.day === day || s.day === day.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))">
-              <div class="cal-slot" @click="selectedCalSlot = slot; showCalSlotModal = true">
+              <div class="cal-slot" @click="selectedCalSlot = slot; showCalSlotModal = true" :style="slot.piece_id ? 'border-left: 2px solid var(--green)' : ''">
                 <div class="slot-platform" x-text="slot.platform"></div>
                 <div class="slot-time" x-text="(slot.time || '') + ' ' + (slot.format || '')"></div>
-                <div x-show="slot.product" style="font-size: 0.68rem; color: var(--accent);" x-text="slot.product"></div>
+                <div x-show="slot.pillar" style="font-size: 0.65rem; color: var(--purple); text-transform: uppercase;" x-text="slot.pillar"></div>
+                <div x-show="slot.product" style="font-size: 0.68rem; color: var(--accent); font-weight: 600;" x-text="slot.product.toUpperCase()"></div>
+                <div x-show="slot.piece_id" style="font-size: 0.6rem; color: var(--green);">&#10003; Produzido</div>
               </div>
             </template>
           </div>
@@ -2188,6 +2215,8 @@ function studioApp() {
     calWeekId: '2026-W14',
     calBrand: 'salk',
     calSlots: [],
+    weekProducing: false,
+    weekResult: null,
     seasonalDates: ['7 Abr - Dia da Saude', '1 Mai - Trabalho', '12 Mai - Enfermagem', '12 Jun - Cirurgiao', '11 Jul - Engenheiro', '18 Ago - Medico', 'Nov - Hospitalar', 'Dez - Retrospectiva'],
 
     // Hashtags
@@ -2445,6 +2474,32 @@ function studioApp() {
         method: 'POST',
         body: JSON.stringify({ week_id: this.calWeekId, brand: this.calBrand, slots: this.calSlots }),
       });
+    },
+
+    async autoFillCalendar() {
+      const data = await this.api(`/api/calendar/${this.calWeekId}/auto-fill?brand=${this.calBrand}`, { method: 'POST' });
+      this.calSlots = data.slots || [];
+      this.notify('Calendario preenchido automaticamente');
+    },
+
+    async produceWeek() {
+      if (!confirm('Produzir conteudo para toda a semana? (briefings + copy + prompts + atomizacao)')) return;
+      this.weekProducing = true;
+      this.weekResult = null;
+      try {
+        const data = await this.api(`/api/calendar/${this.calWeekId}/produce`, {
+          method: 'POST',
+          body: JSON.stringify({ brand: this.calBrand }),
+        });
+        this.weekResult = data;
+        this.calSlots = (await this.api(`/api/calendar/${this.calWeekId}`)).slots || [];
+        this.notify(`Semana produzida: ${data.pieces_created} pecas criadas`);
+        await this.loadPieces();
+      } catch (e) {
+        this.notify('Erro ao produzir semana: ' + e.message, 'error');
+      } finally {
+        this.weekProducing = false;
+      }
     },
 
     // Hashtags

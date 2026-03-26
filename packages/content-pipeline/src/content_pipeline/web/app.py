@@ -675,6 +675,35 @@ async def generate_calendar(week_id: str, brand: str = "salk"):
     return svc.generate_calendar_from_template(week_id, brand)
 
 
+@app.post("/api/calendar/{week_id}/auto-fill")
+async def auto_fill_calendar(week_id: str, brand: str = "salk", user: dict = Depends(require_auth)):
+    """Preenche slots do calendário automaticamente (pilares, produtos, personas)."""
+    svc = get_service()
+    return svc.auto_fill_calendar(week_id, brand)
+
+
+@app.post("/api/calendar/{week_id}/produce")
+async def produce_week(week_id: str, request: Request, user: dict = Depends(require_auth)):
+    """Produz conteúdo para todos os slots da semana (briefings, copy, prompts, atomização)."""
+    svc = get_service()
+    data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
+    return await svc.produce_week(
+        week_id=week_id,
+        brand=data.get("brand", "salk"),
+        generate_briefing=data.get("generate_briefing", True),
+        generate_copy=data.get("generate_copy", True),
+        generate_prompt=data.get("generate_prompt", True),
+        atomize=data.get("atomize", True),
+    )
+
+
+@app.post("/api/calendar/{week_id}/generate-full")
+async def generate_full_week(week_id: str, brand: str = "salk", user: dict = Depends(require_auth)):
+    """Fluxo completo: gera calendário + auto-fill + produção de toda a semana."""
+    svc = get_service()
+    return await svc.generate_full_week(week_id, brand)
+
+
 # =========================================================================
 # BUDGET TRACKER
 # =========================================================================

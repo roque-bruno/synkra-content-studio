@@ -47,6 +47,7 @@ from content_pipeline.automation.auto_prompt import AutoPromptNB2
 from content_pipeline.automation.atomizer import SemanticAtomizer
 from content_pipeline.automation.copywriter import BrandCopywriter, PersonaClone
 from content_pipeline.automation.disaster_check import DisasterCheck
+from content_pipeline.automation.week_orchestrator import WeekOrchestrator
 from content_pipeline.web.database import StudioDatabase
 from content_pipeline.web.settings_store import SettingsStore
 
@@ -159,6 +160,16 @@ class StudioService:
             brandbook_loader=self.load_brandbook,
         )
         self.atomizer = SemanticAtomizer(llm_client=self.llm_client)
+
+        # Week Orchestrator (produção automatizada da semana)
+        self.week_orchestrator = WeekOrchestrator(
+            auto_briefing=self.auto_briefing,
+            auto_prompt=self.auto_prompt,
+            copywriter_factory=lambda brand: BrandCopywriter(self.llm_client, brand),
+            atomizer=self.atomizer,
+            db=self.db,
+            brandbook_loader=self.load_brandbook,
+        )
 
         # Publishers
         preview = self.preview_mode
@@ -885,6 +896,43 @@ class StudioService:
 
     def save_calendar(self, week_id: str, data: dict) -> None:
         self.db.save_calendar(week_id, data)
+
+    def auto_fill_calendar(self, week_id: str, brand: str = "salk") -> dict:
+        """Gera calendário E preenche slots automaticamente."""
+        cal = self.load_calendar(week_id)
+        if not cal:
+            cal = self.generate_calendar_from_template(week_id, brand)
+        filled = self.week_orchestrator.auto_fill_calendar(cal, brand)
+        self.save_calendar(week_id, filled)
+        return filled
+
+    async def produce_week(
+        self,
+        week_id: str,
+        brand: str = "salk",
+        generate_briefing: bool = True,
+        generate_copy: bool = True,
+        generate_prompt: bool = True,
+        atomize: bool = True,
+    ) -> dict:
+        """Produz conteúdo completo para a semana (briefings, copy, prompts, atomização)."""
+        cal = self.load_calendar(week_id)
+        if not cal:
+            cal = self.auto_fill_calendar(week_id, brand)
+        return await self.week_orchestrator.produce_week(
+            calendar=cal,
+            generate_briefing=generate_briefing,
+            generate_copy=generate_copy,
+            generate_prompt=generate_prompt,
+            atomize=atomize,
+        )
+
+    async def generate_full_week(self, week_id: str, brand: str = "salk") -> dict:
+        """Fluxo completo: auto-fill + produção de toda a semana."""
+        cal = self.generate_calendar_from_template(week_id, brand)
+        filled = self.week_orchestrator.auto_fill_calendar(cal, brand)
+        self.save_calendar(week_id, filled)
+        return await self.week_orchestrator.produce_week(filled)
 
     def generate_calendar_from_template(self, week_id: str, brand: str = "salk") -> dict:
         """Gera calendário da semana baseado no template editorial."""
