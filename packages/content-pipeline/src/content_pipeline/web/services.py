@@ -266,12 +266,20 @@ class StudioService:
         return self._orchestrator
 
     def _data_dir(self) -> Path:
-        return (
-            self.config.project_root
-            / "squads"
-            / "content-production"
-            / "data"
-        )
+        # Procurar squads/content-production/data a partir do project_root
+        # ou subindo até o monorepo root (onde .git está)
+        candidates = [
+            self.config.project_root / "squads" / "content-production" / "data",
+        ]
+        # Subir até encontrar o diretório squads (monorepo root)
+        for parent in self.config.project_root.parents:
+            candidates.append(parent / "squads" / "content-production" / "data")
+            if (parent / ".git").exists():
+                break
+        for c in candidates:
+            if c.exists():
+                return c
+        return candidates[0]  # fallback
 
     def _load_yaml(self, filename: str) -> dict | list:
         path = self._data_dir() / filename
@@ -937,26 +945,43 @@ class StudioService:
     def generate_calendar_from_template(self, week_id: str, brand: str = "salk") -> dict:
         """Gera calendário da semana baseado no template editorial."""
         template = self.load_editorial_template()
-        slots_template = template.get("weekly_slots_template", {})
+
+        # Tentar múltiplas chaves do template (salk_weekly_template, mendel_weekly_template, etc.)
+        slots_template = (
+            template.get(f"{brand}_weekly_template")
+            or template.get("salk_weekly_template")
+            or template.get("weekly_slots_template")
+            or {}
+        )
 
         slots = []
         day_map = {
+            "segunda": "Segunda",
+            "terca": "Terca",
+            "quarta": "Quarta",
+            "quinta": "Quinta",
+            "sexta": "Sexta",
+            # Fallback inglês
             "monday": "Segunda",
-            "tuesday": "Terça",
+            "tuesday": "Terca",
             "wednesday": "Quarta",
             "thursday": "Quinta",
             "friday": "Sexta",
         }
 
         for day_key, day_name in day_map.items():
-            day_slots = slots_template.get(day_key, [])
+            day_data = slots_template.get(day_key)
+            if not day_data:
+                continue
+            # O template pode ter {slots: [...]} ou ser diretamente uma lista
+            day_slots = day_data.get("slots", day_data) if isinstance(day_data, dict) else day_data
             if isinstance(day_slots, list):
                 for s in day_slots:
                     if isinstance(s, dict):
                         slots.append({
                             "id": str(uuid.uuid4())[:8],
                             "day": day_name,
-                            "time": s.get("time", s.get("best_time", "")),
+                            "time": s.get("horario", s.get("time", s.get("best_time", ""))),
                             "platform": s.get("platform", ""),
                             "format": s.get("format", ""),
                             "product": "",
