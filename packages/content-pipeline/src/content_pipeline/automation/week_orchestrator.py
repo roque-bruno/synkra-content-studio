@@ -12,6 +12,7 @@ Resultado: gestora recebe a semana pronta para revisão.
 
 from __future__ import annotations
 
+import json
 import logging
 import random
 import uuid
@@ -439,8 +440,33 @@ class WeekOrchestrator:
 
         piece["total_cost_usd"] = round(cost, 4)
 
+        # Mapear campos para o schema do DB antes de salvar
+        db_piece = {
+            "id": piece["id"],
+            "title": f"{slot.get('pillar', 'conteudo').title()} — {slot.get('product', '').upper() or brand.title()} ({slot.get('platform', 'instagram')})",
+            "brand": brand,
+            "product": piece.get("product", ""),
+            "pillar": piece.get("pillar", ""),
+            "platform": piece.get("platform", ""),
+            "format": piece.get("format", ""),
+            "stage": piece.get("stage", "briefing"),
+            "persona_target": piece.get("persona_target", ""),
+            "calendar_slot_id": slot.get("id", ""),
+            "copy_text": piece.get("copy", ""),
+            "notes": json.dumps({
+                "briefing": piece.get("briefing", ""),
+                "nb2_prompt": piece.get("nb2_prompt"),
+                "derivatives": piece.get("derivatives"),
+                "derivatives_count": piece.get("derivatives_count", 0),
+                "copywriter": piece.get("copywriter", ""),
+                "week_id": week_id,
+                "cost_usd": piece["total_cost_usd"],
+            }),
+            "created_at": piece.get("created_at"),
+        }
+
         # Salvar peça no banco
-        self.db.create_piece(piece)
+        self.db.create_piece(db_piece)
 
         return piece
 

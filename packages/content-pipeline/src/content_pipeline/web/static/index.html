@@ -901,79 +901,100 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 <!-- TAB: DASHBOARD -->
 <!-- ===================================================== -->
 <div x-show="tab === 'dashboard'">
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="label">Fichas de Produto</div>
-      <div class="value" x-text="stats.total_vdps"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Imagens Geradas</div>
-      <div class="value" x-text="stats.images_generated"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Produtos</div>
-      <div class="value" x-text="stats.products_available"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Logos</div>
-      <div class="value" x-text="stats.logos_available"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Argumentos</div>
-      <div class="value" x-text="stats.claims_available"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Em Producao</div>
-      <div class="value" style="color: var(--amber)" x-text="stats.pieces_in_production"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Aguardando Aprovacao</div>
-      <div class="value" style="color: var(--purple)" x-text="stats.pieces_pending_review"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Tamanho Total</div>
-      <div class="value" x-text="stats.total_size_mb + ' MB'"></div>
-    </div>
-  </div>
-
-  <!-- Quick Actions -->
-  <div class="card">
-    <div class="card-title">Acoes Rapidas</div>
-    <div class="btn-group">
-      <button class="btn" @click="tab='board'; showNewPiece=true">+ Nova Peca</button>
-      <button class="btn" @click="tab='vdp'; showNewVDP=true">+ Nova Ficha</button>
-      <button class="btn" @click="tab='compliance'">Verificar Regras</button>
-      <button class="btn" @click="tab='calendar'">Planejar Semana</button>
-      <button class="btn" @click="tab='copy'">Escrever Textos</button>
-    </div>
-  </div>
-
-  <!-- Brand Overview -->
-  <div class="card">
-    <div class="card-title">Marcas</div>
-    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
-      <template x-for="b in ['salk', 'mendel', 'manager', 'dayho']">
-        <div class="stat-card" style="cursor: pointer;" @click="boardBrandFilter = b; tab = 'board';">
-          <div class="label" x-text="b.toUpperCase()"></div>
-          <div class="value" x-text="pieces.filter(p => p.brand === b).length"></div>
-          <div class="detail">pecas no board</div>
+  <!-- Pipeline Funnel -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-title">Pipeline de Producao</div>
+    <div style="display: flex; gap: 4px; align-items: stretch; min-height: 100px;">
+      <template x-for="stage in stages" :key="stage">
+        <div style="flex: 1; background: var(--bg-secondary); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: var(--transition); position: relative;"
+             @click="boardBrandFilter = ''; tab = 'board';"
+             @mouseenter="$el.style.background='var(--bg-tertiary)'"
+             @mouseleave="$el.style.background='var(--bg-secondary)'">
+          <div style="font-size: 2rem; font-weight: 700; line-height: 1;" :style="'color:' + stageColors[stage]" x-text="piecesInStage(stage).length"></div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;" x-text="stageLabels[stage]"></div>
+          <div x-show="stages.indexOf(stage) < stages.length - 1" style="position: absolute; right: -8px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem; z-index: 1;">&#8594;</div>
         </div>
       </template>
     </div>
   </div>
 
-  <!-- Recent Log -->
-  <div class="card" x-show="recentLog.length > 0">
-    <div class="card-title">Log Recente</div>
+  <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+    <!-- Producao Rapida -->
+    <div class="card">
+      <div class="card-title">Producao Rapida</div>
+      <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">Gere conteudo automaticamente com um clique.</p>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 0.95rem;" @click="tab='calendar'">
+          Planejar e Produzir Semana
+        </button>
+        <button class="btn" style="width: 100%;" @click="tab='copy'">
+          Gerar Copy Individual
+        </button>
+        <button class="btn" style="width: 100%;" @click="tab='board'; showNewPiece=true">
+          + Nova Peca Manual
+        </button>
+      </div>
+    </div>
+
+    <!-- Metricas Resumo -->
+    <div class="card">
+      <div class="card-title">Metricas do Sistema</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px;">
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Total Pecas</div>
+          <div style="font-size: 1.4rem; font-weight: 700;" x-text="pieces.length"></div>
+        </div>
+        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px;">
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Aprovadas</div>
+          <div style="font-size: 1.4rem; font-weight: 700; color: var(--green);" x-text="pieces.filter(p => p.stage === 'approved' || p.stage === 'published').length"></div>
+        </div>
+        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px;">
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Fichas (VDPs)</div>
+          <div style="font-size: 1.4rem; font-weight: 700;" x-text="stats.total_vdps || 0"></div>
+        </div>
+        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px;">
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Argumentos</div>
+          <div style="font-size: 1.4rem; font-weight: 700;" x-text="stats.claims_available || 0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Brand Distribution -->
+  <div class="card">
+    <div class="card-title">Distribuicao por Marca</div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+      <template x-for="b in ['salk', 'mendel', 'manager', 'dayho']">
+        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 12px; cursor: pointer; transition: var(--transition);"
+             @click="boardBrandFilter = b; tab = 'board';"
+             @mouseenter="$el.style.background='var(--bg-tertiary)'"
+             @mouseleave="$el.style.background='var(--bg-secondary)'">
+          <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;" x-text="b"></div>
+          <div style="font-size: 1.6rem; font-weight: 700;" x-text="pieces.filter(p => p.brand === b).length"></div>
+          <div style="display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap;">
+            <template x-for="s in stages.filter(s => pieces.filter(p => p.brand === b && p.stage === s).length > 0)">
+              <span style="font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; background: var(--bg-primary);" :style="'color:' + stageColors[s]" x-text="stageLabels[s] + ': ' + pieces.filter(p => p.brand === b && p.stage === s).length"></span>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Recent Pieces -->
+  <div class="card" x-show="pieces.length > 0">
+    <div class="card-title">Ultimas Pecas</div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Produto</th><th>Status</th><th>Data</th></tr></thead>
+        <thead><tr><th>Titulo</th><th>Marca</th><th>Estagio</th><th>Plataforma</th><th>Criada em</th></tr></thead>
         <tbody>
-          <template x-for="entry in recentLog">
-            <tr>
-              <td x-text="entry.vdp?.produto || entry.produto || '-'"></td>
-              <td><span class="badge" :class="entry.success ? 'badge-green' : 'badge-red'" x-text="entry.success ? 'OK' : 'FALHA'"></span></td>
-              <td x-text="entry.timestamp || entry.created_at || '-'"></td>
+          <template x-for="p in pieces.slice(0, 10)">
+            <tr style="cursor: pointer;" @click="selectedPiece = p; showPieceDetail = true; tab = 'board';">
+              <td x-text="p.title || p.id"></td>
+              <td><span class="badge" :class="'badge-' + p.brand" x-text="p.brand"></span></td>
+              <td><span class="badge" :style="'background:' + stageColors[p.stage] + '22; color:' + stageColors[p.stage]" x-text="stageLabels[p.stage]"></span></td>
+              <td x-text="p.platform || '-'"></td>
+              <td style="font-size: 0.75rem; color: var(--text-muted);" x-text="(p.created_at || '').substring(0, 10)"></td>
             </tr>
           </template>
         </tbody>
@@ -986,8 +1007,8 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 <!-- TAB: PRODUCTION BOARD (Tempo) -->
 <!-- ===================================================== -->
 <div x-show="tab === 'board'">
-  <!-- Filters -->
-  <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+  <!-- Filters + Batch Actions -->
+  <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
     <select class="form-select" style="width: 150px;" x-model="boardBrandFilter" @change="loadPieces()">
       <option value="">Todas Marcas</option>
       <option value="salk">Salk</option>
@@ -995,6 +1016,14 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
       <option value="manager">Manager</option>
       <option value="dayho">Dayho</option>
     </select>
+    <div style="flex: 1;"></div>
+    <button class="btn btn-sm" @click="batchMoveStage('review', 'approved')" x-show="piecesInStage('review').length > 0" title="Aprovar todas as pecas em revisao">
+      Aprovar Todas em Revisao (<span x-text="piecesInStage('review').length"></span>)
+    </button>
+    <button class="btn btn-sm" @click="batchMoveStage('copy', 'visual')" x-show="piecesInStage('copy').length > 0" title="Mover todas com copy para visual">
+      Copy &#8594; Visual (<span x-text="piecesInStage('copy').length"></span>)
+    </button>
+    <span style="font-size: 0.75rem; color: var(--text-muted);" x-text="pieces.length + ' pecas total'"></span>
   </div>
 
   <!-- Kanban Board -->
@@ -1008,11 +1037,15 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
         <div class="kanban-body">
           <template x-for="piece in piecesInStage(stage)" :key="piece.id">
             <div class="kanban-card" @click="selectedPiece = piece; showPieceDetail = true">
-              <div class="kc-title" x-text="piece.title"></div>
+              <div class="kc-title" x-text="piece.title || piece.id"></div>
               <div class="kc-meta">
                 <span class="badge" :class="'badge-' + piece.brand" x-text="piece.brand"></span>
-                <span x-show="piece.product" x-text="piece.product"></span>
-                <span x-show="piece.platform" x-text="piece.platform"></span>
+                <span x-show="piece.product" style="font-size: 0.7rem;" x-text="piece.product"></span>
+                <span x-show="piece.platform" style="font-size: 0.7rem;" x-text="piece.platform"></span>
+              </div>
+              <div style="display: flex; gap: 4px; margin-top: 6px;">
+                <span style="font-size: 0.6rem; padding: 1px 5px; border-radius: 3px;" :style="piece.copy_text ? 'background: rgba(34,197,94,0.2); color: var(--green);' : 'background: rgba(255,255,255,0.05); color: var(--text-muted);'" x-text="piece.copy_text ? 'Copy &#10003;' : 'Copy'"></span>
+                <span style="font-size: 0.6rem; padding: 1px 5px; border-radius: 3px;" :style="piece.notes && piece.notes.includes('nb2_prompt') ? 'background: rgba(59,130,246,0.2); color: var(--accent);' : 'background: rgba(255,255,255,0.05); color: var(--text-muted);'" x-text="piece.notes && piece.notes.includes('nb2_prompt') ? 'Prompt &#10003;' : 'Prompt'"></span>
               </div>
             </div>
           </template>
@@ -2787,6 +2820,24 @@ function studioApp() {
       });
       await this.loadPieces();
       if (this.selectedPiece) this.selectedPiece.stage = stage;
+    },
+
+    async batchMoveStage(fromStage, toStage) {
+      const pcs = this.piecesInStage(fromStage);
+      if (!pcs.length) return;
+      if (!confirm(`Mover ${pcs.length} pecas de "${this.stageLabels[fromStage]}" para "${this.stageLabels[toStage]}"?`)) return;
+      let moved = 0;
+      for (const p of pcs) {
+        try {
+          await this.api(`/api/production/pieces/${p.id}/stage`, {
+            method: 'PUT',
+            body: JSON.stringify({ stage: toStage }),
+          });
+          moved++;
+        } catch (e) { /* skip failed */ }
+      }
+      await this.loadPieces();
+      this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}`);
     },
 
     async deletePiece(id) {
