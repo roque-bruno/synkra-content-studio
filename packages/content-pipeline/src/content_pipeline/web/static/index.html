@@ -2091,42 +2091,46 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 
   <!-- Pieces ready to publish -->
   <div class="card">
-    <div class="card-title">Pecas Aprovadas para Publicacao</div>
+    <div class="card-title">Pecas Aprovadas para Publicacao (<span x-text="approvedPieces.length"></span>)</div>
     <template x-if="approvedPieces.length > 0">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Titulo</th>
-              <th>Marca</th>
-              <th>Plataforma</th>
-              <th>Formato</th>
-              <th>Data</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <template x-for="p in approvedPieces">
-              <tr>
-                <td x-text="p.title"></td>
-                <td><span class="badge" :class="'badge-' + (p.brand === 'salk' ? 'blue' : p.brand === 'mendel' ? 'green' : 'purple')" x-text="p.brand"></span></td>
-                <td x-text="p.platform"></td>
-                <td x-text="p.format"></td>
-                <td><input type="datetime-local" class="form-input" style="width: 200px;" x-model="p.scheduled_at"></td>
-                <td>
-                  <button class="btn btn-sm btn-primary" @click="publishPiece(p)" :disabled="publishingPiece === p.id">
-                    <span x-show="publishingPiece !== p.id">Publicar</span>
-                    <span x-show="publishingPiece === p.id">Enviando...</span>
-                  </button>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+      <div>
+        <template x-for="p in approvedPieces" :key="p.id">
+          <div style="border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+              <div>
+                <div style="font-weight: 600; font-size: 0.9rem;" x-text="p.title || p.id"></div>
+                <div style="display: flex; gap: 6px; margin-top: 4px;">
+                  <span class="badge" :class="'badge-' + p.brand" x-text="p.brand"></span>
+                  <span class="badge badge-muted" x-text="p.platform"></span>
+                  <span class="badge badge-blue" x-text="p.format" x-show="p.format"></span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="datetime-local" class="form-input" style="width: 200px; font-size: 0.75rem;" x-model="p.scheduled_at" title="Agendar publicacao">
+                <button class="btn btn-sm btn-primary" @click="publishPiece(p)" :disabled="publishingPiece === p.id">
+                  <span x-show="publishingPiece !== p.id">Publicar</span>
+                  <span x-show="publishingPiece === p.id">Enviando...</span>
+                </button>
+              </div>
+            </div>
+            <!-- Preview do conteudo -->
+            <div x-show="p.copy_text" style="background: var(--bg-secondary); border-radius: 6px; padding: 10px; font-size: 0.78rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 120px; overflow-y: auto; margin-bottom: 8px;" x-text="p.copy_text"></div>
+            <div x-show="!p.copy_text" style="background: var(--bg-secondary); border-radius: 6px; padding: 10px; font-size: 0.78rem; color: var(--red);">Sem copy — gere o texto antes de publicar</div>
+            <div x-show="p.hashtags && p.hashtags.length > 0" style="display: flex; gap: 4px; flex-wrap: wrap;">
+              <template x-for="h in (p.hashtags || [])">
+                <span class="badge badge-cyan" style="font-size: 0.6rem;" x-text="h"></span>
+              </template>
+            </div>
+          </div>
+        </template>
       </div>
     </template>
     <template x-if="approvedPieces.length === 0">
-      <p style="color: var(--text-muted); padding: 20px;">Nenhuma peca aprovada aguardando publicacao. Aprove pecas na aba "Aprovar Conteudo".</p>
+      <div class="empty-state">
+        <div class="icon">&#128640;</div>
+        <p>Nenhuma peca aprovada aguardando publicacao.</p>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">Aprove pecas no Board (arraste para "Aprovado") ou use a aba "Aprovar Conteudo".</p>
+      </div>
     </template>
   </div>
 </div>
@@ -2286,33 +2290,94 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 
 <!-- Piece Detail Modal -->
 <div class="modal-overlay" x-show="showPieceDetail" @click.self="showPieceDetail = false" x-cloak>
-  <div class="modal">
+  <div class="modal" style="max-width: 720px;">
     <div class="modal-header">
-      <h3 x-text="selectedPiece?.title || 'Peca'"></h3>
+      <h3 x-text="selectedPiece?.title || selectedPiece?.id || 'Peca'"></h3>
       <button class="modal-close" @click="showPieceDetail = false">&times;</button>
     </div>
     <div class="modal-body">
-      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+      <!-- Badges -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
         <span class="badge" :class="'badge-' + (selectedPiece?.brand || '')" x-text="selectedPiece?.brand"></span>
-        <span class="badge badge-blue" x-text="selectedPiece?.product"></span>
-        <span class="badge badge-muted" x-text="selectedPiece?.platform"></span>
-        <span class="badge badge-purple" x-text="selectedPiece?.stage"></span>
+        <span class="badge badge-blue" x-text="selectedPiece?.product" x-show="selectedPiece?.product"></span>
+        <span class="badge badge-muted" x-text="selectedPiece?.platform" x-show="selectedPiece?.platform"></span>
+        <span class="badge" :style="'background:' + stageColors[selectedPiece?.stage] + '22; color:' + stageColors[selectedPiece?.stage]" x-text="stageLabels[selectedPiece?.stage]"></span>
+        <span class="badge badge-purple" x-text="selectedPiece?.format" x-show="selectedPiece?.format"></span>
       </div>
-      <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
+
+      <!-- Info -->
+      <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
         <div x-show="selectedPiece?.pillar"><strong>Pilar:</strong> <span x-text="selectedPiece?.pillar"></span></div>
         <div x-show="selectedPiece?.persona_target"><strong>Persona:</strong> <span x-text="selectedPiece?.persona_target"></span></div>
-        <div x-show="selectedPiece?.notes"><strong>Notas:</strong> <span x-text="selectedPiece?.notes"></span></div>
         <div><strong>Criado:</strong> <span x-text="(selectedPiece?.created_at || '').substring(0, 16)"></span></div>
+        <div><strong>Atualizado:</strong> <span x-text="(selectedPiece?.updated_at || '').substring(0, 16)"></span></div>
       </div>
-      <div class="card-title">Mover para Estagio</div>
+
+      <!-- Copy Text -->
+      <div class="card" style="margin-bottom: 12px;" x-show="selectedPiece?.copy_text">
+        <div class="card-title" style="font-size: 0.75rem;">Copy</div>
+        <div style="font-size: 0.82rem; color: var(--text-primary); white-space: pre-wrap; line-height: 1.5; max-height: 200px; overflow-y: auto;" x-text="selectedPiece?.copy_text"></div>
+      </div>
+
+      <!-- Hashtags -->
+      <div style="margin-bottom: 12px;" x-show="selectedPiece?.hashtags && selectedPiece?.hashtags.length > 0">
+        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Hashtags</div>
+        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+          <template x-for="h in (selectedPiece?.hashtags || [])">
+            <span class="badge badge-cyan" style="font-size: 0.65rem;" x-text="h"></span>
+          </template>
+        </div>
+      </div>
+
+      <!-- Notes / Briefing / Prompt (parsed from JSON notes) -->
+      <template x-if="selectedPiece?.notes">
+        <div style="margin-bottom: 12px;">
+          <template x-if="parsePieceNotes(selectedPiece?.notes).briefing">
+            <div class="card" style="margin-bottom: 8px;">
+              <div class="card-title" style="font-size: 0.75rem;">Briefing</div>
+              <div style="font-size: 0.78rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 120px; overflow-y: auto;" x-text="parsePieceNotes(selectedPiece?.notes).briefing"></div>
+            </div>
+          </template>
+          <template x-if="parsePieceNotes(selectedPiece?.notes).nb2_prompt">
+            <div class="card" style="margin-bottom: 8px;">
+              <div class="card-title" style="font-size: 0.75rem;">Prompt NB2</div>
+              <div style="font-size: 0.78rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 120px; overflow-y: auto; font-family: var(--mono);" x-text="parsePieceNotes(selectedPiece?.notes).nb2_prompt"></div>
+            </div>
+          </template>
+          <template x-if="!parsePieceNotes(selectedPiece?.notes).briefing && !parsePieceNotes(selectedPiece?.notes).nb2_prompt">
+            <div style="font-size: 0.78rem; color: var(--text-muted);"><strong>Notas:</strong> <span x-text="selectedPiece?.notes"></span></div>
+          </template>
+        </div>
+      </template>
+
+      <!-- Automation Actions -->
+      <div class="card" style="margin-bottom: 12px; border-left: 2px solid var(--accent);">
+        <div class="card-title" style="font-size: 0.75rem;">Automacao</div>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-primary" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="!selectedPiece?.copy_text">
+            Gerar Copy com IA
+          </button>
+          <button class="btn btn-sm" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="selectedPiece?.copy_text">
+            Regerar Copy
+          </button>
+          <button class="btn btn-sm" @click="generatePromptForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
+            Gerar Prompt NB2
+          </button>
+          <span x-show="pieceActionLoading" style="font-size: 0.75rem; color: var(--amber);">Processando...</span>
+        </div>
+      </div>
+
+      <!-- Stage Actions -->
+      <div class="card-title" style="font-size: 0.75rem;">Mover para Estagio</div>
       <div class="btn-group">
         <template x-for="s in stages">
           <button class="btn btn-sm" :class="{ 'btn-primary': selectedPiece?.stage === s }" @click="movePieceStage(selectedPiece?.id, s)" x-text="stageLabels[s]"></button>
         </template>
       </div>
-      <div style="margin-top: 16px;">
-        <button class="btn btn-sm" @click="sendToReview(selectedPiece?.id)">Enviar para Aprovacao</button>
-        <button class="btn btn-sm btn-danger" style="margin-left: 8px;" @click="if(confirm('Excluir peca?')) { deletePiece(selectedPiece?.id); }">Excluir</button>
+      <div style="margin-top: 16px; display: flex; gap: 8px;">
+        <button class="btn btn-sm btn-success" @click="movePieceStage(selectedPiece?.id, 'approved'); notify('Peca aprovada!');">Aprovar</button>
+        <button class="btn btn-sm" @click="sendToReview(selectedPiece?.id)">Enviar para Revisao</button>
+        <button class="btn btn-sm btn-danger" style="margin-left: auto;" @click="if(confirm('Excluir peca?')) { deletePiece(selectedPiece?.id); }">Excluir</button>
       </div>
     </div>
   </div>
@@ -2576,6 +2641,7 @@ function studioApp() {
     // Modals
     showNewPiece: false,
     showPieceDetail: false,
+    pieceActionLoading: false,
     showNewVDP: false,
     showVDPDetail: false,
     showCalSlotModal: false,
@@ -2786,6 +2852,41 @@ function studioApp() {
       setTimeout(() => { this.toastVisible = false; }, 4000);
     },
 
+    // Piece helpers
+    parsePieceNotes(notes) {
+      if (!notes) return {};
+      try { return JSON.parse(notes); } catch(e) { return {}; }
+    },
+
+    async generateCopyForPiece(pieceId) {
+      if (!pieceId) return;
+      this.pieceActionLoading = true;
+      try {
+        const result = await this.api(`/api/production/pieces/${pieceId}/generate-copy`, {
+          method: 'POST', body: JSON.stringify({}),
+        });
+        this.notify('Copy gerada: ' + (result.copywriter || 'IA'));
+        await this.loadPieces();
+        // Atualizar selectedPiece com dados frescos
+        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+      } catch(e) { this.notify('Erro ao gerar copy: ' + e.message, 'error'); }
+      this.pieceActionLoading = false;
+    },
+
+    async generatePromptForPiece(pieceId) {
+      if (!pieceId) return;
+      this.pieceActionLoading = true;
+      try {
+        const result = await this.api(`/api/production/pieces/${pieceId}/generate-prompt`, {
+          method: 'POST', body: JSON.stringify({ concept: 'dramatic_studio' }),
+        });
+        this.notify('Prompt NB2 gerado com sucesso');
+        await this.loadPieces();
+        this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
+      } catch(e) { this.notify('Erro ao gerar prompt: ' + e.message, 'error'); }
+      this.pieceActionLoading = false;
+    },
+
     // Board helpers
     piecesInStage(stage) {
       let filtered = this.pieces.filter(p => p.stage === stage);
@@ -2969,15 +3070,30 @@ function studioApp() {
       this.publishingPiece = piece.id;
       try {
         const platform = (piece.platform || 'instagram').toLowerCase().split(' ')[0];
+        // Montar conteudo completo: copy + hashtags
+        let content = piece.copy_text || '';
+        if (piece.hashtags && piece.hashtags.length > 0) {
+          content += '\n\n' + piece.hashtags.join(' ');
+        }
         await this.api('/api/publish/' + platform, {
           method: 'POST',
           body: JSON.stringify({
             piece_id: piece.id,
-            scheduled_at: piece.scheduled_at || null,
+            content: content,
+            schedule_time: piece.scheduled_at || null,
           }),
         });
+        // Mover para published
+        await this.api(`/api/production/pieces/${piece.id}/stage`, {
+          method: 'PUT',
+          body: JSON.stringify({ stage: 'published' }),
+        });
+        this.notify('Peca publicada com sucesso!');
         await this.loadApprovedPieces();
-      } catch(e) { console.error(e); }
+        await this.loadPieces();
+      } catch(e) {
+        this.notify('Erro ao publicar: ' + e.message, 'error');
+      }
       this.publishingPiece = null;
     },
 

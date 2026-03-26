@@ -574,9 +574,10 @@ async def update_piece_stage(piece_id: str, req: PieceStageUpdate):
 
 
 @app.put("/api/production/pieces/{piece_id}")
-async def update_piece(piece_id: str, req: ProductionPiece):
+async def update_piece(piece_id: str, request: Request):
     svc = get_service()
-    result = svc.update_piece(piece_id, req.model_dump(exclude_unset=True))
+    data = await request.json()
+    result = svc.update_piece(piece_id, data)
     if result is None:
         raise HTTPException(404, f"Peça não encontrada: {piece_id}")
     return result
@@ -588,6 +589,71 @@ async def delete_piece(piece_id: str):
     if not svc.delete_piece(piece_id):
         raise HTTPException(404, f"Peça não encontrada: {piece_id}")
     return {"status": "deleted"}
+
+
+@app.post("/api/production/pieces/{piece_id}/generate-copy")
+@limiter.limit("10/minute")
+async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = Depends(require_auth)):
+    """Gera copy para uma peca existente e salva automaticamente."""
+    svc = get_service()
+    piece = svc.get_piece(piece_id)
+    if not piece:
+        raise HTTPException(404, f"Peça não encontrada: {piece_id}")
+    data = await request.json()
+    briefing = data.get("briefing", "")
+    if not briefing:
+        # Gerar briefing automaticamente
+        ab = svc.auto_briefing
+        br = await ab.generate(
+            product=piece.get("product", ""),
+            brand=piece.get("brand", "salk"),
+            pillar=piece.get("pillar", ""),
+            platform=piece.get("platform", "instagram"),
+        )
+        briefing = br.get("briefing_text", "")
+    # Gerar copy
+    cw = BrandCopywriter(svc.llm_client, brand=piece.get("brand", "salk"))
+    copy_result = await cw.write_copy(
+        briefing=briefing,
+        platform=piece.get("platform", "instagram"),
+        format_type=piece.get("format", "post"),
+    )
+    # Salvar na peca e avancar stage
+    update_data = {"copy_text": copy_result.get("copy_text", "")}
+    if piece.get("stage") == "briefing":
+        update_data["stage"] = "copy"
+    svc.update_piece(piece_id, update_data)
+    return {**copy_result, "piece_id": piece_id, "stage": update_data.get("stage", piece.get("stage"))}
+
+
+@app.post("/api/production/pieces/{piece_id}/generate-prompt")
+@limiter.limit("10/minute")
+async def generate_prompt_for_piece(piece_id: str, request: Request, user: dict = Depends(require_auth)):
+    """Gera prompt NB2 para uma peca existente e salva em notes."""
+    svc = get_service()
+    piece = svc.get_piece(piece_id)
+    if not piece:
+        raise HTTPException(404, f"Peça não encontrada: {piece_id}")
+    data = await request.json()
+    result = await svc.auto_prompt.generate_prompt(
+        product=piece.get("product", "lev"),
+        brand=piece.get("brand", "salk"),
+        concept=data.get("concept", "dramatic_studio"),
+        platform=piece.get("platform", "instagram"),
+    )
+    # Salvar prompt em notes (JSON)
+    import json as _json
+    existing_notes = piece.get("notes", "")
+    try:
+        notes_data = _json.loads(existing_notes) if existing_notes else {}
+    except (ValueError, TypeError):
+        notes_data = {"original_notes": existing_notes}
+    notes_data["nb2_prompt"] = result.get("prompt", result.get("nb2_prompt", ""))
+    update_data = {"notes": _json.dumps(notes_data)}
+    if piece.get("stage") in ("briefing", "copy"):
+        update_data["stage"] = "visual"
+    svc.update_piece(piece_id, update_data)
+    return {**result, "piece_id": piece_id, "stage": update_data.get("stage", piece.get("stage"))}
 
 
 # =========================================================================

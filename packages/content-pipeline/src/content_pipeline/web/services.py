@@ -730,6 +730,9 @@ class StudioService:
     def list_pieces(self, stage: str = "", brand: str = "") -> list[dict]:
         return self.db.list_pieces(stage=stage, brand=brand)
 
+    def get_piece(self, piece_id: str) -> Optional[dict]:
+        return self.db.get_piece(piece_id)
+
     def create_piece(self, data: dict) -> dict:
         return self.db.create_piece(data)
 
