@@ -860,6 +860,168 @@ async def veo3_image_to_video(request: Request, user: dict = Depends(require_aut
 
 
 # =========================================================================
+# VIDEO — Kling 3.0 Pro
+# =========================================================================
+
+@app.post("/api/video/kling/i2v")
+async def kling_image_to_video(request: Request, user: dict = Depends(require_auth)):
+    """Gera video a partir de imagem via Kling 3.0 Pro."""
+    svc = get_service()
+    data = await request.json()
+    if not svc.kling_client or not svc.kling_client.api_key:
+        raise HTTPException(503, "Kling nao configurado. Adicione KLING_API_KEY nas configuracoes.")
+    result = await svc.kling_client.image_to_video(
+        image_path=data.get("image_path", ""),
+        prompt=data.get("prompt", ""),
+        duration=data.get("duration", 5),
+        aspect_ratio=data.get("aspect_ratio", "9:16"),
+    )
+    return result
+
+
+@app.post("/api/video/kling/t2v")
+async def kling_text_to_video(request: Request, user: dict = Depends(require_auth)):
+    """Gera video a partir de texto via Kling 3.0 Pro."""
+    svc = get_service()
+    data = await request.json()
+    if not svc.kling_client or not svc.kling_client.api_key:
+        raise HTTPException(503, "Kling nao configurado. Adicione KLING_API_KEY nas configuracoes.")
+    result = await svc.kling_client.text_to_video(
+        prompt=data.get("prompt", ""),
+        duration=data.get("duration", 5),
+        aspect_ratio=data.get("aspect_ratio", "16:9"),
+    )
+    return result
+
+
+# =========================================================================
+# VIDEO — ElevenLabs TTS
+# =========================================================================
+
+@app.post("/api/video/tts")
+async def generate_tts(request: Request, user: dict = Depends(require_auth)):
+    """Gera narracao via ElevenLabs TTS."""
+    svc = get_service()
+    data = await request.json()
+    if not svc.tts_client or not svc.tts_client.api_key:
+        raise HTTPException(503, "ElevenLabs nao configurado. Adicione ELEVENLABS_API_KEY nas configuracoes.")
+    result = await svc.tts_client.generate(
+        text=data.get("text", ""),
+        voice_id=data.get("voice_id", "pqHfZKP75CvOlQylNhV4"),
+        output_path=data.get("output_path", ""),
+    )
+    return result
+
+
+# =========================================================================
+# VIDEO — Assembly (FFmpeg)
+# =========================================================================
+
+@app.post("/api/video/assemble")
+async def assemble_video(request: Request, user: dict = Depends(require_auth)):
+    """Monta video final: clip + narracao + musica + legendas."""
+    svc = get_service()
+    data = await request.json()
+    if not svc.video_assembler or not svc.video_assembler.ffmpeg_available:
+        raise HTTPException(503, "FFmpeg nao disponivel no servidor.")
+    result = await svc.video_assembler.assemble(
+        video_path=data.get("video_path", ""),
+        audio_path=data.get("audio_path", ""),
+        subtitle_text=data.get("subtitle_text", ""),
+        bgm_path=data.get("bgm_path", ""),
+        output_path=data.get("output_path", ""),
+        bgm_volume=data.get("bgm_volume", 0.15),
+    )
+    return result
+
+
+# =========================================================================
+# VIDEO — Complete Pipeline
+# =========================================================================
+
+@app.post("/api/video/pipeline")
+async def video_pipeline(request: Request, user: dict = Depends(require_auth)):
+    """Pipeline completo: gera video + narracao + montagem."""
+    svc = get_service()
+    data = await request.json()
+    results = {"steps": [], "errors": []}
+
+    # Step 1: Generate video clip
+    video_result = None
+    engine = data.get("engine", "veo3")
+    try:
+        if engine == "kling" and svc.kling_client and svc.kling_client.api_key:
+            if data.get("image_path"):
+                video_result = await svc.kling_client.image_to_video(
+                    image_path=data["image_path"],
+                    prompt=data.get("prompt", ""),
+                    duration=data.get("duration", 5),
+                    aspect_ratio=data.get("aspect_ratio", "9:16"),
+                )
+            else:
+                video_result = await svc.kling_client.text_to_video(
+                    prompt=data.get("prompt", ""),
+                    duration=data.get("duration", 5),
+                    aspect_ratio=data.get("aspect_ratio", "16:9"),
+                )
+            results["steps"].append({"step": "video", "engine": "kling", "status": "ok"})
+        elif svc.veo3_client and svc.veo3_client.api_key:
+            if data.get("image_path"):
+                video_result = await svc.veo3_client.image_to_video(
+                    image_path=data["image_path"],
+                    prompt=data.get("prompt", ""),
+                    aspect_ratio=data.get("aspect_ratio", "9:16"),
+                )
+            else:
+                video_result = await svc.veo3_client.text_to_video(
+                    prompt=data.get("prompt", ""),
+                    aspect_ratio=data.get("aspect_ratio", "16:9"),
+                )
+            results["steps"].append({"step": "video", "engine": "veo3", "status": "ok"})
+        else:
+            results["errors"].append("Nenhum engine de video configurado (Kling ou Veo3)")
+    except Exception as e:
+        results["errors"].append(f"Erro gerando video: {str(e)}")
+
+    results["video"] = video_result
+
+    # Step 2: Generate narration (if script provided)
+    narration_result = None
+    if data.get("narration_text") and svc.tts_client and svc.tts_client.api_key:
+        try:
+            narration_result = await svc.tts_client.generate(
+                text=data["narration_text"],
+                voice_id=data.get("voice_id", "pqHfZKP75CvOlQylNhV4"),
+            )
+            results["steps"].append({"step": "narration", "status": "ok"})
+        except Exception as e:
+            results["errors"].append(f"Erro gerando narracao: {str(e)}")
+
+    results["narration"] = narration_result
+
+    # Step 3: Assembly (if video + narration available)
+    if video_result and narration_result and svc.video_assembler and svc.video_assembler.ffmpeg_available:
+        try:
+            assembly_result = await svc.video_assembler.assemble(
+                video_path=video_result.get("output_path", ""),
+                audio_path=narration_result.get("output_path", ""),
+                subtitle_text=data.get("narration_text", ""),
+                bgm_path=data.get("bgm_path", ""),
+                output_path=data.get("final_output_path", ""),
+            )
+            results["steps"].append({"step": "assembly", "status": "ok"})
+            results["final_video"] = assembly_result
+        except Exception as e:
+            results["errors"].append(f"Erro na montagem: {str(e)}")
+
+    results["total_cost_usd"] = sum(
+        r.get("cost_usd", 0) for r in [video_result, narration_result] if r and isinstance(r, dict)
+    )
+
+    return results
+
+
+# =========================================================================
 # AUTOMATION — Auto-Briefing (Atlas)
 # =========================================================================
 

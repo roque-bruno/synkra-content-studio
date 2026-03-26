@@ -715,65 +715,71 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
       <span class="icon">&#9632;</span> Dashboard
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'board' }" @click="tab='board'">
-      <span class="icon">&#9638;</span> Production Board
+      <span class="icon">&#9638;</span> Pecas em Producao
       <span class="sidebar-badge badge-blue" x-show="stats.pieces_in_production > 0" x-text="stats.pieces_in_production"></span>
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'calendar' }" @click="tab='calendar'">
-      <span class="icon">&#9783;</span> Calendario Editorial
+      <span class="icon">&#9783;</span> Planejar Semana
     </div>
   </div>
 
   <div class="sidebar-section">
-    <div class="sidebar-section-title">Producao</div>
+    <div class="sidebar-section-title">Criar Conteudo</div>
     <div class="sidebar-item" :class="{ active: tab === 'copy' }" @click="tab='copy'">
-      <span class="icon">&#9998;</span> Copy Editor
+      <span class="icon">&#9998;</span> Escrever Textos
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'">
-      <span class="icon">&#9881;</span> VDPs
+      <span class="icon">&#9881;</span> Fichas de Produto
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'studio' }" @click="tab='studio'">
-      <span class="icon">&#10070;</span> NB2 Studio
+      <span class="icon">&#10070;</span> Gerar Imagens
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'video' }" @click="tab='video'">
+      <span class="icon">&#9654;</span> Criar Video
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Qualidade</div>
     <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'">
-      <span class="icon">&#9888;</span> Compliance
+      <span class="icon">&#9888;</span> Verificar Regras
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'review' }" @click="tab='review'">
-      <span class="icon">&#10003;</span> Review Queue
+      <span class="icon">&#10003;</span> Aprovar Conteudo
       <span class="sidebar-badge badge-amber" x-show="pendingReviews > 0" x-text="pendingReviews"></span>
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'publish' }" @click="tab='publish'">
+      <span class="icon">&#9992;</span> Publicar
     </div>
   </div>
 
   <div class="sidebar-section">
-    <div class="sidebar-section-title">Recursos</div>
+    <div class="sidebar-section-title">Consultar</div>
     <div class="sidebar-item" :class="{ active: tab === 'assets' }" @click="tab='assets'">
       <span class="icon">&#9733;</span> Biblioteca
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'claims' }" @click="tab='claims'">
-      <span class="icon">&#9875;</span> Claims Bank
+      <span class="icon">&#9875;</span> Argumentos de Venda
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" @click="tab='hashtags'">
       <span class="icon">#</span> Hashtags
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'personas' }" @click="tab='personas'">
-      <span class="icon">&#9673;</span> Personas
+      <span class="icon">&#9673;</span> Perfis de Cliente
     </div>
   </div>
 
   <div class="sidebar-section">
-    <div class="sidebar-section-title">Analise</div>
+    <div class="sidebar-section-title">Resultados</div>
     <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'">
-      <span class="icon">&#9650;</span> Performance
+      <span class="icon">&#9650;</span> Desempenho
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Sistema</div>
-    <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'; loadSettings()">
-      <span class="icon">&#9881;</span> Configurações
+    <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'">
+      <span class="icon">&#9881;</span> Configuracoes
     </div>
   </div>
 
@@ -800,7 +806,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   </div>
   <div class="btn-group">
     <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'">+ Nova Peca</button>
-    <button class="btn btn-primary" @click="showNewVDP = true" x-show="tab === 'vdp'">+ Novo VDP</button>
+    <button class="btn btn-primary" @click="showNewVDP = true" x-show="tab === 'vdp'">+ Nova Ficha</button>
     <button class="btn" @click="refreshData()">Atualizar</button>
   </div>
 </div>
@@ -813,11 +819,11 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 <div x-show="tab === 'dashboard'">
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="label">VDPs Criados</div>
+      <div class="label">Fichas de Produto</div>
       <div class="value" x-text="stats.total_vdps"></div>
     </div>
     <div class="stat-card">
-      <div class="label">Imagens NB2</div>
+      <div class="label">Imagens Geradas</div>
       <div class="value" x-text="stats.images_generated"></div>
     </div>
     <div class="stat-card">
@@ -829,7 +835,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
       <div class="value" x-text="stats.logos_available"></div>
     </div>
     <div class="stat-card">
-      <div class="label">Claims</div>
+      <div class="label">Argumentos</div>
       <div class="value" x-text="stats.claims_available"></div>
     </div>
     <div class="stat-card">
@@ -837,11 +843,11 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
       <div class="value" style="color: var(--amber)" x-text="stats.pieces_in_production"></div>
     </div>
     <div class="stat-card">
-      <div class="label">Aguardando Review</div>
+      <div class="label">Aguardando Aprovacao</div>
       <div class="value" style="color: var(--purple)" x-text="stats.pieces_pending_review"></div>
     </div>
     <div class="stat-card">
-      <div class="label">Tamanho Output</div>
+      <div class="label">Tamanho Total</div>
       <div class="value" x-text="stats.total_size_mb + ' MB'"></div>
     </div>
   </div>
@@ -851,10 +857,10 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
     <div class="card-title">Acoes Rapidas</div>
     <div class="btn-group">
       <button class="btn" @click="tab='board'; showNewPiece=true">+ Nova Peca</button>
-      <button class="btn" @click="tab='vdp'; showNewVDP=true">+ Novo VDP</button>
-      <button class="btn" @click="tab='compliance'">Verificar Compliance</button>
-      <button class="btn" @click="tab='calendar'">Calendario</button>
-      <button class="btn" @click="tab='copy'">Editor de Copy</button>
+      <button class="btn" @click="tab='vdp'; showNewVDP=true">+ Nova Ficha</button>
+      <button class="btn" @click="tab='compliance'">Verificar Regras</button>
+      <button class="btn" @click="tab='calendar'">Planejar Semana</button>
+      <button class="btn" @click="tab='copy'">Escrever Textos</button>
     </div>
   </div>
 
@@ -945,26 +951,25 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
       <option value="dayho">Dayho</option>
     </select>
     <button class="btn" @click="loadCalendar()">Carregar</button>
-    <button class="btn btn-primary" @click="generateCalendar()">Gerar do Template</button>
-    <button class="btn btn-success" @click="saveCalendar()" x-show="calSlots.length > 0">Salvar</button>
-    <button class="btn" style="background: var(--purple); color: white;" @click="autoFillCalendar()" x-show="calSlots.length > 0">Auto-Fill</button>
+    <button class="btn btn-primary" @click="generateCalendar(); setTimeout(() => autoFillCalendar(), 500)">Nova Semana</button>
+    <button class="btn btn-success" @click="saveCalendar()" x-show="calSlots.length > 0">Salvar Ajustes</button>
     <button class="btn" style="background: var(--green); color: #000; font-weight: 600;" @click="produceWeek()" x-show="calSlots.length > 0" :disabled="weekProducing">
-      <span x-show="!weekProducing">Produzir Semana</span>
-      <span x-show="weekProducing">Produzindo...</span>
+      <span x-show="!weekProducing">Gerar Conteudo da Semana</span>
+      <span x-show="weekProducing">Gerando conteudo...</span>
     </button>
   </div>
 
   <!-- Production Summary -->
   <template x-if="weekResult">
     <div class="card" style="margin-bottom: 16px; border-left: 3px solid var(--green);">
-      <div class="card-title" style="color: var(--green);">Producao Completa</div>
+      <div class="card-title" style="color: var(--green);">Semana Pronta para Revisao</div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
         <div class="stat-box"><div class="stat-value" x-text="weekResult.pieces_created"></div><div class="stat-label">Pecas Criadas</div></div>
         <div class="stat-box"><div class="stat-value" x-text="weekResult.briefings_generated"></div><div class="stat-label">Briefings</div></div>
-        <div class="stat-box"><div class="stat-value" x-text="weekResult.copies_generated"></div><div class="stat-label">Copies</div></div>
-        <div class="stat-box"><div class="stat-value" x-text="weekResult.prompts_generated"></div><div class="stat-label">Prompts NB2</div></div>
-        <div class="stat-box"><div class="stat-value" x-text="weekResult.atomizations"></div><div class="stat-label">Atomizacoes</div></div>
-        <div class="stat-box"><div class="stat-value" x-text="'$' + (weekResult.total_cost_usd || 0).toFixed(4)"></div><div class="stat-label">Custo LLM</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="weekResult.copies_generated"></div><div class="stat-label">Textos</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="weekResult.prompts_generated"></div><div class="stat-label">Roteiros de Imagem</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="weekResult.atomizations"></div><div class="stat-label">Adaptacoes</div></div>
+        <div class="stat-box"><div class="stat-value" x-text="'$' + (weekResult.total_cost_usd || 0).toFixed(2)"></div><div class="stat-label">Custo IA</div></div>
       </div>
       <div x-show="weekResult.errors && weekResult.errors.length > 0" style="margin-top: 10px; color: var(--red); font-size: 0.75rem;">
         <template x-for="err in weekResult.errors">
@@ -1049,7 +1054,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
           </div>
         </div>
         <div class="btn-group" style="margin-top: 8px;">
-          <button class="btn btn-primary" @click="checkCopyCompliance()">Verificar Compliance</button>
+          <button class="btn btn-primary" @click="checkCopyCompliance()">Verificar Regras</button>
           <button class="btn" @click="copyText = ''; copyHeadline = ''; copyCTA = ''; copyCharCount = 0;">Limpar</button>
         </div>
       </div>
@@ -1076,7 +1081,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
     <div>
       <!-- Claims Sugestao -->
       <div class="card">
-        <div class="card-title">Claims Disponiveis</div>
+        <div class="card-title">Argumentos Disponiveis</div>
         <div class="form-group">
           <label>Filtrar Produto</label>
           <select class="form-select" x-model="copyClaimFilter">
@@ -1159,7 +1164,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   <template x-if="vdps.length === 0">
     <div class="empty-state">
       <div class="icon">&#9881;</div>
-      <p>Nenhum VDP encontrado. Crie um novo VDP.</p>
+      <p>Nenhuma ficha encontrada. Crie uma nova ficha de produto.</p>
     </div>
   </template>
 </div>
@@ -1229,9 +1234,15 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
         <div style="margin-top: 10px;">
           <button class="btn btn-sm" @click="navigator.clipboard.writeText(studioPromptResult?.prompt || '')">Copiar</button>
         </div>
+        <div style="margin-top: 12px;" x-show="studioPromptResult">
+          <button class="btn btn-primary" style="font-size: 1rem; padding: 10px 24px;" @click="generateNB2Image()" :disabled="nb2Generating">
+            <span x-show="!nb2Generating">Gerar Imagem com IA</span>
+            <span x-show="nb2Generating">Gerando imagem... (30-60s)</span>
+          </button>
+        </div>
       </div>
       <div class="card">
-        <div class="card-title">Regras NB2</div>
+        <div class="card-title">Regras de Imagem</div>
         <ul style="font-size: 0.8rem; color: var(--text-secondary); list-style: none;">
           <li style="padding: 4px 0;">&#9679; Upload do produto REAL como referencia</li>
           <li style="padding: 4px 0;">&#9679; IA renderiza o produto DENTRO do cenario</li>
@@ -1252,7 +1263,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   <div class="form-row">
     <div>
       <div class="card">
-        <div class="card-title">Verificador de Compliance</div>
+        <div class="card-title">Verificador de Regras</div>
         <div class="form-group">
           <label>Texto para Verificar</label>
           <textarea class="form-textarea" style="min-height: 200px;" x-model="complianceText" placeholder="Cole aqui o texto completo da peca (copy, headline, CTA, hashtags)..."></textarea>
@@ -1309,7 +1320,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 
     <div>
       <div class="card">
-        <div class="card-title">Checklist de Compliance (4 Camadas)</div>
+        <div class="card-title">Checklist de Verificacao (4 Camadas)</div>
         <div style="font-size: 0.8rem;">
           <div style="padding: 8px 0; border-bottom: 1px solid var(--border);">
             <strong style="color: var(--green);">1. Automatizado (Shield)</strong>
@@ -1332,7 +1343,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
             <strong style="color: var(--amber);">3. Tecnico/Medico</strong>
             <ul style="margin-top: 4px; padding-left: 16px; color: var(--text-secondary);">
               <li>Precisao tecnica</li>
-              <li>Claims com fonte</li>
+              <li>Argumentos com fonte</li>
               <li>Dados verificaveis</li>
             </ul>
           </div>
@@ -1697,90 +1708,262 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 </div>
 
 
-<!-- ===== SETTINGS ===== -->
-<div x-show="tab === 'settings'">
-  <template x-if="settingsData">
-    <div>
-      <!-- Status bar -->
-      <div class="card" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-        <div style="flex:1;">
-          <span x-show="stats.preview_mode" class="preview-badge" style="font-size:0.85rem;">PREVIEW MODE — Configure as chaves abaixo para ativar</span>
-          <span x-show="!stats.preview_mode" class="badge badge-green" style="font-size:0.85rem; padding:4px 12px;">MODO PRODUCAO ATIVO</span>
-        </div>
-        <button class="btn btn-secondary" @click="testConnections()" style="margin-right:8px;">Testar Conexoes</button>
-        <button class="btn btn-primary" :disabled="settingsSaving" @click="saveSettings()">
-          <span x-show="!settingsSaving">Salvar Configuracoes</span>
-          <span x-show="settingsSaving">Salvando...</span>
-        </button>
-        <span x-show="settingsSaved" style="color:var(--green); font-weight:600;">Salvo!</span>
+<!-- ===================================================== -->
+<!-- TAB: CRIAR VIDEO -->
+<!-- ===================================================== -->
+<div x-show="tab === 'video'">
+  <!-- Video Status -->
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-title">Status dos Servicos de Video</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+      <div class="stat-card">
+        <div class="label">Veo 3 (Google)</div>
+        <div class="value" :style="videoStatus.veo3_configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="videoStatus.veo3_configured ? 'Ativo' : 'Nao configurado'"></div>
       </div>
-
-      <!-- Test results -->
-      <div class="card" x-show="settingsTestResults" style="margin-top:12px;">
-        <div class="card-title">Status dos Servicos</div>
-        <div class="stats-grid">
-          <template x-for="[name, info] in Object.entries(settingsTestResults?.services || {})">
-            <div class="stat-card">
-              <div class="label" x-text="name" style="text-transform:capitalize;"></div>
-              <div class="value" style="font-size:1.2rem;" :style="{ color: info.configured ? 'var(--green)' : 'var(--text-muted)' }">
-                <span x-text="info.configured ? 'Ativo' : 'Pendente'"></span>
-              </div>
-              <div class="detail" x-text="info.status"></div>
-            </div>
-          </template>
-        </div>
+      <div class="stat-card">
+        <div class="label">Kling 3.0</div>
+        <div class="value" :style="videoStatus.kling_configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="videoStatus.kling_configured ? 'Ativo' : 'Nao configurado'"></div>
       </div>
+      <div class="stat-card">
+        <div class="label">Narracao (ElevenLabs)</div>
+        <div class="value" :style="videoStatus.elevenlabs_configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="videoStatus.elevenlabs_configured ? 'Ativo' : 'Nao configurado'"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Montagem (FFmpeg)</div>
+        <div class="value" :style="videoStatus.ffmpeg_available ? 'color: var(--green)' : 'color: var(--red)'" x-text="videoStatus.ffmpeg_available ? 'Disponivel' : 'Indisponivel'"></div>
+      </div>
+    </div>
+  </div>
 
-      <!-- Settings Groups -->
-      <template x-for="[groupKey, groupInfo] in Object.entries(settingsData.groups || {})">
-        <div class="card" style="margin-top:16px;">
-          <div class="card-title">
-            <span x-text="groupInfo.icon"></span> <span x-text="groupInfo.label"></span>
-          </div>
-          <template x-for="defn in settingsGroupDefs(groupKey)">
-            <div style="margin-bottom:14px;">
-              <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span style="font-weight:600; font-size:0.85rem;" x-text="defn.label"></span>
-                <span x-show="settingsKeyStatus(defn.key).configured"
-                      style="font-size:0.65rem; padding:1px 6px; border-radius:8px; font-weight:600; background:var(--green-bg); color:var(--green);"
-                      x-text="settingsKeyStatus(defn.key).source === 'env' ? 'ENV' : 'SALVO'">
-                </span>
-                <span x-show="!settingsKeyStatus(defn.key).configured"
-                      style="font-size:0.65rem; padding:1px 6px; border-radius:8px; font-weight:600; background:var(--bg-input); color:var(--text-muted);">
-                  NAO CONFIGURADO
-                </span>
-              </label>
-              <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:4px;" x-text="defn.description"></div>
-              <input class="form-input"
-                     :type="defn.key.includes('PASS') || defn.key.includes('SECRET') ? 'password' : 'text'"
-                     :placeholder="defn.placeholder"
-                     x-model="settingsForm[defn.key]"
-                     @input="settingsSaved = false"
-                     style="font-family: var(--mono); font-size:0.8rem;">
-            </div>
-          </template>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <!-- Left: Video Generation -->
+    <div class="card">
+      <div class="card-title">Gerar Clip de Video</div>
+      <div class="form-group">
+        <label class="form-label">Motor de Video</label>
+        <select class="form-select" x-model="videoEngine">
+          <option value="veo3">Google Veo 3</option>
+          <option value="kling">Kling 3.0 Pro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" x-model="videoType">
+          <option value="t2v">Texto para Video</option>
+          <option value="i2v">Imagem para Video</option>
+        </select>
+      </div>
+      <div class="form-group" x-show="videoType === 'i2v'">
+        <label class="form-label">Caminho da Imagem (PNG do produto)</label>
+        <input class="form-input" x-model="videoImagePath" placeholder="Ex: output/nb2/lev_hero.png">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descricao da Cena</label>
+        <textarea class="form-input" x-model="videoPrompt" rows="4" placeholder="Descreva o cenario e movimento desejado (NUNCA descrever o produto em si)"></textarea>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Formato</label>
+          <select class="form-select" x-model="videoAspect">
+            <option value="9:16">Reels/Shorts (9:16)</option>
+            <option value="16:9">YouTube/LinkedIn (16:9)</option>
+            <option value="1:1">Feed Quadrado (1:1)</option>
+          </select>
         </div>
-      </template>
-
-      <!-- Info box -->
-      <div class="card" style="margin-top:16px; border-color: var(--accent); background: var(--accent-dim);">
-        <div style="font-size:0.85rem; line-height:1.6;">
-          <strong>Como funciona:</strong><br>
-          As chaves sao salvas localmente e criptografadas. Elas tem prioridade sobre variaveis de ambiente (.env).<br>
-          Apos salvar, todos os clientes (LLM, video, publishers) sao reinicializados automaticamente.<br>
-          Campos com valor mascarado (••••) ja estao configurados — deixe como esta para manter o valor atual.
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Duracao</label>
+          <select class="form-select" x-model="videoDuration">
+            <option value="5">5 segundos</option>
+            <option value="10">10 segundos</option>
+          </select>
         </div>
       </div>
     </div>
-  </template>
 
-  <!-- Loading state -->
-  <template x-if="!settingsData">
-    <div class="card" style="text-align:center; padding:40px;">
-      <div style="color: var(--text-muted);">Carregando configuracoes...</div>
+    <!-- Right: Narration -->
+    <div class="card">
+      <div class="card-title">Narracao (opcional)</div>
+      <div class="form-group">
+        <label class="form-label">Roteiro de Narracao</label>
+        <textarea class="form-input" x-model="videoNarration" rows="6" placeholder="Texto que sera narrado sobre o video (voz Bill, portugues)"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Caracteres: <span x-text="(videoNarration || '').length"></span></label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Musica de Fundo</label>
+        <select class="form-select" x-model="videoBGM">
+          <option value="">Sem musica</option>
+          <option value="corporate">Corporativo</option>
+          <option value="tech">Tecnologia</option>
+          <option value="medical">Medico/Clean</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Legendas</label>
+        <select class="form-select" x-model="videoSubtitles">
+          <option value="none">Sem legendas</option>
+          <option value="burn">Gravar no video</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate Button -->
+  <div style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
+    <button class="btn btn-primary" style="font-size: 1rem; padding: 10px 24px;" @click="generateVideo()" :disabled="videoGenerating">
+      <span x-show="!videoGenerating">Gerar Video Completo</span>
+      <span x-show="videoGenerating">Gerando... (pode levar ate 2 minutos)</span>
+    </button>
+    <span x-show="videoGenerating" style="color: var(--amber); font-size: 0.8rem;">O video esta sendo processado no servidor. Nao feche esta pagina.</span>
+  </div>
+
+  <!-- Video Result -->
+  <template x-if="videoResult">
+    <div class="card" style="margin-top: 16px; border-left: 3px solid var(--green);">
+      <div class="card-title" style="color: var(--green);">Video Gerado com Sucesso</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+        <template x-for="step in (videoResult.steps || [])">
+          <div class="stat-card">
+            <div class="label" x-text="step.step === 'video' ? 'Clip' : step.step === 'narration' ? 'Narracao' : 'Montagem'"></div>
+            <div class="value" style="color: var(--green)">OK</div>
+          </div>
+        </template>
+        <div class="stat-card">
+          <div class="label">Custo Total</div>
+          <div class="value" x-text="'$' + (videoResult.total_cost_usd || 0).toFixed(4)"></div>
+        </div>
+      </div>
+      <div x-show="videoResult.errors && videoResult.errors.length > 0" style="margin-top: 10px; color: var(--red); font-size: 0.8rem;">
+        <template x-for="err in (videoResult.errors || [])">
+          <div x-text="err"></div>
+        </template>
+      </div>
     </div>
   </template>
 </div>
+
+<!-- ===================================================== -->
+<!-- TAB: PUBLICAR -->
+<!-- ===================================================== -->
+<div x-show="tab === 'publish'">
+  <!-- Publisher Status -->
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-title">Status das Plataformas</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+      <div class="stat-card">
+        <div class="label">Instagram</div>
+        <div class="value" :style="publishStatus.instagram ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.instagram ? 'Conectado' : 'Nao conectado'"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Facebook</div>
+        <div class="value" :style="publishStatus.facebook ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.facebook ? 'Conectado' : 'Nao conectado'"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">LinkedIn</div>
+        <div class="value" :style="publishStatus.linkedin ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.linkedin ? 'Conectado' : 'Nao conectado'"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">YouTube</div>
+        <div class="value" :style="publishStatus.youtube ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.youtube ? 'Conectado' : 'Nao conectado'"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pieces ready to publish -->
+  <div class="card">
+    <div class="card-title">Pecas Aprovadas para Publicacao</div>
+    <template x-if="approvedPieces.length > 0">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Titulo</th>
+              <th>Marca</th>
+              <th>Plataforma</th>
+              <th>Formato</th>
+              <th>Data</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="p in approvedPieces">
+              <tr>
+                <td x-text="p.title"></td>
+                <td><span class="badge" :class="'badge-' + (p.brand === 'salk' ? 'blue' : p.brand === 'mendel' ? 'green' : 'purple')" x-text="p.brand"></span></td>
+                <td x-text="p.platform"></td>
+                <td x-text="p.format"></td>
+                <td><input type="datetime-local" class="form-input" style="width: 200px;" x-model="p.scheduled_at"></td>
+                <td>
+                  <button class="btn btn-sm btn-primary" @click="publishPiece(p)" :disabled="publishingPiece === p.id">
+                    <span x-show="publishingPiece !== p.id">Publicar</span>
+                    <span x-show="publishingPiece === p.id">Enviando...</span>
+                  </button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </template>
+    <template x-if="approvedPieces.length === 0">
+      <p style="color: var(--text-muted); padding: 20px;">Nenhuma peca aprovada aguardando publicacao. Aprove pecas na aba "Aprovar Conteudo".</p>
+    </template>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: CONFIGURACOES -->
+<!-- ===================================================== -->
+<div x-show="tab === 'settings'">
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-title">Chaves de API</div>
+    <p style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.8rem;">Configure as chaves necessarias para ativar cada funcionalidade. As chaves sao salvas de forma segura no servidor.</p>
+
+    <template x-for="setting in settingsList">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border);">
+        <div style="flex: 1;">
+          <div style="font-weight: 600;" x-text="setting.label"></div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);" x-text="setting.description"></div>
+        </div>
+        <div style="width: 40px; text-align: center;">
+          <span :style="setting.configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="setting.configured ? '●' : '○'"></span>
+        </div>
+        <input class="form-input" style="width: 320px;" type="password" :placeholder="setting.placeholder || 'Cole a chave aqui...'" x-model="setting.value">
+        <button class="btn btn-sm" @click="saveSetting(setting)">Salvar</button>
+      </div>
+    </template>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Testar Conexoes</div>
+    <button class="btn btn-primary" @click="testConnections()">Testar Todas as Conexoes</button>
+    <template x-if="connectionTestResult">
+      <div style="margin-top: 12px;">
+        <template x-for="[key, val] in Object.entries(connectionTestResult)">
+          <div style="display: flex; gap: 8px; padding: 4px 0;">
+            <span :style="val ? 'color: var(--green)' : 'color: var(--red)'" x-text="val ? '✓' : '✗'"></span>
+            <span x-text="key"></span>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <div class="card-title">Autenticacao</div>
+    <div class="form-group">
+      <label class="form-label">Usuario</label>
+      <input class="form-input" style="width: 300px;" x-model="settingsUser" placeholder="admin">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nova Senha</label>
+      <input class="form-input" style="width: 300px;" type="password" x-model="settingsPass" placeholder="Nova senha...">
+    </div>
+    <button class="btn" @click="updateAuth()">Atualizar Credenciais</button>
+  </div>
+</div>
+
 
 </div> <!-- /main-content -->
 </div> <!-- /main -->
@@ -1909,7 +2092,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
         </template>
       </div>
       <div style="margin-top: 16px;">
-        <button class="btn btn-sm" @click="sendToReview(selectedPiece?.id)">Enviar para Review</button>
+        <button class="btn btn-sm" @click="sendToReview(selectedPiece?.id)">Enviar para Aprovacao</button>
         <button class="btn btn-sm btn-danger" style="margin-left: 8px;" @click="if(confirm('Excluir peca?')) { deletePiece(selectedPiece?.id); }">Excluir</button>
       </div>
     </div>
@@ -2108,36 +2291,40 @@ function studioApp() {
 
     tab: 'dashboard',
     tabTitles: {
-      dashboard: 'Dashboard',
-      board: 'Production Board',
-      calendar: 'Calendario Editorial',
-      copy: 'Copy Editor',
-      vdp: 'Visual Design Packs',
-      studio: 'NB2 Studio',
-      compliance: 'Compliance Check',
-      review: 'Review Queue',
-      assets: 'Biblioteca de Assets',
-      claims: 'Claims Bank',
-      hashtags: 'Hashtag Bank',
-      personas: 'Buyer Personas',
-      performance: 'Performance',
-      settings: 'Configurações'
+      dashboard: 'Painel Geral',
+      board: 'Pecas em Producao',
+      calendar: 'Planejar Semana',
+      copy: 'Escrever Textos',
+      vdp: 'Fichas de Produto',
+      studio: 'Gerar Imagens',
+      compliance: 'Verificar Regras',
+      review: 'Aprovar Conteudo',
+      assets: 'Biblioteca',
+      claims: 'Argumentos de Venda',
+      hashtags: 'Hashtags',
+      personas: 'Perfis de Cliente',
+      performance: 'Resultados',
+      video: 'Criar Video',
+      publish: 'Publicar Conteudo',
+      settings: 'Configuracoes'
     },
     tabSubtitles: {
-      dashboard: 'Visao geral do sistema de producao',
-      board: 'Kanban de pecas em producao — Tempo',
-      calendar: 'Planejamento semanal por marca — Atlas',
-      copy: 'Editor de copy com claims e compliance — Helix',
-      vdp: 'Visual Design Packs para geracao NB2 — Apex',
-      studio: 'Construtor de prompts NB2 — Apex',
-      compliance: 'Verificacao de termos proibidos — Shield',
-      review: 'Fila de revisao editorial — Lens',
-      assets: 'Imagens de produto e logos',
-      claims: 'Claims regulatorios aprovados',
-      hashtags: 'Banco de hashtags por marca',
-      personas: 'Buyer personas do Manager Grupo',
-      performance: 'Metricas pos-publicacao — Pulse',
-      settings: 'Chaves API e configurações do sistema'
+      dashboard: 'Visao geral da producao de conteudo',
+      board: 'Acompanhe o que esta sendo produzido',
+      calendar: 'Monte o planejamento da semana e gere tudo automaticamente',
+      copy: 'Crie e edite textos para cada rede social',
+      vdp: 'Fichas visuais dos produtos para geracao de imagens',
+      studio: 'Crie imagens profissionais dos produtos',
+      compliance: 'Verifique se o conteudo segue as regras da marca',
+      review: 'Revise e aprove pecas antes de publicar',
+      assets: 'Fotos de produtos e logomarcas',
+      claims: 'Dados tecnicos aprovados para usar nos textos',
+      hashtags: 'Hashtags organizadas por marca e rede social',
+      personas: 'Perfis dos clientes que queremos atingir',
+      performance: 'Acompanhe os resultados das publicacoes',
+      video: 'Crie videos profissionais com IA para redes sociais',
+      publish: 'Agende e publique conteudo nas redes sociais',
+      settings: 'Chaves API e configuracoes do sistema'
     },
 
     // Data
@@ -2155,13 +2342,6 @@ function studioApp() {
     personas: [],
     hashtagData: {},
     selectedHashtags: [],
-
-    // Settings
-    settingsData: null,
-    settingsForm: {},
-    settingsSaving: false,
-    settingsSaved: false,
-    settingsTestResults: null,
 
     // Board
     stages: ['briefing', 'copy', 'visual', 'review', 'approved', 'published'],
@@ -2233,6 +2413,33 @@ function studioApp() {
     studioMood: '',
     studioIsLEV: false,
     studioPromptResult: null,
+    nb2Generating: false,
+    nb2GeneratedImage: null,
+
+    // Video
+    videoStatus: {},
+    videoEngine: 'veo3',
+    videoType: 't2v',
+    videoImagePath: '',
+    videoPrompt: '',
+    videoAspect: '9:16',
+    videoDuration: '5',
+    videoNarration: '',
+    videoBGM: '',
+    videoSubtitles: 'none',
+    videoGenerating: false,
+    videoResult: null,
+
+    // Publishing
+    publishStatus: {},
+    approvedPieces: [],
+    publishingPiece: null,
+
+    // Settings
+    settingsList: [],
+    connectionTestResult: null,
+    settingsUser: '',
+    settingsPass: '',
 
     // Performance
     metricPieceId: '',
@@ -2256,6 +2463,11 @@ function studioApp() {
     async init() {
       if (!this.authenticated) return;
       await this.refreshData();
+      this.$watch('tab', (val) => {
+        if (val === 'video') this.loadVideoStatus();
+        if (val === 'publish') { this.loadApprovedPieces(); this.loadPublishStatus(); }
+        if (val === 'settings') this.loadSettings();
+      });
     },
 
     async doLogin() {
@@ -2309,10 +2521,12 @@ function studioApp() {
       if (metricsRes.status === 'fulfilled') this.metrics = metricsRes.value || [];
       if (metricsSumRes.status === 'fulfilled') this.perfSummary = metricsSumRes.value || {};
       if (personasRes.status === 'fulfilled') this.personas = personasRes.value || [];
+      this.loadVideoStatus();
+      this.loadPublishStatus();
     },
 
     async api(url, opts = {}) {
-      const base = (window.STUDIO_CONFIG && window.STUDIO_CONFIG.API_BASE_URL) || '';
+      const base = (window.STUDIO_CONFIG && (window.STUDIO_CONFIG.API_URL || window.STUDIO_CONFIG.API_BASE_URL)) || '';
       const fullUrl = url.startsWith('http') ? url : base + url;
       const token = localStorage.getItem('studio_token');
       const headers = { 'Content-Type': 'application/json', ...opts.headers };
@@ -2409,6 +2623,122 @@ function studioApp() {
           is_lev: this.studioIsLEV,
         }),
       });
+    },
+
+    // NB2 Generate
+    async generateNB2Image() {
+      this.nb2Generating = true;
+      this.nb2GeneratedImage = null;
+      try {
+        const result = await this.api('/api/studio/generate', {
+          method: 'POST',
+          body: JSON.stringify({
+            prompt: this.studioPromptResult?.prompt || '',
+            product_type: this.studioProductType,
+            width: 1080,
+            height: 1350,
+          }),
+        });
+        this.nb2GeneratedImage = result;
+      } catch(e) {
+        console.error('Erro gerando imagem:', e);
+      }
+      this.nb2Generating = false;
+    },
+
+    // Video
+    async loadVideoStatus() {
+      this.videoStatus = await this.api('/api/video/status') || {};
+    },
+
+    async generateVideo() {
+      this.videoGenerating = true;
+      this.videoResult = null;
+      try {
+        const payload = {
+          engine: this.videoEngine,
+          prompt: this.videoPrompt,
+          aspect_ratio: this.videoAspect,
+          duration: parseInt(this.videoDuration),
+          narration_text: this.videoNarration || undefined,
+          bgm: this.videoBGM || undefined,
+        };
+        if (this.videoType === 'i2v') payload.image_path = this.videoImagePath;
+        this.videoResult = await this.api('/api/video/pipeline', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      } catch (e) {
+        this.videoResult = { errors: [e.message || 'Erro ao gerar video'], steps: [] };
+      }
+      this.videoGenerating = false;
+    },
+
+    // Publishing
+    async loadPublishStatus() {
+      this.publishStatus = await this.api('/api/publish/status') || {};
+    },
+
+    async loadApprovedPieces() {
+      const all = await this.api('/api/production/pieces?stage=approved') || [];
+      this.approvedPieces = Array.isArray(all) ? all : (all.pieces || []);
+    },
+
+    async publishPiece(piece) {
+      this.publishingPiece = piece.id;
+      try {
+        const platform = (piece.platform || 'instagram').toLowerCase().split(' ')[0];
+        await this.api('/api/publish/' + platform, {
+          method: 'POST',
+          body: JSON.stringify({
+            piece_id: piece.id,
+            scheduled_at: piece.scheduled_at || null,
+          }),
+        });
+        await this.loadApprovedPieces();
+      } catch(e) { console.error(e); }
+      this.publishingPiece = null;
+    },
+
+    // Settings
+    async loadSettings() {
+      const data = await this.api('/api/settings') || {};
+      this.settingsList = (data.settings || []).map(s => ({
+        key: s.key,
+        label: s.label || s.key,
+        description: s.description || '',
+        configured: s.configured || false,
+        placeholder: s.placeholder || '',
+        value: '',
+      }));
+    },
+
+    async saveSetting(setting) {
+      if (!setting.value) return;
+      await this.api('/api/settings', {
+        method: 'PUT',
+        body: JSON.stringify({ [setting.key]: setting.value }),
+      });
+      setting.configured = true;
+      setting.value = '';
+      await this.loadSettings();
+    },
+
+    async testConnections() {
+      this.connectionTestResult = await this.api('/api/settings/test') || {};
+    },
+
+    async updateAuth() {
+      if (!this.settingsUser || !this.settingsPass) return;
+      await this.api('/api/settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          STUDIO_USER: this.settingsUser,
+          STUDIO_PASS: this.settingsPass,
+        }),
+      });
+      this.settingsUser = '';
+      this.settingsPass = '';
     },
 
     // Compliance
@@ -2543,57 +2873,6 @@ function studioApp() {
       this.metricClicks = 0;
       this.metricSaves = 0;
       this.metricShares = 0;
-    },
-
-    // === Settings ===
-    async loadSettings() {
-      try {
-        this.settingsSaved = false;
-        this.settingsTestResults = null;
-        this.settingsData = await this.api('/api/settings');
-        // Inicializar form com valores mascarados
-        this.settingsForm = { ...(this.settingsData.values || {}) };
-      } catch (e) { console.error('Settings load error:', e); }
-    },
-
-    async saveSettings() {
-      this.settingsSaving = true;
-      this.settingsSaved = false;
-      try {
-        // Filtrar apenas campos que mudaram (sem máscara)
-        const toSave = {};
-        for (const [k, v] of Object.entries(this.settingsForm)) {
-          if (v && !v.includes('\u2022')) { // bullet = masked
-            toSave[k] = v;
-          }
-        }
-        const result = await this.api('/api/settings', {
-          method: 'PUT',
-          body: JSON.stringify({ settings: toSave }),
-        });
-        this.settingsSaved = true;
-        // Recarregar settings e stats
-        await this.loadSettings();
-        this.stats = (await this.api('/api/dashboard')).stats;
-        setTimeout(() => { this.settingsSaved = false; }, 3000);
-      } catch (e) { console.error('Settings save error:', e); }
-      this.settingsSaving = false;
-    },
-
-    async testConnections() {
-      try {
-        this.settingsTestResults = await this.api('/api/settings/test');
-      } catch (e) { console.error('Test error:', e); }
-    },
-
-    settingsGroupDefs(group) {
-      if (!this.settingsData) return [];
-      return (this.settingsData.definitions || []).filter(d => d.group === group);
-    },
-
-    settingsKeyStatus(key) {
-      if (!this.settingsData || !this.settingsData.status) return {};
-      return this.settingsData.status[key] || {};
     },
 
     formatNumber(n) {
