@@ -231,6 +231,11 @@ class ReviewItem(BaseModel):
     checklist: list[dict] = []
 
 
+class ReviewUpdate(BaseModel):
+    verdict: str = "pending"
+    comments: str = ""
+
+
 # --- Performance (Pulse) ---
 
 class PerformanceEntry(BaseModel):

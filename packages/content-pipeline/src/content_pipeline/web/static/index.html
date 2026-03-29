@@ -14,18 +14,20 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-primary: #090b10;
-  --bg-secondary: #0f1118;
-  --bg-card: #151823;
-  --bg-card-hover: #1c2030;
-  --bg-input: #121520;
-  --text-primary: #e8eaef;
-  --text-secondary: #8b8fa6;
-  --text-muted: #7a7e96;
-  --accent: #3b82f6;
-  --accent-hover: #60a5fa;
-  --accent-dim: rgba(59,130,246,0.12);
-  --accent-glow: rgba(59,130,246,0.25);
+  --bg-primary: #080a0f;
+  --bg-secondary: #0d0f16;
+  --bg-card: #12151f;
+  --bg-card-hover: #181c28;
+  --bg-input: #10131c;
+  --bg-darker: #0a0c12;
+  --text-primary: #eaecf2;
+  --text-secondary: #8890a8;
+  --text-muted: #636b85;
+  --accent: #4f8eff;
+  --accent-hover: #6ba1ff;
+  --accent-dim: rgba(79,142,255,0.10);
+  --accent-glow: rgba(79,142,255,0.20);
+  --accent-gradient: linear-gradient(135deg, #4f8eff 0%, #7c5cfc 100%);
   --green: #10b981;
   --green-bg: rgba(16,185,129,0.10);
   --amber: #f59e0b;
@@ -36,17 +38,20 @@
   --purple-bg: rgba(139,92,246,0.10);
   --cyan: #06b6d4;
   --cyan-bg: rgba(6,182,212,0.10);
-  --blue-bg: rgba(59,130,246,0.10);
-  --border: #1e2235;
-  --border-hover: #2a3050;
+  --blue-bg: rgba(79,142,255,0.08);
+  --border: #1a1e2e;
+  --border-hover: #252a3d;
   --radius: 12px;
   --radius-sm: 8px;
+  --radius-lg: 16px;
   --shadow: 0 8px 32px rgba(0,0,0,0.5);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-  --sidebar-w: 240px;
+  --shadow-card: 0 4px 16px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15);
+  --shadow-glow: 0 0 20px rgba(79,142,255,0.12);
+  --sidebar-w: 260px;
   --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
-  --bg-tertiary: #1a1d2e;
+  --bg-tertiary: #181b2a;
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -76,7 +81,7 @@ a:hover { color: var(--accent-hover); }
 .sidebar {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
-  background: linear-gradient(180deg, #0c0e15 0%, var(--bg-secondary) 100%);
+  background: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -86,59 +91,96 @@ a:hover { color: var(--accent-hover); }
 }
 
 .sidebar-brand {
-  padding: 24px 20px 20px;
+  padding: 0;
   border-bottom: 1px solid var(--border);
   text-align: center;
+  position: relative;
+}
+
+.sidebar-brand-bg {
+  position: relative;
+  padding: 24px 20px 20px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(79,142,255,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(13,15,22,0.3) 0%, transparent 100%);
 }
 
 .sidebar-brand .brand-logo {
-  height: 44px;
+  display: block;
+  height: 80px;
   width: auto;
+  max-width: 75%;
+  margin: 0 auto 14px;
   opacity: 0.95;
-  margin-bottom: 14px;
-  filter: drop-shadow(0 2px 8px rgba(59,130,246,0.15));
+  filter: drop-shadow(0 4px 16px rgba(79,142,255,0.12));
+  transition: var(--transition);
+}
+.sidebar-brand:hover .brand-logo {
+  filter: drop-shadow(0 4px 20px rgba(79,142,255,0.20));
+  transform: scale(1.02);
 }
 
 .sidebar-brand h1 {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: 800;
   letter-spacing: -0.3px;
   color: var(--text-primary);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.sidebar-brand .studio-label {
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  margin-top: 3px;
 }
 
 .sidebar-brand .version {
-  font-size: 0.62rem;
+  font-size: 0.52rem;
   color: var(--text-muted);
-  margin-top: 3px;
-  font-weight: 500;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  margin-top: 8px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  opacity: 0.5;
+}
+
+.sidebar-brand-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+  opacity: 0.2;
 }
 
 .sidebar-section {
-  padding: 16px 0 4px;
+  padding: 14px 0 2px;
 }
 
-.sidebar-section:first-of-type { padding-top: 12px; }
+.sidebar-section:first-of-type { padding-top: 10px; }
 
 .sidebar-section-title {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-secondary);
-  padding: 0 20px 8px;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  padding: 0 24px 8px;
   font-weight: 700;
-  opacity: 0.6;
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 10px 20px;
+  gap: 12px;
+  padding: 9px 24px;
   cursor: pointer;
   transition: var(--transition);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   border-left: 3px solid transparent;
   font-weight: 450;
@@ -147,7 +189,7 @@ a:hover { color: var(--accent-hover); }
 }
 
 .sidebar-item:hover {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.03);
   color: var(--text-primary);
 }
 
@@ -159,15 +201,19 @@ a:hover { color: var(--accent-hover); }
 }
 
 .sidebar-item .icon {
-  font-size: 1.05rem; width: 22px; text-align: center;
-  opacity: 0.6; transition: var(--transition);
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: var(--transition);
 }
-.sidebar-item:hover .icon { opacity: 0.85; }
-.sidebar-item.active .icon { opacity: 1; }
+.sidebar-item .icon svg { width: 16px; height: 16px; }
+.sidebar-item:hover .icon { color: var(--text-secondary); }
+.sidebar-item.active .icon { color: var(--accent); }
 
 .sidebar-badge {
   margin-left: auto;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   padding: 2px 7px;
   border-radius: 10px;
   font-weight: 700;
@@ -177,7 +223,7 @@ a:hover { color: var(--accent-hover); }
 
 .sidebar-footer {
   margin-top: auto;
-  padding: 16px 20px;
+  padding: 14px 24px;
   border-top: 1px solid var(--border);
   font-size: 0.7rem;
   color: var(--text-muted);
@@ -187,14 +233,16 @@ a:hover { color: var(--accent-hover); }
 }
 
 .preview-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: var(--amber-bg);
   color: var(--amber);
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 6px;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 
 /* === MAIN === */
@@ -205,28 +253,29 @@ a:hover { color: var(--accent-hover); }
 }
 
 .main-header {
-  padding: 16px 32px;
+  padding: 18px 36px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(15,17,24,0.95) 100%);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(180deg, rgba(13,15,22,0.98) 0%, rgba(13,15,22,0.92) 100%);
+  backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .main-header h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: -0.3px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
 }
 
 .main-header .subtitle {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 3px;
   font-weight: 400;
 }
 
@@ -248,11 +297,13 @@ a:hover { color: var(--accent-hover); }
   border-radius: var(--radius);
   padding: 18px;
   transition: var(--transition);
+  box-shadow: var(--shadow-card);
 }
 
 .stat-card:hover {
   border-color: var(--border-hover);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card), var(--shadow-glow);
+  transform: translateY(-2px);
 }
 
 .stat-card .label {
@@ -285,10 +336,12 @@ a:hover { color: var(--accent-hover); }
   padding: 20px;
   margin-bottom: 16px;
   transition: var(--transition);
+  box-shadow: var(--shadow-card);
 }
 
 .card:hover {
   border-color: var(--border-hover);
+  box-shadow: var(--shadow-card), 0 0 0 1px rgba(255,255,255,0.03);
 }
 
 .card-title {
@@ -321,8 +374,9 @@ a:hover { color: var(--accent-hover); }
 
 .btn:hover { background: var(--bg-card-hover); border-color: var(--border-hover); transform: translateY(-1px); }
 .btn:active { transform: translateY(0); }
-.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
-.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 12px var(--accent-glow); }
+.btn:disabled, .btn[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; transform: none; filter: grayscale(0.3); }
+.btn-primary { background: var(--accent-gradient); border-color: transparent; color: #fff; font-weight: 600; }
+.btn-primary:hover { box-shadow: 0 4px 20px var(--accent-glow), 0 0 40px rgba(79,142,255,0.10); }
 .btn-ab { background: linear-gradient(135deg, var(--purple), var(--accent)); color: #fff; border-color: transparent; font-weight: 600; }
 .btn-ab:hover { box-shadow: 0 4px 12px rgba(139,92,246,0.3); }
 .btn-danger { border-color: var(--red); color: var(--red); }
@@ -429,10 +483,10 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 .badge-cyan { background: var(--cyan-bg); color: var(--cyan); }
 .badge-muted { background: rgba(255,255,255,0.04); color: var(--text-muted); }
 
-.badge-salk { background: rgba(59,130,246,0.12); color: #60a5fa; }
-.badge-mendel { background: rgba(16,185,129,0.12); color: #34d399; }
-.badge-manager { background: rgba(245,158,11,0.12); color: #f59e0b; }
-.badge-dayho { background: rgba(139,92,246,0.12); color: #a78bfa; }
+.badge-salk { background: rgba(42,191,191,0.12); color: #2ABFBF; }
+.badge-mendel { background: rgba(0,188,212,0.12); color: #00BCD4; }
+.badge-manager { background: rgba(30,136,229,0.12); color: #1E88E5; }
+.badge-dayho { background: rgba(26,26,26,0.18); color: #8a8a8a; }
 
 /* === KANBAN === */
 .kanban {
@@ -649,6 +703,15 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   cursor: pointer;
   transition: var(--transition);
 }
+.cal-slot.slot-filled {
+  background: rgba(59,130,246,0.06);
+  border-color: rgba(59,130,246,0.2);
+}
+.cal-slot.slot-produced {
+  background: rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.25);
+  border-left: 3px solid var(--green);
+}
 
 .cal-slot:hover { border-color: var(--accent); background: rgba(59,130,246,0.05); }
 .cal-slot .slot-platform { font-weight: 600; }
@@ -659,6 +722,10 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 12px;
+}
+.img-grid.logos-grid {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
 }
 
 .img-thumb {
@@ -683,6 +750,310 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   font-size: 0.68rem;
   font-weight: 600;
 }
+.img-thumb .img-size {
+  position: absolute;
+  top: 6px; right: 6px;
+  background: rgba(0,0,0,0.7);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: var(--transition);
+}
+.img-thumb:hover .img-size { opacity: 1; }
+
+/* Asset search & filters */
+.asset-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.asset-toolbar .search-input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px 8px 34px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  transition: var(--transition);
+}
+.asset-toolbar .search-input:focus { border-color: var(--accent); outline: none; }
+.asset-toolbar .search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+}
+.asset-toolbar .search-wrap::before {
+  content: '\1F50D';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  opacity: 0.5;
+}
+.asset-stat {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* Category accordion */
+.asset-category {
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.asset-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+}
+.asset-category-header:hover { background: rgba(74,125,255,0.06); }
+.asset-category-header h3 {
+  font-size: 0.82rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.asset-category-header .cat-count {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: var(--bg-darker);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.asset-category-header .chevron {
+  transition: transform 0.2s;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.asset-category-header .chevron.open { transform: rotate(90deg); }
+.asset-category-body {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* Logo brand card */
+.logo-brand-section {
+  margin-bottom: 16px;
+}
+.logo-brand-section h4 {
+  font-size: 0.78rem;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+/* Image modal improvements */
+.img-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.img-modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  z-index: 10;
+}
+.img-modal-nav:hover { background: rgba(74,125,255,0.8); }
+.img-modal-nav.prev { left: 10px; }
+.img-modal-nav.next { right: 10px; }
+
+/* === UPLOAD & PRODUCT PICKER === */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--bg-card);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(74,125,255,0.06); }
+.upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-zone .upload-icon { font-size: 1.5rem; margin-bottom: 6px; }
+.upload-zone .upload-text { font-size: 0.78rem; color: var(--text-secondary); }
+.upload-zone .upload-hint { font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; }
+
+.upload-preview {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.upload-preview-item {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-darker);
+}
+.upload-preview-item img, .upload-preview-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.upload-preview-item .remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.upload-preview-item .file-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.7);
+  font-size: 0.55rem;
+  padding: 2px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Product picker */
+.product-picker {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  max-height: 220px;
+  overflow-y: auto;
+}
+.product-picker-header {
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.product-picker-header input {
+  flex: 1;
+  background: var(--bg-darker);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--text-primary);
+  font-size: 0.72rem;
+}
+.product-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.75rem;
+}
+.product-picker-item:hover { background: rgba(74,125,255,0.08); }
+.product-picker-item.selected { background: rgba(74,125,255,0.15); border-left: 3px solid var(--accent); }
+.product-picker-item img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  background: var(--bg-darker);
+  border-radius: 4px;
+  padding: 2px;
+}
+.product-picker-item .product-info {
+  flex: 1;
+  min-width: 0;
+}
+.product-picker-item .product-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.product-picker-item .product-cat {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.ref-section {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(74,125,255,0.03);
+}
+.ref-section-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ref-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.ref-tab {
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.ref-tab:hover { border-color: var(--accent); }
+.ref-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
 
 /* === PROMPT PREVIEW === */
 .prompt-box {
@@ -725,6 +1096,86 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 .chip:hover { border-color: var(--accent); background: var(--accent-dim); }
 .chip.selected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 
+/* === PREMIUM ANIMATIONS === */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes drawerSlideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.main-content > div { animation: fadeSlideIn 0.25s ease-out; }
+.modal-overlay { animation: overlayFadeIn 0.2s ease-out; }
+.modal { animation: modalFadeIn 0.25s ease-out; }
+
+/* === PREMIUM KANBAN CARDS === */
+.kanban-card { box-shadow: var(--shadow-card); }
+.kanban-card:hover { box-shadow: var(--shadow-card), var(--shadow-glow); }
+
+/* === PREMIUM SIDEBAR ACTIVE GLOW === */
+.sidebar-item.active {
+  box-shadow: inset 3px 0 12px -4px rgba(59,130,246,0.3);
+}
+
+/* === SEARCH BAR === */
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 7px 14px;
+  transition: var(--transition); max-width: 280px;
+}
+.search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.search-bar input {
+  background: none; border: none; color: var(--text-primary);
+  font-family: var(--font); font-size: 0.82rem; outline: none; width: 100%;
+}
+.search-bar .search-icon { color: var(--text-muted); font-size: 0.9rem; flex-shrink: 0; }
+
+/* === DRAWER (Piece Production Panel) === */
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px); z-index: 100;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 900px; max-width: 95vw;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+  z-index: 101; overflow-y: auto;
+  animation: drawerSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.drawer-header {
+  padding: 20px 28px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; background: var(--bg-secondary); z-index: 1;
+}
+.drawer-header h3 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.3px; }
+.drawer-body { padding: 24px 28px; }
+.drawer-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  padding: 0 28px; background: var(--bg-secondary);
+  position: sticky; top: 62px; z-index: 1;
+}
+.drawer-tab {
+  padding: 12px 20px; background: none; border: none;
+  border-bottom: 2px solid transparent; color: var(--text-secondary);
+  font-size: 0.8rem; cursor: pointer; transition: var(--transition);
+  font-family: var(--font); font-weight: 500;
+}
+.drawer-tab:hover { color: var(--text-primary); }
+.drawer-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
 /* === RESPONSIVE === */
 @media (max-width: 900px) {
   .sidebar { display: none; }
@@ -745,37 +1196,54 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   position: fixed; inset: 0; z-index: 9999;
   background: var(--bg-primary);
   display: flex; align-items: center; justify-content: center;
-  background-image: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 60%);
+  background-image:
+    radial-gradient(ellipse at 30% 20%, rgba(79,142,255,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(139,92,246,0.06) 0%, transparent 50%);
 }
 .login-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 48px 40px;
-  width: 100%; max-width: 400px;
-  box-shadow: var(--shadow);
+  background: linear-gradient(180deg, rgba(18,21,31,0.95) 0%, rgba(12,14,18,0.98) 100%);
+  border: 1px solid rgba(79,142,255,0.10);
+  border-radius: var(--radius-lg);
+  padding: 56px 48px 48px;
+  width: 100%; max-width: 440px;
+  box-shadow: 0 32px 100px rgba(0,0,0,0.65), 0 0 80px rgba(79,142,255,0.05);
   text-align: center;
 }
-.login-card h1 { font-size: 1.5rem; margin-bottom: 4px; font-weight: 700; letter-spacing: -0.5px; }
-.login-card .subtitle { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 32px; font-weight: 400; }
+.login-logo {
+  height: 72px;
+  width: auto;
+  max-width: 80%;
+  margin-bottom: 28px;
+  opacity: 0.95;
+  filter: drop-shadow(0 6px 24px rgba(79,142,255,0.15));
+}
+.login-card h1 {
+  font-size: 1.6rem; margin-bottom: 4px; font-weight: 800; letter-spacing: -0.5px;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.login-card .subtitle { color: var(--text-muted); font-size: 0.78rem; margin-bottom: 36px; font-weight: 400; letter-spacing: 0.3px; }
 .login-card input {
-  width: 100%; padding: 11px 16px; margin-bottom: 12px;
-  background: var(--bg-input); border: 1px solid var(--border);
+  width: 100%; padding: 13px 16px; margin-bottom: 12px;
+  background: var(--bg-primary); border: 1px solid var(--border);
   border-radius: var(--radius-sm); color: var(--text-primary);
-  font-size: 0.88rem; font-family: var(--font);
+  font-size: 0.85rem; font-family: var(--font);
   transition: var(--transition);
 }
 .login-card input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
 .login-card .btn-login {
-  width: 100%; padding: 11px; margin-top: 8px;
-  background: var(--accent); color: #fff; border: none;
-  border-radius: var(--radius-sm); font-size: 0.9rem;
-  cursor: pointer; font-weight: 600; font-family: var(--font);
+  width: 100%; padding: 13px; margin-top: 10px;
+  background: var(--accent-gradient); color: #fff; border: none;
+  border-radius: var(--radius-sm); font-size: 0.88rem;
+  cursor: pointer; font-weight: 700; font-family: var(--font);
   transition: var(--transition);
+  letter-spacing: 0.3px;
 }
-.login-card .btn-login:hover { background: var(--accent-hover); box-shadow: 0 4px 16px var(--accent-glow); }
+.login-card .btn-login:hover { box-shadow: 0 6px 24px rgba(79,142,255,0.3); transform: translateY(-1px); }
 .login-card .error { color: var(--red); font-size: 0.8rem; margin-top: 12px; }
-.login-card .btn-login:disabled { opacity: 0.6; cursor: wait; }
+.login-card .btn-login:disabled { opacity: 0.6; cursor: wait; transform: none; }
 
 /* === ACCESSIBILITY — Focus Visible === */
 .btn:focus-visible, .form-input:focus-visible, .form-select:focus-visible, .form-textarea:focus-visible {
@@ -835,9 +1303,28 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 }
 .loading-bar::before { content: ''; display: block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* === TOAST DISMISS === */
-.toast-container { cursor: pointer; }
+/* === TOAST NOTIFICATION === */
+.toast-notify {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  max-width: 360px;
+  width: auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toast-notify.toast-success { background: #14532d; color: #bbf7d0; border: 1px solid #22c55e; }
+.toast-notify.toast-error { background: #991b1b; color: #fecaca; border: 1px solid #dc2626; }
 
 /* === LOGOUT BUTTON === */
 .btn-logout {
@@ -1107,21 +1594,22 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <body x-data="studioApp()" x-init="init()">
 
 <!-- Toast Notification -->
-<div x-show="toastVisible" x-transition:enter="transition ease-out duration-200" x-transition:leave="transition ease-in duration-150"
-     style="position: fixed; top: 24px; right: 24px; z-index: 10000; padding: 14px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);"
-     :style="toastType === 'error' ? 'background: #dc2626; color: white;' : 'background: #16a34a; color: white;'"
-     x-text="toastMessage" x-cloak @click="toastVisible = false" class="toast-container"></div>
+<div x-show="toastVisible" x-cloak @click="toastVisible = false"
+     class="toast-notify" :class="toastType === 'error' ? 'toast-error' : 'toast-success'">
+  <span x-text="toastType === 'error' ? '✕' : '✓'" style="font-size: 1rem; flex-shrink: 0;"></span>
+  <span x-text="toastMessage"></span>
+</div>
 
 <!-- ============================================= -->
 <!-- LOGIN SCREEN -->
 <!-- ============================================= -->
 <div class="login-overlay" x-show="!authenticated" x-cloak>
   <div class="login-card">
-    <img src="https://uottkdywmxbwiogxzaqa.supabase.co/storage/v1/object/public/logos/Salk%20Medical/LogSalkMedicalPNG%20-%20W.png" alt="Salk Medical" style="height: 36px; margin-bottom: 20px; opacity: 0.9;">
+    <img src="/img/salk-logo-white.png" alt="Salk Medical" class="login-logo">
     <h1>Content Studio</h1>
-    <div class="subtitle">Plataforma de Producao de Conteudo</div>
+    <div class="subtitle">Producao Criativa de Conteudo</div>
     <form @submit.prevent="doLogin()">
-      <input type="text" x-model="loginUser" placeholder="Usuario" autocomplete="username">
+      <input type="text" x-model="loginUser" placeholder="Usuario" autocomplete="username" x-ref="loginInput" x-init="$nextTick(() => { if (!$store || !localStorage.getItem('studio_token')) $refs.loginInput?.focus() })">
       <input type="password" x-model="loginPass" placeholder="Senha" autocomplete="current-password">
       <button type="submit" class="btn-login" :disabled="loginLoading">
         <span x-show="!loginLoading">Entrar</span>
@@ -1139,82 +1627,82 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <div class="sidebar-overlay" :class="{ active: sidebarOpen }" @click="sidebarOpen = false"></div>
 <aside class="sidebar" :class="{ open: sidebarOpen }">
   <div class="sidebar-brand">
-    <img src="https://uottkdywmxbwiogxzaqa.supabase.co/storage/v1/object/public/logos/Salk%20Medical/LogSalkMedicalPNG%20-%20W.png" alt="Salk Medical" class="brand-logo">
-    <h1>Content Studio</h1>
-    <div class="version">Manager Grupo &bull; v2.0</div>
+    <div class="sidebar-brand-bg">
+      <img src="/img/salk-logo-white.png" alt="Salk Medical" class="brand-logo" onerror="this.onerror=null; this.src='https://uottkdywmxbwiogxzaqa.supabase.co/storage/v1/object/public/logos/Salk%20Medical/LogSalkMedicalPNG%20-%20W.png';">
+      <div class="brand-logo-fallback" style="display:none; font-size:1.4rem; font-weight:800; color:var(--text-primary); margin-bottom:14px; letter-spacing:-0.5px;">SALK MEDICAL</div>
+      <h1>Content Studio</h1>
+      <div class="studio-label">Producao Criativa</div>
+      <div class="version">Manager Grupo</div>
+    </div>
+    <div class="sidebar-brand-divider"></div>
   </div>
 
   <div class="sidebar-section">
-    <div class="sidebar-section-title">Principal</div>
+    <div class="sidebar-section-title">Producao</div>
     <div class="sidebar-item" :class="{ active: tab === 'dashboard' }" @click="tab='dashboard'; sidebarOpen=false">
-      <span class="icon">&#9632;</span> Painel
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.9"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.3"/></svg></span> Painel
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'board' }" @click="tab='board'; sidebarOpen=false">
-      <span class="icon">&#9638;</span> Pecas em Producao
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="4" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="6" y="4" width="4" height="10" rx="1" fill="currentColor" opacity="0.5"/><rect x="11" y="1" width="4" height="13" rx="1" fill="currentColor" opacity="0.3"/></svg></span> Board
       <span class="sidebar-badge badge-blue" x-show="stats.pieces_in_production > 0" x-text="stats.pieces_in_production"></span>
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'calendar' }" @click="tab='calendar'; sidebarOpen=false">
-      <span class="icon">&#9783;</span> Planejar Semana
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="1" x2="5" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="11" y1="1" x2="11" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> Calendario
     </div>
   </div>
 
   <div class="sidebar-section">
-    <div class="sidebar-section-title">Criar Conteudo</div>
+    <div class="sidebar-section-title">Criar</div>
     <div class="sidebar-item" :class="{ active: tab === 'copy' }" @click="tab='copy'; sidebarOpen=false">
-      <span class="icon">&#9998;</span> Escrever Textos
-    </div>
-    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'; sidebarOpen=false">
-      <span class="icon">&#9881;</span> Fichas de Produto
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4" fill="none"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="11" x2="9" y2="11" stroke="currentColor" stroke-width="1.2"/></svg></span> Textos
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'studio' }" @click="tab='studio'; sidebarOpen=false">
-      <span class="icon">&#10070;</span> Gerar Imagens
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" opacity="0.7"/><path d="M1 12l4-4 2.5 2.5L11 7l4 5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/></svg></span> Imagens
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'video' }" @click="tab='video'; sidebarOpen=false">
-      <span class="icon">&#9654;</span> Criar Video
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M11 6l4-2v8l-4-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/></svg></span> Videos
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'editor' }" @click="tab='editor'; sidebarOpen=false">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="4" y1="12" x2="4" y2="15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="8" y1="12" x2="8" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="12" y1="12" x2="12" y2="15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="8" r="1" fill="currentColor" opacity="0.6"/><circle cx="8" cy="8" r="1" fill="currentColor" opacity="0.6"/><circle cx="11" cy="8" r="1" fill="currentColor" opacity="0.6"/></svg></span> Editor
     </div>
   </div>
 
   <div class="sidebar-section">
-    <div class="sidebar-section-title">Qualidade</div>
-    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'; sidebarOpen=false">
-      <span class="icon">&#9888;</span> Verificar Regras
-    </div>
+    <div class="sidebar-section-title">Gerenciar</div>
     <div class="sidebar-item" :class="{ active: tab === 'review' }" @click="tab='review'; sidebarOpen=false">
-      <span class="icon">&#10003;</span> Aprovar Conteudo
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span> Aprovar
       <span class="sidebar-badge badge-amber" x-show="pendingReviews > 0" x-text="pendingReviews"></span>
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'publish' }" @click="tab='publish'; sidebarOpen=false">
-      <span class="icon">&#9992;</span> Publicar
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="rotate(180 8 8)"/><path d="M2 12v2h12v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></span> Publicar
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'; sidebarOpen=false">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="1,12 5,7 9,9 15,3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="15" cy="3" r="1.5" fill="currentColor" opacity="0.6"/></svg></span> Resultados
     </div>
   </div>
 
-  <div class="sidebar-section">
-    <div class="sidebar-section-title">Consultar</div>
+  <div class="sidebar-section" style="border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px;">
+    <div class="sidebar-section-title">Recursos</div>
     <div class="sidebar-item" :class="{ active: tab === 'assets' }" @click="tab='assets'; sidebarOpen=false">
-      <span class="icon">&#9733;</span> Biblioteca
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Biblioteca
+    </div>
+    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'; sidebarOpen=false">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1" opacity="0.5"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1" opacity="0.5"/><line x1="5" y1="11" x2="9" y2="11" stroke="currentColor" stroke-width="1" opacity="0.5"/></svg></span> Fichas
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'claims' }" @click="tab='claims'; sidebarOpen=false">
-      <span class="icon">&#9875;</span> Argumentos de Venda
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span> Argumentos
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" @click="tab='hashtags'; sidebarOpen=false">
-      <span class="icon">#</span> Hashtags
+      <span class="icon" style="font-weight:700; font-size:0.85rem;">#</span> Hashtags
     </div>
     <div class="sidebar-item" :class="{ active: tab === 'personas' }" @click="tab='personas'; sidebarOpen=false">
-      <span class="icon">&#9673;</span> Perfis de Cliente
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M2 15c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Personas
     </div>
-  </div>
-
-  <div class="sidebar-section">
-    <div class="sidebar-section-title">Resultados</div>
-    <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'; sidebarOpen=false">
-      <span class="icon">&#9650;</span> Desempenho
+    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'; sidebarOpen=false">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Regras
     </div>
-  </div>
-
-  <div class="sidebar-section">
-    <div class="sidebar-section-title">Sistema</div>
     <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'; sidebarOpen=false">
-      <span class="icon">&#9881;</span> Configuracoes
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6l1.4 1.4M13 3l-1.4 1.4M4.4 11.6L3 13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Config
     </div>
   </div>
 
@@ -1224,7 +1712,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <span class="preview-badge">PREVIEW</span>
       </template>
       <template x-if="!stats.preview_mode">
-        <span class="badge badge-green">PRODUCAO</span>
+        <span class="badge badge-green">LIVE</span>
       </template>
     </div>
     <button class="btn-logout" @click="logout()">Sair</button>
@@ -1245,10 +1733,14 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <div class="subtitle" x-text="tabSubtitles[tab]"></div>
     </div>
   </div>
-  <div class="btn-group">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <div class="search-bar" x-show="['board','review','claims','assets','vdp'].includes(tab)">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" x-model="globalSearch" placeholder="Buscar pecas, produtos...">
+    </div>
     <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'">+ Nova Peca</button>
     <button class="btn btn-primary" @click="showNewVDP = true" x-show="tab === 'vdp'">+ Nova Ficha</button>
-    <button class="btn" @click="refreshData()">Atualizar</button>
+    <button class="btn" @click="refreshData()">&#8635;</button>
   </div>
 </div>
 
@@ -1270,11 +1762,11 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
     <div style="display: flex; gap: 8px;">
       <button class="btn btn-primary" @click="showQuickProduce = true" :disabled="quickProducing">
-        <span x-show="!quickProducing">&#9889; Producao Express</span>
+        <span x-show="!quickProducing">&#9889; Criar Peca Automatica</span>
         <span x-show="quickProducing">Produzindo...</span>
       </button>
       <button class="btn btn-ab" @click="showABTest = true" :disabled="abTestRunning">
-        <span x-show="!abTestRunning">&#9878; Teste A/B</span>
+        <span x-show="!abTestRunning">&#9878; Gerar Variacoes</span>
         <span x-show="abTestRunning">Gerando...</span>
       </button>
     </div>
@@ -1300,7 +1792,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <div class="kpi-icon" style="background: var(--blue-bg); color: var(--accent);">&#9638;</div>
       <div class="kpi-data">
         <div class="kpi-value" x-text="pieces.length">0</div>
-        <div class="kpi-label">Total Pecas</div>
+        <div class="kpi-label">Total de Pecas</div>
       </div>
     </div>
     <div class="kpi-card">
@@ -1314,7 +1806,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <div class="kpi-icon" style="background: var(--purple-bg); color: var(--purple);">&#9783;</div>
       <div class="kpi-data">
         <div class="kpi-value" x-text="stats.total_vdps || 0">0</div>
-        <div class="kpi-label">Fichas VDP</div>
+        <div class="kpi-label">Fichas de Produto</div>
       </div>
     </div>
     <div class="kpi-card">
@@ -1342,8 +1834,8 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <button class="action-btn" @click="tab='copy'; sidebarOpen=false">
           <span class="action-icon" style="background: var(--green-bg); color: var(--green);">&#9998;</span>
           <div class="action-text">
-            <div class="action-title">Escrever Copy</div>
-            <div class="action-desc">Gerar textos para redes sociais</div>
+            <div class="action-title">Escrever Textos</div>
+            <div class="action-desc">Crie textos para redes sociais com IA</div>
           </div>
           <span class="action-arrow">&#8250;</span>
         </button>
@@ -1351,7 +1843,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <span class="action-icon" style="background: var(--purple-bg); color: var(--purple);">+</span>
           <div class="action-text">
             <div class="action-title">Nova Peca Manual</div>
-            <div class="action-desc">Criar peca com configuracao personalizada</div>
+            <div class="action-desc">Crie uma peca com configuracao personalizada</div>
           </div>
           <span class="action-arrow">&#8250;</span>
         </button>
@@ -1388,7 +1880,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <thead><tr><th>Titulo</th><th>Marca</th><th>Estagio</th><th>Plataforma</th><th>Criada em</th></tr></thead>
         <tbody>
           <template x-for="p in pieces.slice(0, 10)">
-            <tr style="cursor: pointer;" @click="selectedPiece = p; showPieceDetail = true; tab = 'board';">
+            <tr style="cursor: pointer;" @click="selectedPiece = p; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board';">
               <td x-text="p.title || p.id"></td>
               <td><span class="badge" :class="'badge-' + p.brand" x-text="p.brand"></span></td>
               <td><span class="badge" :style="'background:' + stageColors[p.stage] + '22; color:' + stageColors[p.stage]" x-text="stageLabels[p.stage]"></span></td>
@@ -1438,8 +1930,9 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <span class="count" x-text="piecesInStage(stage).length"></span>
         </div>
         <div class="kanban-body">
+          <div x-show="piecesInStage(stage).length === 0" style="text-align: center; padding: 20px 8px; color: var(--text-muted); font-size: 0.75rem;">Nenhuma peca</div>
           <template x-for="piece in piecesInStage(stage)" :key="piece.id">
-            <div class="kanban-card" @click="selectedPiece = piece; showPieceDetail = true">
+            <div class="kanban-card" @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true">
               <div class="kc-title" x-text="piece.title || piece.id"></div>
               <div class="kc-meta">
                 <span class="badge" :class="'badge-' + piece.brand" x-text="piece.brand"></span>
@@ -1471,7 +1964,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <option value="dayho">Dayho</option>
     </select>
     <button class="btn" @click="loadCalendar()">Carregar</button>
-    <button class="btn btn-primary" @click="generateCalendar(); setTimeout(() => autoFillCalendar(), 500)">Nova Semana</button>
+    <button class="btn btn-primary" @click="await generateCalendar(); await autoFillCalendar()">Nova Semana</button>
     <button class="btn btn-success" @click="saveCalendar()" x-show="calSlots.length > 0">Salvar Ajustes</button>
     <button class="btn" style="background: var(--green); color: #000; font-weight: 600;" @click="produceWeek()" x-show="calSlots.length > 0" :disabled="weekProducing">
       <span x-show="!weekProducing">Gerar Conteudo da Semana</span>
@@ -1506,11 +1999,11 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <div class="cal-day-header" x-text="day"></div>
           <div class="cal-day-body">
             <template x-for="slot in calSlots.filter(s => s.day === day || s.day === day.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))">
-              <div class="cal-slot" @click="selectedCalSlot = slot; showCalSlotModal = true" :style="slot.piece_id ? 'border-left: 2px solid var(--green)' : ''">
+              <div class="cal-slot" :class="{ 'slot-produced': slot.piece_id, 'slot-filled': !slot.piece_id && (slot.product || slot.pillar) }" @click="selectedCalSlot = slot; showCalSlotModal = true">
                 <div class="slot-platform" x-text="slot.platform"></div>
                 <div class="slot-time" x-text="(slot.time || '') + ' ' + (slot.format || '')"></div>
                 <div x-show="slot.pillar" style="font-size: 0.65rem; color: var(--purple); text-transform: uppercase;" x-text="slot.pillar"></div>
-                <div x-show="slot.product" style="font-size: 0.68rem; color: var(--accent); font-weight: 600;" x-text="slot.product.toUpperCase()"></div>
+                <div x-show="slot.product" style="font-size: 0.68rem; color: var(--accent); font-weight: 600;" x-text="(slot.product || '').toUpperCase()"></div>
                 <div x-show="slot.piece_id" style="font-size: 0.6rem; color: var(--green);">&#10003; Produzido</div>
               </div>
             </template>
@@ -1602,15 +2095,15 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <span style="font-size: 0.7rem; color: var(--text-muted);" x-text="copyCharCount + ' caracteres'"></span>
         </div>
         <div class="form-group">
-          <label>Headline</label>
+          <label style="display: flex; justify-content: space-between; align-items: center;">Headline <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 400;" x-show="copyHeadline.length > 0" x-text="copyHeadline.length + ' chars'"></span></label>
           <input class="form-input" x-model="copyHeadline" placeholder="Headline da peca...">
         </div>
         <div class="form-group">
-          <label>Texto Principal</label>
+          <label style="display: flex; justify-content: space-between; align-items: center;">Texto Principal <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 400;" x-show="copyText.length > 0" x-text="copyText.length + ' chars'"></span></label>
           <textarea class="form-textarea" style="min-height: 180px; font-family: var(--font);" x-model="copyText" placeholder="A copy aparecera aqui apos gerar com IA, ou escreva manualmente..." @input="copyCharCount = copyText.length"></textarea>
         </div>
         <div class="form-group">
-          <label>CTA (Call-to-Action)</label>
+          <label style="display: flex; justify-content: space-between; align-items: center;">CTA (Call-to-Action) <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 400;" x-show="copyCTA.length > 0" x-text="copyCTA.length + ' chars'"></span></label>
           <input class="form-input" x-model="copyCTA" placeholder="Ex: Solicite uma demonstracao gratuita">
         </div>
         <div class="btn-group" style="margin-top: 8px;">
@@ -1830,7 +2323,63 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <div class="form-group">
           <label><input type="checkbox" x-model="studioIsLEV"> Produto LEV (anti-dispersao)</label>
         </div>
-        <button class="btn btn-primary" @click="previewPrompt()">Preview Prompt</button>
+
+        <!-- Reference: Product PNG + Upload -->
+        <div class="ref-section">
+          <div class="ref-section-title">&#128206; Arquivos de Referencia</div>
+          <div class="ref-tabs">
+            <button class="ref-tab" :class="{ active: studioRefTab === 'product' }" @click="studioRefTab = 'product'">Produto PNG</button>
+            <button class="ref-tab" :class="{ active: studioRefTab === 'upload' }" @click="studioRefTab = 'upload'">Upload</button>
+          </div>
+
+          <!-- Product Picker -->
+          <div x-show="studioRefTab === 'product'">
+            <div class="product-picker">
+              <div class="product-picker-header">
+                <input type="text" placeholder="Buscar produto..." x-model="refProductSearch">
+              </div>
+              <template x-for="cat in refFilteredCategories('studio')" :key="'sp-'+cat">
+                <div>
+                  <div style="padding: 4px 12px; font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; background: var(--bg-darker);" x-text="cat"></div>
+                  <template x-for="img in refFilteredProducts(cat)" :key="img.path">
+                    <div class="product-picker-item" :class="{ selected: studioRefProduct?.path === img.path }" @click="studioRefProduct = (studioRefProduct?.path === img.path ? null : img)">
+                      <img :src="img.url" :alt="img.name">
+                      <div class="product-info">
+                        <div class="product-name" x-text="img.name"></div>
+                        <div class="product-cat" x-text="Math.round(img.size_kb) + ' KB'"></div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+            <div style="margin-top: 8px; font-size: 0.7rem; color: var(--accent);" x-show="studioRefProduct">
+              Selecionado: <strong x-text="studioRefProduct?.name"></strong>
+              <button style="background:none; border:none; color:var(--red); cursor:pointer; font-size:0.7rem; margin-left:6px;" @click="studioRefProduct = null">&times; Remover</button>
+            </div>
+          </div>
+
+          <!-- Upload Zone -->
+          <div x-show="studioRefTab === 'upload'">
+            <div class="upload-zone" :class="{ dragover: studioUploadDrag }" @dragover.prevent="studioUploadDrag = true" @dragleave="studioUploadDrag = false" @drop.prevent="studioUploadDrag = false; handleRefUpload($event.dataTransfer.files, 'studio')">
+              <input type="file" accept="image/*" multiple @change="handleRefUpload($event.target.files, 'studio')">
+              <div class="upload-icon">&#128228;</div>
+              <div class="upload-text">Arraste imagens ou clique para selecionar</div>
+              <div class="upload-hint">PNG, JPG, WebP — max 50MB cada</div>
+            </div>
+            <div class="upload-preview" x-show="studioRefUploads.length > 0">
+              <template x-for="(f, idx) in studioRefUploads" :key="'su-'+idx">
+                <div class="upload-preview-item">
+                  <img :src="f.url" :alt="f.name">
+                  <button class="remove-btn" @click="studioRefUploads.splice(idx, 1)">&times;</button>
+                  <div class="file-name" x-text="f.name"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top: 12px;" @click="previewPrompt()">Preview Prompt</button>
       </div>
     </div>
     <div>
@@ -1847,6 +2396,26 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           </button>
         </div>
       </div>
+
+      <!-- Referências selecionadas (resumo visual) -->
+      <div class="card" x-show="studioRefProduct || studioRefUploads.length > 0">
+        <div class="card-title">Arquivos de Referencia Anexados</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <template x-if="studioRefProduct">
+            <div class="upload-preview-item" style="width: 70px; height: 70px;">
+              <img :src="studioRefProduct.url" :alt="studioRefProduct.name" style="object-fit: contain; padding: 4px;">
+              <div class="file-name" x-text="studioRefProduct.name"></div>
+            </div>
+          </template>
+          <template x-for="f in studioRefUploads">
+            <div class="upload-preview-item" style="width: 70px; height: 70px;">
+              <img :src="f.url" :alt="f.name">
+              <div class="file-name" x-text="f.name"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title">Regras de Imagem</div>
         <ul style="font-size: 0.8rem; color: var(--text-secondary); list-style: none;">
@@ -2034,37 +2603,89 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- ===================================================== -->
 <div x-show="tab === 'assets'">
   <div class="tabs">
-    <button class="tab-btn" :class="{ active: assetTab === 'products' }" @click="assetTab = 'products'">Produtos</button>
-    <button class="tab-btn" :class="{ active: assetTab === 'logos' }" @click="assetTab = 'logos'">Logos</button>
+    <button class="tab-btn" :class="{ active: assetTab === 'products' }" @click="assetTab = 'products'">
+      Produtos <span class="badge badge-blue" style="font-size:0.6rem; margin-left:4px;" x-text="assetTotalProducts()"></span>
+    </button>
+    <button class="tab-btn" :class="{ active: assetTab === 'logos' }" @click="assetTab = 'logos'">
+      Logos <span class="badge badge-purple" style="font-size:0.6rem; margin-left:4px;" x-text="logos.length"></span>
+    </button>
   </div>
 
   <!-- Products -->
   <div x-show="assetTab === 'products'">
-    <template x-for="(items, cat) in productImages">
-      <div style="margin-bottom: 20px;">
-        <h3 style="font-size: 0.9rem; margin-bottom: 10px; text-transform: capitalize;" x-text="cat + ' (' + items.length + ')'"></h3>
-        <div class="img-grid">
-          <template x-for="img in items">
-            <div class="img-thumb" @click="selectedImage = img; showImageModal = true">
-              <img :src="img.url" :alt="img.name" loading="lazy">
-              <div class="img-label" x-text="img.name"></div>
-            </div>
-          </template>
+    <!-- Toolbar: search + filter + stats -->
+    <div class="asset-toolbar">
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Buscar imagem por nome..." x-model="assetSearch" style="width:100%;">
+      </div>
+      <select class="form-select" style="width: 180px; font-size: 0.78rem;" x-model="assetCategoryFilter">
+        <option value="">Todas Categorias</option>
+        <template x-for="cat in Object.keys(productImages).sort()">
+          <option :value="cat" x-text="cat"></option>
+        </template>
+      </select>
+      <div style="display:flex; gap:6px; margin-left:auto;">
+        <button class="btn btn-sm" @click="assetExpandAll = !assetExpandAll; Object.keys(assetCatOpen).forEach(k => assetCatOpen[k] = assetExpandAll)"
+                x-text="assetExpandAll ? 'Recolher Tudo' : 'Expandir Tudo'" style="font-size:0.72rem;"></button>
+      </div>
+      <div class="asset-stat" x-text="assetFilteredCount() + ' imagens'"></div>
+    </div>
+
+    <!-- Categories (accordion) -->
+    <template x-for="cat in assetFilteredCategories()" :key="cat">
+      <div class="asset-category">
+        <div class="asset-category-header" @click="assetCatOpen[cat] = !assetCatOpen[cat]">
+          <h3>
+            <span class="chevron" :class="{ open: assetCatOpen[cat] }">&#9654;</span>
+            <span x-text="cat"></span>
+            <span class="cat-count" x-text="assetFilteredItems(cat).length + ' img'"></span>
+          </h3>
+          <span style="font-size:0.68rem; color:var(--text-muted);" x-text="assetCatSize(cat)"></span>
         </div>
+        <div class="asset-category-body" x-show="assetCatOpen[cat]" x-transition>
+          <div class="img-grid">
+            <template x-for="img in assetFilteredItems(cat)" :key="img.path">
+              <div class="img-thumb" @click="openAssetModal(img, cat)">
+                <img :src="img.url" :alt="img.name" loading="lazy">
+                <div class="img-size" x-text="img.size_kb > 1024 ? (img.size_kb/1024).toFixed(1)+'MB' : Math.round(img.size_kb)+'KB'"></div>
+                <div class="img-label" x-text="img.name"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="assetFilteredCategories().length === 0">
+      <div class="empty-state">
+        <div class="icon">&#128247;</div>
+        <p>Nenhuma imagem encontrada para "<span x-text="assetSearch"></span>"</p>
       </div>
     </template>
   </div>
 
   <!-- Logos -->
   <div x-show="assetTab === 'logos'">
-    <div class="img-grid">
-      <template x-for="logo in logos">
-        <div class="img-thumb" @click="selectedImage = logo; showImageModal = true">
-          <img :src="logo.url" :alt="logo.name" loading="lazy" style="object-fit: contain; padding: 12px;">
-          <div class="img-label" x-text="logo.name"></div>
-        </div>
-      </template>
+    <div class="asset-toolbar">
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Buscar logo..." x-model="logoSearch" style="width:100%;">
+      </div>
     </div>
+
+    <template x-for="brand in logoGroupedBrands()" :key="brand">
+      <div class="logo-brand-section">
+        <h4 x-text="brand + ' (' + logoFilteredByBrand(brand).length + ')'"></h4>
+        <div class="img-grid logos-grid">
+          <template x-for="logo in logoFilteredByBrand(brand)" :key="logo.path">
+            <div class="img-thumb" @click="openAssetModal(logo, brand)" style="background: var(--bg-darker);">
+              <img :src="logo.url" :alt="logo.name" loading="lazy" style="object-fit: contain; padding: 14px;">
+              <div class="img-size" x-text="Math.round(logo.size_kb)+'KB'"></div>
+              <div class="img-label" x-text="logo.name"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
   </div>
 </div>
 
@@ -2103,7 +2724,8 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- TAB: HASHTAGS -->
 <!-- ===================================================== -->
 <div x-show="tab === 'hashtags'">
-  <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+  <!-- Filtros -->
+  <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
     <select class="form-select" style="width: 150px;" x-model="hashtagBrand" @change="loadHashtags()">
       <option value="salk">Salk</option>
       <option value="mendel">Mendel</option>
@@ -2115,43 +2737,71 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <option value="linkedin">LinkedIn</option>
       <option value="facebook">Facebook</option>
     </select>
-    <button class="btn" @click="copySelectedHashtags()">Copiar Selecionadas</button>
+    <span style="font-size: 0.7rem; padding: 3px 10px; border-radius: 12px;"
+          :style="selectedHashtags.length >= hashtagMaxForPlatform() ? 'background: var(--red-bg); color: var(--red);' : 'color: var(--text-muted);'">
+      <span x-text="selectedHashtags.length"></span>/<span x-text="hashtagMaxForPlatform()"></span> hashtags
+    </span>
   </div>
 
-  <div class="form-row">
-    <div>
-      <div class="card">
-        <div class="card-title">Core (sempre usar)</div>
-        <div>
-          <template x-for="h in hashtagData.core || []">
-            <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h"></span>
-          </template>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Produto (rotacionar)</div>
-        <div>
-          <template x-for="h in hashtagData.product || []">
-            <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h"></span>
-          </template>
-        </div>
+  <!-- Selecionadas (topo, destaque) -->
+  <div class="card" style="margin-bottom: 16px; border: 1px solid var(--accent);" x-show="selectedHashtags.length > 0">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div class="card-title" style="margin: 0;">Selecionadas (<span x-text="selectedHashtags.length"></span>)</div>
+      <div style="display: flex; gap: 6px;">
+        <button class="btn" style="font-size: 0.75rem; padding: 4px 10px;" @click="selectedHashtags = []">Limpar</button>
+        <button class="btn btn-primary" style="font-size: 0.75rem; padding: 4px 10px;" @click="copySelectedHashtags()">Copiar</button>
       </div>
     </div>
-    <div>
-      <div class="card">
-        <div class="card-title">Nicho (complementar)</div>
-        <div>
-          <template x-for="h in hashtagData.niche || []">
-            <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h"></span>
-          </template>
-        </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+      <template x-for="(h, idx) in selectedHashtags" :key="'sel-'+idx">
+        <span class="chip selected" style="display: inline-flex; align-items: center; gap: 4px;">
+          <span x-text="h"></span>
+          <span @click.stop="selectedHashtags.splice(idx, 1)" style="cursor: pointer; font-size: 0.7rem; opacity: 0.7; margin-left: 2px;">&times;</span>
+        </span>
+      </template>
+    </div>
+    <div style="margin-top: 8px; padding: 6px 10px; background: var(--bg-card); border-radius: 6px; font-size: 0.75rem; color: var(--text-secondary); font-family: monospace; word-break: break-all;" x-text="selectedHashtags.join(' ')"></div>
+  </div>
+
+  <!-- Adicionar customizada -->
+  <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+    <input class="form-input" style="flex: 1; max-width: 250px; font-size: 0.8rem;" x-model="customHashtag" placeholder="Digite uma hashtag customizada..." @keydown.enter="addCustomHashtag()">
+    <button class="btn" @click="addCustomHashtag()" style="white-space: nowrap; font-size: 0.8rem;">+ Adicionar</button>
+  </div>
+
+  <!-- Banco de hashtags -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+    <div class="card">
+      <div class="card-title">Core <span style="font-size: 0.7rem; color: var(--text-muted);">(sempre usar)</span></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <template x-for="h in hashtagData.core || []">
+          <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h" style="font-size: 0.78rem;"></span>
+        </template>
+        <template x-if="!(hashtagData.core || []).length">
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Nenhuma hashtag core</span>
+        </template>
       </div>
-      <div class="card">
-        <div class="card-title">Selecionadas (<span x-text="selectedHashtags.length"></span>)</div>
-        <div class="prompt-box" style="min-height: 60px; font-size: 0.8rem;" x-text="selectedHashtags.join(' ')"></div>
-        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 6px;">
-          Limite: Instagram max 11 | LinkedIn max 5 | Facebook max 3
-        </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Produto <span style="font-size: 0.7rem; color: var(--text-muted);">(rotacionar)</span></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <template x-for="h in hashtagData.product || []">
+          <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h" style="font-size: 0.78rem;"></span>
+        </template>
+        <template x-if="!(hashtagData.product || []).length">
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Nenhuma hashtag produto</span>
+        </template>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Nicho <span style="font-size: 0.7rem; color: var(--text-muted);">(complementar)</span></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <template x-for="h in hashtagData.niche || []">
+          <span class="chip" :class="{ selected: selectedHashtags.includes(h) }" @click="toggleHashtag(h)" x-text="h" style="font-size: 0.78rem;"></span>
+        </template>
+        <template x-if="!(hashtagData.niche || []).length">
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Nenhuma hashtag nicho</span>
+        </template>
       </div>
     </div>
   </div>
@@ -2161,6 +2811,10 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- TAB: PERSONAS -->
 <!-- ===================================================== -->
 <div x-show="tab === 'personas'">
+  <div x-show="personas.length === 0" class="empty-state">
+    <div class="icon">&#128100;</div>
+    <p>Nenhuma persona carregada. Verifique o arquivo de buyer-personas nos dados do squad.</p>
+  </div>
   <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
     <template x-for="persona in personas">
       <div class="card">
@@ -2261,32 +2915,36 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <div class="form-row-3">
       <div class="form-group">
         <label>Impressoes</label>
-        <input class="form-input" type="number" x-model.number="metricImpressions">
+        <input class="form-input" type="number" x-model.number="metricImpressions" min="0">
       </div>
       <div class="form-group">
         <label>Alcance</label>
-        <input class="form-input" type="number" x-model.number="metricReach">
+        <input class="form-input" type="number" x-model.number="metricReach" min="0">
       </div>
       <div class="form-group">
         <label>Engajamento</label>
-        <input class="form-input" type="number" x-model.number="metricEngagement">
+        <input class="form-input" type="number" x-model.number="metricEngagement" min="0">
       </div>
     </div>
     <div class="form-row-3">
       <div class="form-group">
         <label>Clicks</label>
-        <input class="form-input" type="number" x-model.number="metricClicks">
+        <input class="form-input" type="number" x-model.number="metricClicks" min="0">
       </div>
       <div class="form-group">
         <label>Saves</label>
-        <input class="form-input" type="number" x-model.number="metricSaves">
+        <input class="form-input" type="number" x-model.number="metricSaves" min="0">
       </div>
       <div class="form-group">
         <label>Shares</label>
-        <input class="form-input" type="number" x-model.number="metricShares">
+        <input class="form-input" type="number" x-model.number="metricShares" min="0">
       </div>
     </div>
     <button class="btn btn-primary" @click="saveMetric()">Salvar Metrica</button>
+  </div>
+
+  <div x-show="metrics.length === 0" class="card" style="text-align: center; color: var(--text-muted); padding: 24px;">
+    Nenhuma metrica registrada ainda. Publique pecas e registre os resultados acima.
   </div>
 
   <!-- Metrics Table -->
@@ -2300,7 +2958,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
             <tr>
               <td x-text="m.piece_id"></td>
               <td x-text="m.platform"></td>
-              <td x-text="m.published_at"></td>
+              <td x-text="fmtDate(m.published_at)"></td>
               <td x-text="formatNumber(m.impressions)"></td>
               <td x-text="formatNumber(m.reach)"></td>
               <td x-text="formatNumber(m.engagement)"></td>
@@ -2318,151 +2976,236 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- TAB: CRIAR VIDEO -->
 <!-- ===================================================== -->
 <div x-show="tab === 'video'">
-  <!-- Video Status -->
-  <div class="card" style="margin-bottom: 16px;">
-    <div class="card-title">Status dos Servicos de Video</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
-      <div class="stat-card">
-        <div class="label">Veo 3 (Google)</div>
-        <div class="value" :style="videoStatus.veo3_configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="videoStatus.veo3_configured ? 'Ativo' : 'Nao configurado'"></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Kling 3.0</div>
-        <div class="value" :style="videoStatus.kling_configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="videoStatus.kling_configured ? 'Ativo' : 'Nao configurado'"></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Narracao (ElevenLabs)</div>
-        <div class="value" :style="videoStatus.elevenlabs_configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="videoStatus.elevenlabs_configured ? 'Ativo' : 'Nao configurado'"></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Montagem (FFmpeg)</div>
-        <div class="value" :style="videoStatus.ffmpeg_available ? 'color: var(--green)' : 'color: var(--red)'" x-text="videoStatus.ffmpeg_available ? 'Disponivel' : 'Indisponivel'"></div>
-      </div>
+
+  <!-- Header com status inline -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+    <div>
+      <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">Video Pipeline</div>
+      <div style="font-size: 0.82rem; color: var(--text-secondary);">Gere clips com IA e adicione narracao profissional</div>
+    </div>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <template x-for="eng in [
+        {key: 'veo3_configured', label: 'Veo 3'},
+        {key: 'kling_configured', label: 'Kling'},
+        {key: 'minimax_configured', label: 'Minimax'},
+        {key: 'grok_configured', label: 'Grok'},
+        {key: 'pika_configured', label: 'Pika'},
+        {key: 'runway_configured', label: 'Runway'},
+        {key: 'elevenlabs_configured', label: 'Narracao'},
+        {key: 'ffmpeg_available', label: 'FFmpeg'},
+      ]">
+        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.68rem; font-weight: 600;"
+              :style="videoStatus[eng.key] ? 'background: rgba(16,185,129,0.1); color: var(--green)' : 'background: rgba(255,255,255,0.04); color: var(--text-muted)'">
+          <span style="width: 6px; height: 6px; border-radius: 50%;" :style="videoStatus[eng.key] ? 'background: var(--green)' : 'background: var(--text-muted)'"></span>
+          <span x-text="eng.label"></span>
+        </span>
+      </template>
     </div>
   </div>
 
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-    <!-- Left: Video Generation -->
-    <div class="card">
-      <div class="card-title">Gerar Clip de Video</div>
-      <div class="form-group">
-        <label class="form-label">Motor de Video</label>
-        <select class="form-select" x-model="videoEngine">
-          <option value="veo3">Google Veo 3</option>
-          <option value="kling">Kling 3.0 Pro</option>
-        </select>
+  <div style="display: grid; grid-template-columns: 1fr 380px; gap: 16px;">
+
+    <!-- Esquerda: Configuracao principal -->
+    <div>
+      <!-- Engine + Tipo em linha -->
+      <div class="card">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <span style="font-weight: 700; font-size: 0.95rem;">Gerar Clip</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Motor</label>
+            <select class="form-select" x-model="videoEngine">
+              <option value="veo3">Veo 3 (Google)</option>
+              <option value="kling">Kling 3.0 Pro</option>
+              <option value="minimax">Minimax / Hailuo</option>
+              <option value="grok">Grok (xAI)</option>
+              <option value="pika">Pika Labs</option>
+              <option value="runway">Runway Gen-3</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Origem</label>
+            <select class="form-select" x-model="videoType">
+              <option value="t2v">Texto → Video</option>
+              <option value="i2v">Imagem → Video</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Formato</label>
+            <select class="form-select" x-model="videoAspect">
+              <option value="9:16">9:16 Reels</option>
+              <option value="16:9">16:9 YouTube</option>
+              <option value="1:1">1:1 Feed</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Duracao</label>
+            <select class="form-select" x-model="videoDuration">
+              <option value="5">5 seg</option>
+              <option value="10">10 seg</option>
+            </select>
+          </div>
+        </div>
+      <!-- Imagem base (I2V) -->
+      <div x-show="videoType === 'i2v'" style="margin-bottom: 16px;">
+        <div class="ref-section" style="margin-top: 0;">
+          <div class="ref-section-title" style="font-size: 0.8rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Imagem Base
+          </div>
+          <div class="ref-tabs">
+            <button class="ref-tab" :class="{ active: videoRefTab === 'product' }" @click="videoRefTab = 'product'">Produto PNG</button>
+            <button class="ref-tab" :class="{ active: videoRefTab === 'upload' }" @click="videoRefTab = 'upload'">Upload</button>
+            <button class="ref-tab" :class="{ active: videoRefTab === 'path' }" @click="videoRefTab = 'path'">Caminho</button>
+          </div>
+          <div x-show="videoRefTab === 'product'">
+            <div class="product-picker">
+              <div class="product-picker-header">
+                <input type="text" placeholder="Buscar produto..." x-model="refProductSearchVideo">
+              </div>
+              <template x-for="cat in refFilteredCategories('video')" :key="'vp-'+cat">
+                <div>
+                  <div style="padding: 4px 12px; font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; background: var(--bg-darker);" x-text="cat"></div>
+                  <template x-for="img in refFilteredProductsVideo(cat)" :key="img.path">
+                    <div class="product-picker-item" :class="{ selected: videoRefProduct?.path === img.path }" @click="videoRefProduct = (videoRefProduct?.path === img.path ? null : img); if(videoRefProduct) videoImagePath = videoRefProduct.url;">
+                      <img :src="img.url" :alt="img.name">
+                      <div class="product-info">
+                        <div class="product-name" x-text="img.name"></div>
+                        <div class="product-cat" x-text="Math.round(img.size_kb) + ' KB'"></div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+            <div style="margin-top: 6px; font-size: 0.7rem; color: var(--accent);" x-show="videoRefProduct">
+              Selecionado: <strong x-text="videoRefProduct?.name"></strong>
+            </div>
+          </div>
+          <div x-show="videoRefTab === 'upload'">
+            <div class="upload-zone" :class="{ dragover: videoUploadDrag }" @dragover.prevent="videoUploadDrag = true" @dragleave="videoUploadDrag = false" @drop.prevent="videoUploadDrag = false; handleRefUpload($event.dataTransfer.files, 'video')">
+              <input type="file" accept="image/*,video/*" @change="handleRefUpload($event.target.files, 'video')">
+              <div class="upload-icon">&#128228;</div>
+              <div class="upload-text">Arraste imagem/video ou clique</div>
+              <div class="upload-hint">PNG, JPG, MP4 — max 50MB</div>
+            </div>
+            <div class="upload-preview" x-show="videoRefUpload">
+              <div class="upload-preview-item" x-show="videoRefUpload">
+                <img :src="videoRefUpload?.url" :alt="videoRefUpload?.name" x-show="videoRefUpload && !videoRefUpload.is_video">
+                <video :src="videoRefUpload?.url" x-show="videoRefUpload?.is_video" muted></video>
+                <button class="remove-btn" @click="videoRefUpload = null; videoImagePath = '';">&times;</button>
+                <div class="file-name" x-text="videoRefUpload?.name"></div>
+              </div>
+            </div>
+          </div>
+          <div x-show="videoRefTab === 'path'">
+            <input class="form-input" x-model="videoImagePath" placeholder="Ex: output/nb2/lev_hero.png" style="font-size: 0.78rem;">
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Tipo</label>
-        <select class="form-select" x-model="videoType">
-          <option value="t2v">Texto para Video</option>
-          <option value="i2v">Imagem para Video</option>
-        </select>
-      </div>
-      <div class="form-group" x-show="videoType === 'i2v'">
-        <label class="form-label">Caminho da Imagem (PNG do produto)</label>
-        <input class="form-input" x-model="videoImagePath" placeholder="Ex: output/nb2/lev_hero.png">
-      </div>
+
+      <!-- Prompt da cena -->
       <div class="form-group">
         <label class="form-label">Descricao da Cena</label>
-        <textarea class="form-input" x-model="videoPrompt" rows="4" placeholder="Descreva o cenario e movimento desejado (NUNCA descrever o produto em si)"></textarea>
+        <textarea class="form-input" x-model="videoPrompt" rows="3" placeholder="Descreva o cenario e movimento desejado. Ex: 'Produto flutuando com rotacao suave 360° sobre fundo escuro com reflexo, luz lateral azul' (NUNCA descrever o produto em si)"></textarea>
       </div>
-      <div style="display: flex; gap: 10px;">
-        <div class="form-group" style="flex:1;">
-          <label class="form-label">Formato</label>
-          <select class="form-select" x-model="videoAspect">
-            <option value="9:16">Reels/Shorts (9:16)</option>
-            <option value="16:9">YouTube/LinkedIn (16:9)</option>
-            <option value="1:1">Feed Quadrado (1:1)</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1;">
-          <label class="form-label">Duracao</label>
-          <select class="form-select" x-model="videoDuration">
-            <option value="5">5 segundos</option>
-            <option value="10">10 segundos</option>
-          </select>
-        </div>
-      </div>
-    </div>
 
-    <!-- Right: Narration -->
-    <div class="card">
-      <div class="card-title">Narracao (opcional)</div>
-      <div class="form-group">
-        <label class="form-label">Voz</label>
-        <select class="form-select" x-model="videoVoiceId">
-          <template x-if="videoVoices.length === 0">
-            <option value="">Carregando vozes...</option>
+      <!-- Botao gerar -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="btn btn-primary" style="padding: 10px 28px; font-size: 0.9rem; font-weight: 700;" @click="generateVideo()" :disabled="videoGenerating || !videoPrompt.trim()">
+          <template x-if="!videoGenerating">
+            <span style="display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Gerar Video
+            </span>
           </template>
-          <template x-for="v in videoVoices">
-            <option :value="v.voice_id" x-text="v.name"></option>
+          <template x-if="videoGenerating">
+            <span style="display: inline-flex; align-items: center; gap: 6px;">
+              <div style="width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+              Gerando...
+            </span>
           </template>
-        </select>
-        <div style="margin-top: 6px; font-size: 0.7rem; color: var(--text-muted);" x-show="videoVoices.length > 0">
-          <span x-text="videoVoices.length"></span> vozes disponiveis na sua conta ElevenLabs
+        </button>
+        <span x-show="videoGenerating" style="color: var(--amber); font-size: 0.78rem; font-weight: 500;">Processando no servidor — nao feche esta pagina</span>
+      </div>
+      </div><!-- /card gerar clip -->
+    </div><!-- /coluna esquerda -->
+
+    <!-- Direita: Narracao + Resultado -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- Narracao -->
+      <div class="card" style="flex: 1;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <span style="font-weight: 700; font-size: 0.9rem;">Narracao</span>
+          <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 400;">opcional</span>
         </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Roteiro de Narracao</label>
-        <textarea class="form-input" x-model="videoNarration" rows="6" placeholder="Texto que sera narrado sobre o video"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Caracteres: <span x-text="(videoNarration || '').length"></span></label>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-        <div class="form-group">
-          <label class="form-label">Musica de Fundo</label>
-          <select class="form-select" x-model="videoBGM">
-            <option value="">Sem musica</option>
-            <option value="corporate">Corporativo</option>
-            <option value="tech">Tecnologia</option>
-            <option value="medical">Medico/Clean</option>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label class="form-label">Voz</label>
+          <select class="form-select" x-model="videoVoiceId" style="font-size: 0.82rem;">
+            <template x-if="videoVoices.length === 0">
+              <option value="">Nenhuma voz carregada</option>
+            </template>
+            <template x-for="v in videoVoices">
+              <option :value="v.voice_id" x-text="v.name"></option>
+            </template>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">Legendas</label>
-          <select class="form-select" x-model="videoSubtitles">
-            <option value="none">Sem legendas</option>
-            <option value="burn">Gravar no video</option>
-          </select>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label class="form-label">Roteiro <span style="font-weight: 400; text-transform: none; letter-spacing: 0;" x-text="'(' + (videoNarration || '').length + ' chars)'"></span></label>
+          <textarea class="form-input" x-model="videoNarration" rows="5" placeholder="Texto que sera narrado sobre o video..." style="font-size: 0.82rem;"></textarea>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Generate Button -->
-  <div style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
-    <button class="btn btn-primary" style="font-size: 1rem; padding: 10px 24px;" @click="generateVideo()" :disabled="videoGenerating">
-      <span x-show="!videoGenerating">Gerar Video Completo</span>
-      <span x-show="videoGenerating">Gerando... (pode levar ate 2 minutos)</span>
-    </button>
-    <span x-show="videoGenerating" style="color: var(--amber); font-size: 0.8rem;">O video esta sendo processado no servidor. Nao feche esta pagina.</span>
-  </div>
-
-  <!-- Video Result -->
-  <template x-if="videoResult">
-    <div class="card" style="margin-top: 16px; border-left: 3px solid var(--green);">
-      <div class="card-title" style="color: var(--green);">Video Gerado com Sucesso</div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
-        <template x-for="step in (videoResult.steps || [])">
-          <div class="stat-card">
-            <div class="label" x-text="step.step === 'video' ? 'Clip' : step.step === 'narration' ? 'Narracao' : 'Montagem'"></div>
-            <div class="value" style="color: var(--green)">OK</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Musica de Fundo</label>
+            <select class="form-select" x-model="videoBGM">
+              <option value="">Sem musica</option>
+              <option value="corporate">Corporativo</option>
+              <option value="tech">Tecnologia</option>
+              <option value="medical">Medico/Clean</option>
+            </select>
           </div>
-        </template>
-        <div class="stat-card">
-          <div class="label">Custo Total</div>
-          <div class="value" x-text="'$' + (videoResult.total_cost_usd || 0).toFixed(4)"></div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Legendas</label>
+            <select class="form-select" x-model="videoSubtitles">
+              <option value="none">Sem legendas</option>
+              <option value="burn">Gravar no video</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div x-show="videoResult.errors && videoResult.errors.length > 0" style="margin-top: 10px; color: var(--red); font-size: 0.8rem;">
-        <template x-for="err in (videoResult.errors || [])">
-          <div x-text="err"></div>
-        </template>
-      </div>
+
+      <!-- Resultado -->
+      <template x-if="videoResult">
+        <div class="card" style="border-left: 3px solid var(--green); padding: 14px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-weight: 700; font-size: 0.85rem; color: var(--green); display: flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Video Gerado
+            </div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);" x-text="'$' + (videoResult.total_cost_usd || 0).toFixed(4)"></span>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+            <template x-for="step in (videoResult.steps || [])">
+              <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; background: rgba(16,185,129,0.1); color: var(--green);">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <span x-text="step.step === 'video' ? 'Clip' : step.step === 'narration' ? 'Narracao' : 'Montagem'"></span>
+              </span>
+            </template>
+          </div>
+          <div x-show="videoResult.errors?.length > 0" style="color: var(--red); font-size: 0.78rem;">
+            <template x-for="err in (videoResult.errors || [])">
+              <div x-text="err"></div>
+            </template>
+          </div>
+          <div style="margin-top: 6px; font-size: 0.75rem; color: var(--text-secondary);">Video pronto. Use a aba <strong>Editor</strong> para refinar com FFmpeg.</div>
+        </div>
+      </template>
     </div>
-  </template>
+  </div>
 </div>
 
 <!-- ===================================================== -->
@@ -2539,54 +3282,301 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- ===================================================== -->
+<!-- TAB: VIDEO EDITOR -->
+<!-- ===================================================== -->
+<div x-show="tab === 'editor'">
+
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <div>
+      <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">FFmpeg Editor</div>
+      <div style="font-size: 0.82rem; color: var(--text-secondary);">Edite videos com instrucoes em linguagem natural</div>
+    </div>
+    <div style="display: flex; gap: 6px;">
+      <button class="btn btn-sm" @click="$refs.editorVideoInput2.click()" style="font-size: 0.72rem;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Video
+      </button>
+      <button class="btn btn-sm" @click="$refs.editorAudioInput2.click()" style="font-size: 0.72rem;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Upload Audio
+      </button>
+      <input type="file" accept="video/*" x-ref="editorVideoInput2" @change="editorUploadVideo($event)" style="display:none;">
+      <input type="file" accept="audio/*" x-ref="editorAudioInput2" @change="editorUploadAudio($event)" style="display:none;">
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 280px 1fr; gap: 14px; min-height: 560px;">
+
+    <!-- Sidebar: Arquivos -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+
+      <!-- Videos -->
+      <div class="card" style="padding: 10px 12px; flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <div style="font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            Videos
+          </div>
+          <span style="font-size: 0.65rem; padding: 1px 7px; border-radius: 10px; background: var(--surface-hover); color: var(--text-muted);" x-text="editorVideos.length"></span>
+        </div>
+        <div style="flex: 1; overflow-y: auto;">
+          <template x-if="editorVideos.length === 0">
+            <div style="color: var(--text-muted); font-size: 0.75rem; padding: 16px 0; text-align: center;">Nenhum video.<br>Crie na aba Videos ou faca upload.</div>
+          </template>
+          <template x-for="vid in editorVideos" :key="vid.path">
+            <div style="display: flex; align-items: center; gap: 7px; padding: 5px 6px; border-radius: 5px; cursor: pointer; transition: all 0.15s; font-size: 0.75rem; margin-bottom: 2px;"
+                 :style="editorSelectedVideo?.path === vid.path ? 'background: rgba(79,142,255,0.12); box-shadow: inset 3px 0 0 var(--accent)' : ''"
+                 @click="editorSelectVideo(vid)">
+              <div style="width: 28px; height: 28px; border-radius: 4px; background: var(--surface-hover); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" :style="editorSelectedVideo?.path === vid.path ? 'color: var(--accent)' : 'color: var(--text-muted)'"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.73rem;" x-text="vid.name"></div>
+                <div style="font-size: 0.62rem; color: var(--text-muted);" x-text="vid.size_mb + ' MB'"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Audio -->
+      <div class="card" style="padding: 10px 12px;">
+        <div style="font-weight: 700; font-size: 0.8rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Audio
+          <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 400;">opcional</span>
+        </div>
+        <select class="form-select" style="width: 100%; font-size: 0.75rem;" x-model="editorAudioPath">
+          <option value="">Sem audio adicional</option>
+          <template x-for="aud in editorAudioFiles" :key="aud.path">
+            <option :value="aud.path" x-text="aud.name"></option>
+          </template>
+        </select>
+      </div>
+    </div>
+
+    <!-- Area principal -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- Preview + Info -->
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <template x-if="!editorSelectedVideo">
+          <div style="text-align: center; padding: 48px 20px; background: linear-gradient(135deg, rgba(79,142,255,0.04) 0%, rgba(99,102,241,0.02) 100%);">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1" style="margin: 0 auto 10px; opacity: 0.25;"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/><circle cx="12" cy="14" r="2"/></svg>
+            <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-secondary);">Selecione um video para comecar</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Escolha da lista ou arraste um arquivo</div>
+          </div>
+        </template>
+        <template x-if="editorSelectedVideo">
+          <div>
+            <!-- Player -->
+            <div style="background: #000; position: relative;">
+              <template x-if="editorSelectedVideo.url">
+                <video :src="editorSelectedVideo.url" controls style="width: 100%; max-height: 300px; display: block;"></video>
+              </template>
+              <template x-if="!editorSelectedVideo.url">
+                <div style="padding: 40px; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.8rem;">Preview indisponivel</div>
+              </template>
+            </div>
+            <!-- Info bar -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: var(--bg-card); border-top: 1px solid var(--border);">
+              <div style="font-weight: 600; font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%;" x-text="editorSelectedVideo.name"></div>
+              <template x-if="editorVideoInfo">
+                <div style="display: flex; gap: 6px;">
+                  <span style="padding: 2px 8px; border-radius: 10px; background: var(--surface-hover); font-size: 0.65rem; font-weight: 600;" x-text="editorVideoInfo.width + 'x' + editorVideoInfo.height"></span>
+                  <span style="padding: 2px 8px; border-radius: 10px; background: var(--surface-hover); font-size: 0.65rem; font-weight: 600;" x-text="Math.round(editorVideoInfo.duration) + 's'"></span>
+                  <span style="padding: 2px 8px; border-radius: 10px; background: var(--surface-hover); font-size: 0.65rem;" x-text="editorVideoInfo.fps + 'fps'"></span>
+                  <span style="padding: 2px 8px; border-radius: 10px; font-size: 0.65rem;"
+                        :style="editorVideoInfo.has_audio ? 'background: rgba(16,185,129,0.1); color: var(--green)' : 'background: rgba(239,68,68,0.06); color: var(--red)'"
+                        x-text="editorVideoInfo.has_audio ? 'Audio' : 'Mudo'"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Resultado -->
+      <template x-if="editorResult?.success">
+        <div class="card" style="padding: 10px 14px; background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <div>
+                <div style="font-weight: 700; font-size: 0.8rem; color: var(--green);">Editado com sucesso</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);" x-text="editorResult.size_mb + ' MB — ' + editorResult.elapsed_seconds + 's'"></div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-sm btn-primary" @click="editorUseResult()" style="font-size: 0.7rem;">Editar resultado</button>
+              <a :href="editorResult.output_url" download class="btn btn-sm" style="font-size: 0.7rem;">Download</a>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Chat de instrucoes -->
+      <div class="card" style="padding: 0; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+
+        <!-- Chat header -->
+        <div style="padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span style="font-weight: 700; font-size: 0.82rem;">Instrucoes</span>
+          <span style="font-size: 0.65rem; color: var(--text-muted);">Descreva as edicoes em linguagem natural</span>
+        </div>
+
+        <!-- Mensagens -->
+        <div style="flex: 1; overflow-y: auto; padding: 12px 14px; min-height: 140px;">
+          <template x-if="editorHistory.length === 0 && !editorProcessing">
+            <div style="text-align: center; padding: 16px 0;">
+              <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-bottom: 10px;">O que voce pode fazer:</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+                <button class="btn btn-sm" style="font-size: 0.68rem; border-radius: 20px; padding: 4px 12px;" @click="editorInstruction = 'Adiciona fade to black nos ultimos 2 segundos'" :disabled="!editorSelectedVideo">Fade to black</button>
+                <button class="btn btn-sm" style="font-size: 0.68rem; border-radius: 20px; padding: 4px 12px;" @click="editorInstruction = 'Corta o video dos 3s ate os 10s'" :disabled="!editorSelectedVideo">Cortar trecho</button>
+                <button class="btn btn-sm" style="font-size: 0.68rem; border-radius: 20px; padding: 4px 12px;" @click="editorInstruction = 'Coloca essa musica de fundo com volume 20%'" :disabled="!editorSelectedVideo">Musica de fundo</button>
+                <button class="btn btn-sm" style="font-size: 0.68rem; border-radius: 20px; padding: 4px 12px;" @click="editorInstruction = 'Reduz para 720p mantendo proporcao'" :disabled="!editorSelectedVideo">Reduzir resolucao</button>
+                <button class="btn btn-sm" style="font-size: 0.68rem; border-radius: 20px; padding: 4px 12px;" @click="editorInstruction = 'Adiciona o texto Salk Medical centralizado no topo com fonte branca'" :disabled="!editorSelectedVideo">Texto overlay</button>
+                <button class="btn btn-sm" style="font-size: 0.68rem; border-radius: 20px; padding: 4px 12px;" @click="editorInstruction = 'Acelera o video em 1.5x'" :disabled="!editorSelectedVideo">Acelerar</button>
+              </div>
+            </div>
+          </template>
+          <template x-for="(msg, idx) in editorHistory" :key="idx">
+            <div style="margin-bottom: 10px;">
+              <div style="display: flex; gap: 8px; align-items: start;">
+                <div style="width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.6rem; font-weight: 800;"
+                     :style="msg.role === 'user' ? 'background: var(--accent); color: white' : (msg.success !== false ? 'background: rgba(16,185,129,0.12); color: var(--green)' : 'background: rgba(239,68,68,0.1); color: var(--red)')">
+                  <span x-text="msg.role === 'user' ? 'EU' : 'AI'"></span>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 0.8rem; line-height: 1.4;" x-text="msg.text"></div>
+                  <template x-if="msg.command">
+                    <details style="margin-top: 4px;">
+                      <summary style="font-size: 0.65rem; color: var(--text-muted); cursor: pointer;">Comando FFmpeg</summary>
+                      <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; font-family: monospace; background: var(--surface-hover); padding: 6px 8px; border-radius: 4px; overflow-x: auto; white-space: nowrap;" x-text="msg.command"></div>
+                    </details>
+                  </template>
+                  <template x-if="msg.output_url">
+                    <a :href="msg.output_url" target="_blank" style="font-size: 0.68rem; color: var(--accent); display: inline-flex; align-items: center; gap: 3px; margin-top: 3px;">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Download
+                    </a>
+                  </template>
+                </div>
+                <div style="font-size: 0.58rem; color: var(--text-muted); flex-shrink: 0;" x-text="msg.time"></div>
+              </div>
+            </div>
+          </template>
+          <template x-if="editorProcessing">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0;">
+              <div style="width: 24px; height: 24px; border-radius: 6px; background: rgba(79,142,255,0.1); display: flex; align-items: center; justify-content: center;">
+                <div style="width: 10px; height: 10px; border: 2px solid rgba(79,142,255,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--accent);">Processando edicao...</span>
+            </div>
+          </template>
+        </div>
+
+        <!-- Input -->
+        <div style="padding: 10px 14px; border-top: 1px solid var(--border); background: var(--bg-card); display: flex; gap: 8px;">
+          <input class="form-input" style="flex: 1; font-size: 0.85rem; border-radius: 20px; padding: 8px 16px;"
+                 x-model="editorInstruction"
+                 :disabled="!editorSelectedVideo || editorProcessing"
+                 :placeholder="editorSelectedVideo ? 'Descreva o que deseja fazer...' : 'Selecione um video primeiro'"
+                 @keydown.enter="editorSendInstruction()">
+          <button class="btn btn-primary" style="border-radius: 50%; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center;"
+                  :disabled="!editorSelectedVideo || !editorInstruction.trim() || editorProcessing"
+                  @click="editorSendInstruction()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
 <!-- TAB: CONFIGURACOES -->
 <!-- ===================================================== -->
 <div x-show="tab === 'settings'">
-  <div class="card" style="margin-bottom: 16px;">
-    <div class="card-title">Chaves de API</div>
-    <p style="color: var(--text-secondary); margin-bottom: 12px; font-size: 0.8rem;">Configure as chaves necessarias para ativar cada funcionalidade. As chaves sao salvas de forma segura no servidor.</p>
 
-    <template x-for="setting in settingsList">
-      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border);">
-        <div style="flex: 1;">
-          <div style="font-weight: 600;" x-text="setting.label"></div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);" x-text="setting.description"></div>
-        </div>
-        <div style="width: 40px; text-align: center;">
-          <span :style="setting.configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="setting.configured ? '●' : '○'"></span>
-        </div>
-        <input class="form-input" style="width: 320px;" type="password" :placeholder="setting.placeholder || 'Cole a chave aqui...'" x-model="setting.value">
-        <button class="btn btn-sm" @click="saveSetting(setting)">Salvar</button>
+  <!-- Status resumo -->
+  <div class="card" style="margin-bottom: 16px; background: linear-gradient(135deg, rgba(79,142,255,0.08) 0%, rgba(99,102,241,0.05) 100%);">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 4px;">Configuracoes do Studio</div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary);">Chaves de API sao salvas de forma segura (ofuscadas) no servidor e persistem entre reinicializacoes.</div>
       </div>
-    </template>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Testar Conexoes</div>
-    <button class="btn btn-primary" @click="testConnections()">Testar Todas as Conexoes</button>
-    <template x-if="connectionTestResult">
-      <div style="margin-top: 12px;">
-        <template x-for="[key, val] in Object.entries(connectionTestResult)">
-          <div style="display: flex; gap: 8px; padding: 4px 0;">
-            <span :style="val ? 'color: var(--green)' : 'color: var(--red)'" x-text="val ? '✓' : '✗'"></span>
-            <span x-text="key"></span>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <span style="font-size: 0.8rem; color: var(--text-secondary);" x-text="settingsList.filter(s => s.configured).length + '/' + settingsList.length + ' chaves ativas'"></span>
+        <button class="btn btn-primary btn-sm" @click="testConnections()" style="white-space: nowrap;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Testar Conexoes
+        </button>
+      </div>
+    </div>
+    <!-- Test results inline -->
+    <template x-if="connectionTestResult && connectionTestResult.services">
+      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px;">
+        <template x-for="[key, val] in Object.entries(connectionTestResult.services || {})">
+          <div :style="'display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; background:' + (val.configured ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.08)')">
+            <span :style="val.configured ? 'color: var(--green)' : 'color: var(--red)'" x-text="val.configured ? '✓' : '✗'"></span>
+            <span style="text-transform: capitalize;" x-text="key"></span>
           </div>
         </template>
       </div>
     </template>
   </div>
 
-  <div class="card" style="margin-top: 16px;">
-    <div class="card-title">Autenticacao</div>
-    <div class="form-group">
-      <label class="form-label">Usuario</label>
-      <input class="form-input" style="width: 300px;" x-model="settingsUser" placeholder="admin">
+  <!-- Grupos de API keys -->
+  <template x-for="group in settingsGroups" :key="group.key">
+    <div class="card" style="margin-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer;" @click="settingsGroupOpen[group.key] = !settingsGroupOpen[group.key]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" :style="settingsGroupOpen[group.key] ? 'transform: rotate(90deg)' : ''" style="transition: transform 0.2s;"><polyline points="9 18 15 12 9 6"/></svg>
+        <span style="font-weight: 700; font-size: 0.95rem;" x-text="group.label"></span>
+        <span style="font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: var(--surface-hover); color: var(--text-muted);"
+              x-text="settingsList.filter(s => s.group === group.key && s.configured).length + '/' + settingsList.filter(s => s.group === group.key).length"></span>
+      </div>
+      <div x-show="settingsGroupOpen[group.key]" x-transition>
+        <template x-for="setting in settingsList.filter(s => s.group === group.key)">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <div style="width: 24px; text-align: center; flex-shrink: 0;">
+              <span style="font-size: 0.7rem; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;"
+                    :style="setting.configured ? 'background: rgba(16,185,129,0.15); color: var(--green)' : 'background: rgba(239,68,68,0.1); color: var(--red)'"
+                    x-text="setting.configured ? '✓' : '○'"></span>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; font-size: 0.85rem;" x-text="setting.label"></div>
+              <div style="font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" x-text="setting.description"></div>
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
+              <input class="form-input" style="width: 260px; font-size: 0.8rem;" type="password" :placeholder="setting.configured ? '••••• (configurado)' : (setting.placeholder || 'Cole a chave...')" x-model="setting.value">
+              <button class="btn btn-sm" @click="saveSetting(setting)" :disabled="!setting.value" :style="!setting.value ? 'opacity: 0.4; cursor: default' : ''">Salvar</button>
+            </div>
+          </div>
+        </template>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Nova Senha</label>
-      <input class="form-input" style="width: 300px;" type="password" x-model="settingsPass" placeholder="Nova senha...">
+  </template>
+
+  <!-- Autenticacao do Studio -->
+  <div class="card" style="margin-top: 4px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span style="font-weight: 700; font-size: 0.95rem;">Autenticacao do Studio</span>
     </div>
-    <button class="btn" @click="updateAuth()">Atualizar Credenciais</button>
+    <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px;">Altere o usuario e senha de acesso ao Content Studio. A mudanca entra em vigor no proximo login.</p>
+    <div style="display: flex; gap: 12px; align-items: end; flex-wrap: wrap;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 0.75rem;">Usuario</label>
+        <input class="form-input" style="width: 200px;" x-model="settingsUser" placeholder="admin">
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 0.75rem;">Nova Senha</label>
+        <input class="form-input" style="width: 200px;" type="password" x-model="settingsPass" placeholder="Nova senha...">
+      </div>
+      <button class="btn" @click="updateAuth()" :disabled="!settingsUser || !settingsPass" :style="(!settingsUser || !settingsPass) ? 'opacity: 0.4; cursor: default' : ''">Atualizar</button>
+    </div>
   </div>
 </div>
 
@@ -2599,7 +3589,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- ============================================= -->
 
 <!-- New Piece Modal -->
-<div class="modal-overlay" x-show="showNewPiece" @click.self="showNewPiece = false" x-cloak>
+<div class="modal-overlay" x-show="showNewPiece" @click.self="showNewPiece = false" @keydown.escape.window="showNewPiece = false" x-cloak>
   <div class="modal">
     <div class="modal-header">
       <h3>Nova Peca de Conteudo</h3>
@@ -2607,8 +3597,8 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label>Titulo</label>
-        <input class="form-input" x-model="newPiece.title" placeholder="ex: Hero Shot LEV 4LEV - Instagram">
+        <label>Titulo <span style="color: var(--red); font-size: 0.7rem;">*obrigatorio</span></label>
+        <input class="form-input" x-model="newPiece.title" placeholder="ex: Hero Shot LEV 4LEV - Instagram" required>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -2686,45 +3676,78 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
     <div class="modal-footer">
       <button class="btn" @click="showNewPiece = false">Cancelar</button>
-      <button class="btn btn-primary" @click="createNewPiece()">Criar Peca</button>
+      <button class="btn btn-primary" :disabled="!newPiece.title.trim()" @click="createNewPiece()">Criar Peca</button>
     </div>
   </div>
 </div>
 
 <!-- Piece Detail Modal -->
-<div class="modal-overlay" x-show="showPieceDetail" @click.self="showPieceDetail = false" x-cloak>
-  <div class="modal" style="max-width: 720px;">
-    <div class="modal-header">
+<!-- ===== DRAWER: Piece Production Panel ===== -->
+<div class="drawer-overlay" x-show="showPieceDetail" @click="showPieceDetail = false" x-cloak></div>
+<div class="drawer" x-show="showPieceDetail" x-cloak @keydown.escape.window="showPieceDetail = false">
+  <div class="drawer-header">
+    <div>
       <h3 x-text="selectedPiece?.title || selectedPiece?.id || 'Peca'"></h3>
-      <button class="modal-close" @click="showPieceDetail = false">&times;</button>
-    </div>
-    <div class="modal-body">
-      <!-- Badges -->
-      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
         <span class="badge" :class="'badge-' + (selectedPiece?.brand || '')" x-text="selectedPiece?.brand"></span>
         <span class="badge badge-blue" x-text="selectedPiece?.product" x-show="selectedPiece?.product"></span>
         <span class="badge badge-muted" x-text="selectedPiece?.platform" x-show="selectedPiece?.platform"></span>
         <span class="badge" :style="'background:' + stageColors[selectedPiece?.stage] + '22; color:' + stageColors[selectedPiece?.stage]" x-text="stageLabels[selectedPiece?.stage]"></span>
         <span class="badge badge-purple" x-text="selectedPiece?.format" x-show="selectedPiece?.format"></span>
       </div>
+    </div>
+    <button class="modal-close" @click="showPieceDetail = false">&times;</button>
+  </div>
 
-      <!-- Info -->
-      <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-        <div x-show="selectedPiece?.pillar"><strong>Pilar:</strong> <span x-text="selectedPiece?.pillar"></span></div>
-        <div x-show="selectedPiece?.persona_target"><strong>Persona:</strong> <span x-text="selectedPiece?.persona_target"></span></div>
-        <div><strong>Criado:</strong> <span x-text="(selectedPiece?.created_at || '').substring(0, 16)"></span></div>
-        <div><strong>Atualizado:</strong> <span x-text="(selectedPiece?.updated_at || '').substring(0, 16)"></span></div>
+  <!-- Drawer Tabs -->
+  <div class="drawer-tabs">
+    <button class="drawer-tab" :class="{ active: (drawerTab || 'resumo') === 'resumo' }" @click="drawerTab = 'resumo'">Resumo</button>
+    <button class="drawer-tab" :class="{ active: drawerTab === 'texto' }" @click="drawerTab = 'texto'">Texto</button>
+    <button class="drawer-tab" :class="{ active: drawerTab === 'visual' }" @click="drawerTab = 'visual'">Visual</button>
+    <button class="drawer-tab" :class="{ active: drawerTab === 'acoes' }" @click="drawerTab = 'acoes'">Acoes</button>
+  </div>
+
+  <div class="drawer-body">
+
+    <!-- TAB: Resumo -->
+    <div x-show="(drawerTab || 'resumo') === 'resumo'">
+      <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div x-show="selectedPiece?.pillar"><strong style="color: var(--text-muted);">Pilar:</strong> <span x-text="selectedPiece?.pillar"></span></div>
+        <div x-show="selectedPiece?.persona_target"><strong style="color: var(--text-muted);">Persona:</strong> <span x-text="selectedPiece?.persona_target"></span></div>
+        <div><strong style="color: var(--text-muted);">Criado:</strong> <span x-text="(selectedPiece?.created_at || '').substring(0, 16)"></span></div>
+        <div><strong style="color: var(--text-muted);">Atualizado:</strong> <span x-text="(selectedPiece?.updated_at || '').substring(0, 16)"></span></div>
       </div>
 
-      <!-- Copy Text -->
+      <!-- Notes / Briefing -->
+      <template x-if="selectedPiece?.notes">
+        <div>
+          <template x-if="parsePieceNotes(selectedPiece?.notes).briefing">
+            <div class="card" style="margin-bottom: 12px;">
+              <div class="card-title" style="font-size: 0.75rem;">Briefing</div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 200px; overflow-y: auto;" x-text="parsePieceNotes(selectedPiece?.notes).briefing"></div>
+            </div>
+          </template>
+          <template x-if="!parsePieceNotes(selectedPiece?.notes).briefing && !parsePieceNotes(selectedPiece?.notes).nb2_prompt">
+            <div class="card" style="margin-bottom: 12px;">
+              <div class="card-title" style="font-size: 0.75rem;">Notas</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);" x-text="selectedPiece?.notes"></div>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- Quick Copy Preview -->
       <div class="card" style="margin-bottom: 12px;" x-show="selectedPiece?.copy_text">
-        <div class="card-title" style="font-size: 0.75rem;">Copy</div>
-        <div style="font-size: 0.82rem; color: var(--text-primary); white-space: pre-wrap; line-height: 1.5; max-height: 200px; overflow-y: auto;" x-text="selectedPiece?.copy_text"></div>
+        <div class="card-title" style="font-size: 0.75rem; display: flex; justify-content: space-between;">
+          <span>Texto</span>
+          <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 400;" x-text="(selectedPiece?.copy_text || '').length + ' chars'"></span>
+        </div>
+        <div style="font-size: 0.82rem; color: var(--text-primary); white-space: pre-wrap; line-height: 1.6; max-height: 200px; overflow-y: auto;" x-text="selectedPiece?.copy_text"></div>
       </div>
 
       <!-- Hashtags -->
-      <div style="margin-bottom: 12px;" x-show="selectedPiece?.hashtags && selectedPiece?.hashtags.length > 0">
-        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Hashtags</div>
+      <div class="card" style="margin-bottom: 12px;" x-show="selectedPiece?.hashtags && selectedPiece?.hashtags.length > 0">
+        <div class="card-title" style="font-size: 0.75rem;">Hashtags</div>
         <div style="display: flex; gap: 4px; flex-wrap: wrap;">
           <template x-for="h in (selectedPiece?.hashtags || [])">
             <span class="badge badge-cyan" style="font-size: 0.65rem;" x-text="h"></span>
@@ -2732,87 +3755,126 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         </div>
       </div>
 
-      <!-- Notes / Briefing / Prompt (parsed from JSON notes) -->
-      <template x-if="selectedPiece?.notes">
-        <div style="margin-bottom: 12px;">
-          <template x-if="parsePieceNotes(selectedPiece?.notes).briefing">
-            <div class="card" style="margin-bottom: 8px;">
-              <div class="card-title" style="font-size: 0.75rem;">Briefing</div>
-              <div style="font-size: 0.78rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 120px; overflow-y: auto;" x-text="parsePieceNotes(selectedPiece?.notes).briefing"></div>
-            </div>
-          </template>
-          <template x-if="parsePieceNotes(selectedPiece?.notes).nb2_prompt">
-            <div class="card" style="margin-bottom: 8px;">
-              <div class="card-title" style="font-size: 0.75rem;">Prompt NB2</div>
-              <div style="font-size: 0.78rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 120px; overflow-y: auto; font-family: var(--mono);" x-text="parsePieceNotes(selectedPiece?.notes).nb2_prompt"></div>
-            </div>
-          </template>
-          <template x-if="!parsePieceNotes(selectedPiece?.notes).briefing && !parsePieceNotes(selectedPiece?.notes).nb2_prompt">
-            <div style="font-size: 0.78rem; color: var(--text-muted);"><strong>Notas:</strong> <span x-text="selectedPiece?.notes"></span></div>
-          </template>
+      <!-- Preview: Image + Video side by side -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-title" style="font-size: 0.75rem;">Imagem</div>
+            <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
+          </div>
+        </template>
+        <template x-if="parsePieceNotes(selectedPiece?.notes).video_url">
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-title" style="font-size: 0.75rem;">Video</div>
+            <video :src="parsePieceNotes(selectedPiece?.notes).video_url" controls style="max-width: 100%; border-radius: 8px; max-height: 250px;"></video>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- TAB: Texto (Copy) -->
+    <div x-show="drawerTab === 'texto'">
+      <div class="card" x-show="selectedPiece?.copy_text">
+        <div class="card-title" style="font-size: 0.75rem; display: flex; justify-content: space-between;">
+          <span>Texto da Peca</span>
+          <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 400;" x-text="(selectedPiece?.copy_text || '').length + ' chars'"></span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-primary); white-space: pre-wrap; line-height: 1.7;" x-text="selectedPiece?.copy_text"></div>
+      </div>
+      <div class="empty-state" x-show="!selectedPiece?.copy_text">
+        <div class="empty-icon">&#9998;</div>
+        <p>Nenhum texto gerado ainda. Use o botao abaixo ou va na aba Acoes.</p>
+        <button class="btn btn-primary" style="margin-top: 16px;" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
+          <span x-show="!pieceActionLoading">Gerar Texto com IA</span>
+          <span x-show="pieceActionLoading">Gerando...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB: Visual -->
+    <div x-show="drawerTab === 'visual'">
+      <!-- NB2 Prompt -->
+      <template x-if="parsePieceNotes(selectedPiece?.notes).nb2_prompt">
+        <div class="card" style="margin-bottom: 12px;">
+          <div class="card-title" style="font-size: 0.75rem;">Prompt NB2</div>
+          <div class="prompt-box" x-text="parsePieceNotes(selectedPiece?.notes).nb2_prompt"></div>
         </div>
       </template>
 
-      <!-- Generated Image Preview -->
+      <!-- Image -->
       <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
         <div class="card" style="margin-bottom: 12px;">
           <div class="card-title" style="font-size: 0.75rem;">Imagem Gerada</div>
-          <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 300px; object-fit: contain;">
+          <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
         </div>
       </template>
 
-      <!-- Generated Video Preview -->
+      <!-- Video -->
       <template x-if="parsePieceNotes(selectedPiece?.notes).video_url">
         <div class="card" style="margin-bottom: 12px;">
-          <div class="card-title" style="font-size: 0.75rem;">Video Animado</div>
-          <video :src="parsePieceNotes(selectedPiece?.notes).video_url" controls style="max-width: 100%; border-radius: 8px; max-height: 200px;"></video>
+          <div class="card-title" style="font-size: 0.75rem;">Video</div>
+          <video :src="parsePieceNotes(selectedPiece?.notes).video_url" controls style="max-width: 100%; border-radius: 8px;"></video>
         </div>
       </template>
 
-      <!-- Automation Actions -->
-      <div class="card" style="margin-bottom: 12px; border-left: 2px solid var(--accent);">
-        <div class="card-title" style="font-size: 0.75rem;">Automacao</div>
-        <div class="btn-group" style="flex-wrap: wrap;">
-          <button class="btn btn-sm btn-primary" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="!selectedPiece?.copy_text">
-            Gerar Copy com IA
+      <div class="empty-state" x-show="!parsePieceNotes(selectedPiece?.notes).nb2_prompt && !parsePieceNotes(selectedPiece?.notes).image_url">
+        <div class="empty-icon">&#127912;</div>
+        <p>Nenhum visual gerado. Gere o prompt NB2 primeiro na aba Acoes.</p>
+      </div>
+    </div>
+
+    <!-- TAB: Acoes -->
+    <div x-show="drawerTab === 'acoes'">
+      <!-- Automation -->
+      <div class="card" style="margin-bottom: 16px; border-left: 3px solid var(--accent);">
+        <div class="card-title" style="font-size: 0.8rem;">Automacao com IA</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button class="btn btn-primary" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="!selectedPiece?.copy_text">
+            &#9998; Gerar Texto
           </button>
-          <button class="btn btn-sm" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="selectedPiece?.copy_text">
-            Regerar Copy
+          <button class="btn" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="selectedPiece?.copy_text">
+            &#9998; Regerar Texto
           </button>
-          <button class="btn btn-sm" @click="generatePromptForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
-            Gerar Prompt NB2
+          <button class="btn" @click="generatePromptForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
+            &#127912; Gerar Prompt NB2
           </button>
-          <button class="btn btn-sm" style="background: var(--purple); color: #fff;" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).nb2_prompt">
-            Gerar Imagem (fal.ai)
+          <button class="btn" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple);" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).nb2_prompt">
+            &#128248; Gerar Imagem
           </button>
-          <button class="btn btn-sm" style="background: var(--cyan); color: #000;" @click="animatePieceImage(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).image_path">
-            Animar para Video
+          <button class="btn" style="background: var(--cyan-bg); border-color: var(--cyan); color: var(--cyan);" @click="animatePieceImage(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).image_path">
+            &#127909; Animar Video
           </button>
-          <span x-show="pieceActionLoading" style="font-size: 0.75rem; color: var(--amber);">Processando...</span>
+        </div>
+        <span x-show="pieceActionLoading" style="display: block; font-size: 0.78rem; color: var(--amber); margin-top: 8px;">Processando...</span>
+      </div>
+
+      <!-- Move Stage -->
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-title" style="font-size: 0.8rem;">Mover Etapa</div>
+        <div class="btn-group">
+          <template x-for="s in stages">
+            <button class="btn btn-sm" :class="{ 'btn-primary': selectedPiece?.stage === s }" @click="movePieceStage(selectedPiece?.id, s)" x-text="stageLabels[s]"></button>
+          </template>
         </div>
       </div>
 
-      <!-- Stage Actions -->
-      <div class="card-title" style="font-size: 0.75rem;">Mover para Estagio</div>
-      <div class="btn-group">
-        <template x-for="s in stages">
-          <button class="btn btn-sm" :class="{ 'btn-primary': selectedPiece?.stage === s }" @click="movePieceStage(selectedPiece?.id, s)" x-text="stageLabels[s]"></button>
-        </template>
-      </div>
-      <div style="margin-top: 16px; display: flex; gap: 8px;">
-        <button class="btn btn-sm btn-success" @click="movePieceStage(selectedPiece?.id, 'approved'); notify('Peca aprovada!');">Aprovar</button>
-        <button class="btn btn-sm" @click="sendToReview(selectedPiece?.id)">Enviar para Revisao</button>
-        <button class="btn btn-sm btn-danger" style="margin-left: auto;" @click="if(confirm('Excluir peca?')) { deletePiece(selectedPiece?.id); }">Excluir</button>
+      <!-- Quick Actions -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <button class="btn btn-success" @click="movePieceStage(selectedPiece?.id, 'approved'); notify('Peca aprovada!');">&#9989; Aprovar</button>
+        <button class="btn" style="border-color: var(--amber); color: var(--amber);" @click="rejectPiece(selectedPiece?.id)">&#10060; Rejeitar</button>
+        <button class="btn" @click="sendToReview(selectedPiece?.id)">Enviar para Revisao</button>
+        <button class="btn btn-danger" style="margin-left: auto;" @click="if(confirm('Tem certeza que deseja excluir esta peca?')) { deletePiece(selectedPiece?.id); }">Excluir</button>
       </div>
     </div>
+
   </div>
 </div>
 
 <!-- Quick Produce Modal -->
-<div class="modal-overlay" x-show="showQuickProduce" @click.self="showQuickProduce = false" x-cloak>
+<div class="modal-overlay" x-show="showQuickProduce" @click.self="showQuickProduce = false" @keydown.escape.window="showQuickProduce = false" x-cloak>
   <div class="modal" style="max-width: 520px;">
     <div class="modal-header">
-      <h3>Produzir Peca Express</h3>
+      <h3>Criar Peca Automatica</h3>
       <button class="modal-close" @click="showQuickProduce = false">&times;</button>
     </div>
     <div class="modal-body">
@@ -2875,7 +3937,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <div class="modal-overlay" x-show="showABTest" @click.self="showABTest = false" x-cloak>
   <div class="modal" style="max-width: 580px;">
     <div class="modal-header">
-      <h3>Teste A/B — Variacoes em Massa</h3>
+      <h3>Gerar Variacoes</h3>
       <button class="modal-close" @click="showABTest = false">&times;</button>
     </div>
     <div class="modal-body">
@@ -2954,7 +4016,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- New VDP Modal -->
-<div class="modal-overlay" x-show="showNewVDP" @click.self="showNewVDP = false" x-cloak>
+<div class="modal-overlay" x-show="showNewVDP" @click.self="showNewVDP = false" @keydown.escape.window="showNewVDP = false" x-cloak>
   <div class="modal">
     <div class="modal-header">
       <h3>Criar Novo VDP</h3>
@@ -3020,7 +4082,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- VDP Detail Modal -->
-<div class="modal-overlay" x-show="showVDPDetail" @click.self="showVDPDetail = false" x-cloak>
+<div class="modal-overlay" x-show="showVDPDetail" @click.self="showVDPDetail = false" @keydown.escape.window="showVDPDetail = false" x-cloak>
   <div class="modal">
     <div class="modal-header">
       <h3 x-text="vdpDetail?.produto || 'VDP'"></h3>
@@ -3059,7 +4121,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- Calendar Slot Modal -->
-<div class="modal-overlay" x-show="showCalSlotModal" @click.self="showCalSlotModal = false" x-cloak>
+<div class="modal-overlay" x-show="showCalSlotModal" @click.self="showCalSlotModal = false" @keydown.escape.window="showCalSlotModal = false" x-cloak>
   <div class="modal" style="max-width: 450px;">
     <div class="modal-header">
       <h3>Editar Slot</h3>
@@ -3108,24 +4170,36 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" @click="showCalSlotModal = false">Fechar</button>
+      <button class="btn" @click="showCalSlotModal = false">Cancelar</button>
+      <button class="btn btn-primary" @click="saveCalSlot()">Salvar</button>
     </div>
   </div>
 </div>
 
 <!-- Image Modal -->
-<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" x-cloak>
-  <div class="modal" style="max-width: 600px;">
+<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" @keydown.escape.window="showImageModal = false" @keydown.left.window="navigateAsset(-1)" @keydown.right.window="navigateAsset(1)" x-cloak>
+  <div class="modal" style="max-width: 700px; position: relative;">
     <div class="modal-header">
       <h3 x-text="selectedImage?.name || ''"></h3>
-      <button class="modal-close" @click="showImageModal = false">&times;</button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:0.7rem; color:var(--text-muted);" x-text="(assetModalIndex+1) + '/' + assetModalList.length" x-show="assetModalList.length > 1"></span>
+        <button class="modal-close" @click="showImageModal = false">&times;</button>
+      </div>
     </div>
-    <div class="modal-body" style="text-align: center;">
+    <div class="modal-body" style="text-align: center; position: relative; min-height: 200px;">
+      <button class="img-modal-nav prev" @click.stop="navigateAsset(-1)" x-show="assetModalList.length > 1">&#9664;</button>
       <img :src="selectedImage?.url" :alt="selectedImage?.name" style="max-width: 100%; max-height: 60vh; border-radius: var(--radius-sm);">
-      <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary);">
-        <span x-text="selectedImage?.category"></span> |
-        <span x-text="selectedImage?.size_kb + ' KB'"></span> |
-        <span x-text="selectedImage?.path"></span>
+      <button class="img-modal-nav next" @click.stop="navigateAsset(1)" x-show="assetModalList.length > 1">&#9654;</button>
+
+      <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; font-size: 0.75rem; color: var(--text-secondary);">
+        <span class="badge badge-blue" x-text="selectedImage?.category"></span>
+        <span x-text="selectedImage?.size_kb > 1024 ? (selectedImage.size_kb/1024).toFixed(1)+' MB' : Math.round(selectedImage?.size_kb)+' KB'"></span>
+        <span style="opacity:0.5;" x-text="selectedImage?.path"></span>
+      </div>
+
+      <div class="img-modal-actions">
+        <button class="btn btn-sm" @click="copyAssetUrl(selectedImage)">Copiar URL</button>
+        <a class="btn btn-sm btn-primary" :href="selectedImage?.url" :download="selectedImage?.name" style="text-decoration:none;">Download</a>
       </div>
     </div>
   </div>
@@ -3154,39 +4228,41 @@ function studioApp() {
     tab: 'dashboard',
     tabTitles: {
       dashboard: 'Painel Geral',
-      board: 'Pecas em Producao',
+      board: 'Board de Producao',
       calendar: 'Planejar Semana',
-      copy: 'Escrever Textos',
+      copy: 'Editor de Textos',
       vdp: 'Fichas de Produto',
-      studio: 'Gerar Imagens',
-      compliance: 'Verificar Regras',
+      studio: 'Criar Imagens',
+      compliance: 'Regras da Marca',
       review: 'Aprovar Conteudo',
-      assets: 'Biblioteca',
+      assets: 'Biblioteca de Ativos',
       claims: 'Argumentos de Venda',
-      hashtags: 'Hashtags',
-      personas: 'Perfis de Cliente',
+      hashtags: 'Banco de Hashtags',
+      personas: 'Personas',
       performance: 'Resultados',
       video: 'Criar Video',
-      publish: 'Publicar Conteudo',
+      editor: 'Editor de Video',
+      publish: 'Publicar',
       settings: 'Configuracoes'
     },
     tabSubtitles: {
       dashboard: 'Visao geral da producao de conteudo',
-      board: 'Acompanhe o que esta sendo produzido',
-      calendar: 'Monte o planejamento da semana e gere tudo automaticamente',
-      copy: 'Crie e edite textos para cada rede social',
+      board: 'Todas as pecas organizadas por etapa',
+      calendar: 'Planeje a semana e gere tudo automaticamente',
+      copy: 'Escreva e refine textos para cada rede social',
       vdp: 'Fichas visuais dos produtos para geracao de imagens',
-      studio: 'Crie imagens profissionais dos produtos',
+      studio: 'Gere imagens profissionais dos produtos com IA',
       compliance: 'Verifique se o conteudo segue as regras da marca',
       review: 'Revise e aprove pecas antes de publicar',
-      assets: 'Fotos de produtos e logomarcas',
-      claims: 'Dados tecnicos aprovados para usar nos textos',
+      assets: 'Fotos de produto, logomarcas e recursos visuais',
+      claims: 'Argumentos tecnicos aprovados para usar nos textos',
       hashtags: 'Hashtags organizadas por marca e rede social',
       personas: 'Perfis dos clientes que queremos atingir',
-      performance: 'Acompanhe os resultados das publicacoes',
-      video: 'Crie videos profissionais com IA para redes sociais',
-      publish: 'Agende e publique conteudo nas redes sociais',
-      settings: 'Chaves API e configuracoes do sistema'
+      performance: 'Acompanhe o desempenho das publicacoes',
+      video: 'Produza videos profissionais com IA',
+      editor: 'Edite videos com instrucoes em linguagem natural + FFmpeg',
+      publish: 'Agende e publique nas redes sociais',
+      settings: 'Chaves de API e configuracoes do sistema'
     },
 
     // Data
@@ -3207,13 +4283,15 @@ function studioApp() {
 
     // Board
     stages: ['briefing', 'copy', 'visual', 'review', 'approved', 'published'],
-    stageLabels: { briefing: 'Briefing', copy: 'Copy', visual: 'Visual', review: 'Review', approved: 'Aprovado', published: 'Publicado' },
+    stageLabels: { briefing: 'Briefing', copy: 'Texto', visual: 'Visual', review: 'Revisao', approved: 'Aprovado', published: 'Publicado' },
     stageColors: { briefing: '#7a7a96', copy: '#4a7dff', visual: '#a78bfa', review: '#f59e0b', approved: '#34d399', published: '#22d3ee' },
     boardBrandFilter: '',
+    globalSearch: '',
 
     // Modals
     showNewPiece: false,
     showPieceDetail: false,
+    drawerTab: 'resumo',
     pieceActionLoading: false,
     batchProcessing: false,
     showQuickProduce: false,
@@ -3229,6 +4307,24 @@ function studioApp() {
     showImageModal: false,
     selectedPiece: null,
     selectedImage: null,
+    assetSearch: '',
+    logoSearch: '',
+    assetCategoryFilter: '',
+    assetCatOpen: {},
+    assetExpandAll: false,
+    assetModalList: [],
+    assetModalIndex: 0,
+    // Reference / Upload state
+    studioRefTab: 'product',
+    studioRefProduct: null,
+    studioRefUploads: [],
+    studioUploadDrag: false,
+    refProductSearch: '',
+    refProductSearchVideo: '',
+    videoRefTab: 'product',
+    videoRefProduct: null,
+    videoRefUpload: null,
+    videoUploadDrag: false,
     selectedCalSlot: {},
     vdpDetail: null,
 
@@ -3284,6 +4380,7 @@ function studioApp() {
     // Hashtags
     hashtagBrand: 'salk',
     hashtagPlatform: 'instagram',
+    customHashtag: '',
 
     // Studio
     studioProductType: '',
@@ -3321,9 +4418,23 @@ function studioApp() {
 
     // Settings
     settingsList: [],
+    settingsGroups: [],
+    settingsGroupOpen: {},
     connectionTestResult: null,
     settingsUser: '',
     settingsPass: '',
+
+    // Video Editor
+    editorVideos: [],
+    editorAudioFiles: [],
+    editorSelectedVideo: null,
+    editorVideoInfo: null,
+    editorInstruction: '',
+    editorHistory: [],
+    editorProcessing: false,
+    editorResult: null,
+    editorAudioPath: '',
+    editorUploadDrag: false,
 
     // Performance
     metricPieceId: '',
@@ -3349,6 +4460,7 @@ function studioApp() {
       await this.refreshData();
       this.$watch('tab', (val) => {
         if (val === 'video') this.loadVideoStatus();
+        if (val === 'editor') this.loadEditorData();
         if (val === 'publish') { this.loadApprovedPieces(); this.loadPublishStatus(); }
         if (val === 'settings') this.loadSettings();
       });
@@ -3408,7 +4520,10 @@ function studioApp() {
       if (reviewsRes.status === 'fulfilled') this.reviews = reviewsRes.value || [];
       if (metricsRes.status === 'fulfilled') this.metrics = metricsRes.value || [];
       if (metricsSumRes.status === 'fulfilled') this.perfSummary = metricsSumRes.value || {};
-      if (personasRes.status === 'fulfilled') this.personas = personasRes.value || [];
+      if (personasRes.status === 'fulfilled') {
+        const pData = personasRes.value || {};
+        this.personas = Array.isArray(pData) ? pData : Object.values(pData);
+      }
       this.loadVideoStatus();
       this.loadPublishStatus();
       this.dataLoading = false;
@@ -3431,17 +4546,28 @@ function studioApp() {
     },
 
     // Toast notification
+    fmtNum(n) {
+      if (n == null || isNaN(n)) return '0';
+      return Number(n).toLocaleString('pt-BR');
+    },
+
+    fmtDate(d) {
+      if (!d) return '';
+      try { return new Date(d).toLocaleDateString('pt-BR'); } catch { return d; }
+    },
+
     notify(message, type = 'success') {
       this.toastMessage = message;
       this.toastType = type;
       this.toastVisible = true;
-      setTimeout(() => { this.toastVisible = false; }, 4000);
+      if (this._toastTimer) clearTimeout(this._toastTimer);
+      this._toastTimer = setTimeout(() => { this.toastVisible = false; }, 2500);
     },
 
     // Piece helpers
     parsePieceNotes(notes) {
       if (!notes) return {};
-      try { return JSON.parse(notes); } catch(e) { return {}; }
+      try { const r = JSON.parse(notes); return (r && typeof r === 'object') ? r : {}; } catch(e) { return {}; }
     },
 
     async generateCopyForPiece(pieceId) {
@@ -3530,6 +4656,10 @@ function studioApp() {
     piecesInStage(stage) {
       let filtered = this.pieces.filter(p => p.stage === stage);
       if (this.boardBrandFilter) filtered = filtered.filter(p => p.brand === this.boardBrandFilter);
+      if (this.globalSearch) {
+        const q = this.globalSearch.toLowerCase();
+        filtered = filtered.filter(p => (p.title || '').toLowerCase().includes(q) || (p.product || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q) || (p.copy_text || '').toLowerCase().includes(q));
+      }
       return filtered;
     },
 
@@ -3633,6 +4763,25 @@ function studioApp() {
         await this.loadPieces();
         this.notify('Peca excluida');
       } catch(e) { this.notify('Erro ao excluir: ' + e.message, 'error'); }
+    },
+
+    async rejectPiece(pieceId) {
+      const reason = prompt('Motivo da rejeicao (opcional):') || '';
+      try {
+        await this.movePieceStage(pieceId, 'briefing');
+        if (reason) {
+          const piece = this.pieces.find(p => p.id === pieceId);
+          const notes = piece ? (piece.notes || '') : '';
+          const rejection = JSON.stringify({ rejected_at: new Date().toISOString(), reason });
+          await this.api(`/api/production/pieces/${pieceId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ notes: notes + '\n[REJEITADO] ' + reason }),
+          });
+        }
+        this.notify('Peca rejeitada e retornada para briefing');
+        this.showPieceDetail = false;
+        await this.loadPieces();
+      } catch(e) { this.notify('Erro ao rejeitar: ' + e.message, 'error'); }
     },
 
     async sendToReview(pieceId) {
@@ -3761,6 +4910,7 @@ function studioApp() {
     },
 
     async publishPiece(piece) {
+      if (!confirm(`Publicar "${piece.title || piece.id}" em ${piece.platform}? Esta acao nao pode ser desfeita.`)) return;
       this.publishingPiece = piece.id;
       try {
         const platform = (piece.platform || 'instagram').toLowerCase().split(' ')[0];
@@ -3791,18 +4941,149 @@ function studioApp() {
       this.publishingPiece = null;
     },
 
+    // Video Editor
+    async loadEditorData() {
+      try {
+        const [vids, auds] = await Promise.all([
+          this.api('/api/video/editor/files'),
+          this.api('/api/video/editor/audio'),
+        ]);
+        this.editorVideos = vids?.videos || [];
+        this.editorAudioFiles = auds?.audio || [];
+      } catch(e) { console.error('Erro ao carregar editor:', e); }
+    },
+
+    async editorSelectVideo(video) {
+      this.editorSelectedVideo = video;
+      this.editorVideoInfo = null;
+      this.editorResult = null;
+      try {
+        this.editorVideoInfo = await this.api('/api/video/editor/analyze', {
+          method: 'POST',
+          body: JSON.stringify({ video_path: video.path }),
+        });
+      } catch(e) { this.notify('Erro ao analisar video: ' + e.message, 'error'); }
+    },
+
+    async editorSendInstruction() {
+      if (!this.editorInstruction.trim() || !this.editorSelectedVideo) return;
+      this.editorProcessing = true;
+      this.editorResult = null;
+      const instruction = this.editorInstruction;
+      this.editorHistory.push({ role: 'user', text: instruction, time: new Date().toLocaleTimeString() });
+      try {
+        const result = await this.api('/api/video/editor/execute', {
+          method: 'POST',
+          body: JSON.stringify({
+            video_path: this.editorSelectedVideo.path,
+            instruction: instruction,
+            audio_path: this.editorAudioPath || '',
+            context: this.editorHistory.filter(h => h.role === 'assistant' && h.command).map(h => 'Edicao anterior: ' + h.command).join('\n'),
+          }),
+        });
+        this.editorResult = result;
+        this.editorHistory.push({
+          role: 'assistant',
+          text: result.success
+            ? `Editado com sucesso (${result.elapsed_seconds}s, ${result.size_mb}MB)`
+            : `Erro: ${result.error}`,
+          command: result.ffmpeg_command || '',
+          success: result.success,
+          output_url: result.output_url || '',
+          time: new Date().toLocaleTimeString(),
+        });
+        if (result.success) {
+          this.editorInstruction = '';
+          await this.loadEditorData();
+        }
+      } catch(e) {
+        this.editorHistory.push({ role: 'assistant', text: 'Erro: ' + e.message, success: false, time: new Date().toLocaleTimeString() });
+        this.notify('Erro: ' + e.message, 'error');
+      }
+      this.editorProcessing = false;
+    },
+
+    editorUseResult() {
+      if (this.editorResult?.success && this.editorResult?.output_path) {
+        this.editorSelectedVideo = {
+          name: this.editorResult.output_path.split(/[/\\]/).pop(),
+          path: this.editorResult.output_path,
+          url: this.editorResult.output_url,
+          size_mb: this.editorResult.size_mb,
+          source: 'editado',
+        };
+        this.editorVideoInfo = null;
+        this.editorResult = null;
+        this.editorSelectVideo(this.editorSelectedVideo);
+        this.notify('Video editado carregado para nova edicao');
+      }
+    },
+
+    async editorUploadVideo(event) {
+      const files = event.target?.files || event.dataTransfer?.files;
+      if (!files?.length) return;
+      const file = files[0];
+      if (!file.type.startsWith('video/')) { this.notify('Selecione um arquivo de video', 'error'); return; }
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const resp = await fetch('/api/uploads?purpose=video', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('studio_token') },
+          body: formData,
+        });
+        if (!resp.ok) throw new Error('Upload falhou');
+        const data = await resp.json();
+        this.notify('Video enviado com sucesso');
+        await this.loadEditorData();
+      } catch(e) { this.notify('Erro no upload: ' + e.message, 'error'); }
+      this.editorUploadDrag = false;
+    },
+
+    async editorUploadAudio(event) {
+      const files = event.target?.files || event.dataTransfer?.files;
+      if (!files?.length) return;
+      const file = files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        await fetch('/api/uploads?purpose=audio', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('studio_token') },
+          body: formData,
+        });
+        this.notify('Audio enviado');
+        await this.loadEditorData();
+      } catch(e) { this.notify('Erro no upload: ' + e.message, 'error'); }
+    },
+
     // Settings
     async loadSettings() {
       try {
         const data = await this.api('/api/settings') || {};
-        this.settingsList = (data.settings || []).map(s => ({
+        const defs = data.definitions || [];
+        const status = data.status || {};
+        const groups = data.groups || {};
+        // Filter out auth keys (handled by dedicated section)
+        this.settingsList = defs.filter(s => s.group !== 'auth').map(s => ({
           key: s.key,
           label: s.label || s.key,
           description: s.description || '',
-          configured: s.configured || false,
+          group: s.group || '',
+          configured: status[s.key]?.configured || false,
           placeholder: s.placeholder || '',
           value: '',
         }));
+        // Build groups (excluding auth)
+        const groupKeys = [...new Set(this.settingsList.map(s => s.group))];
+        this.settingsGroups = groupKeys.map(k => ({
+          key: k,
+          label: groups[k]?.label || k,
+        }));
+        // Default: first group open
+        if (!Object.keys(this.settingsGroupOpen).length) {
+          groupKeys.forEach((k, i) => { this.settingsGroupOpen[k] = i === 0; });
+        }
       } catch(e) { console.error('Erro ao carregar settings:', e); }
     },
 
@@ -3811,7 +5092,7 @@ function studioApp() {
       try {
         await this.api('/api/settings', {
           method: 'PUT',
-          body: JSON.stringify({ [setting.key]: setting.value }),
+          body: JSON.stringify({ settings: { [setting.key]: setting.value } }),
         });
         setting.configured = true;
         setting.value = '';
@@ -3827,13 +5108,15 @@ function studioApp() {
     },
 
     async updateAuth() {
-      if (!this.settingsUser || !this.settingsPass) return;
+      if (!this.settingsUser || !this.settingsPass) { this.notify('Preencha usuario e senha', 'error'); return; }
       try {
         await this.api('/api/settings', {
           method: 'PUT',
           body: JSON.stringify({
-            STUDIO_USER: this.settingsUser,
-            STUDIO_PASS: this.settingsPass,
+            settings: {
+              STUDIO_USER: this.settingsUser,
+              STUDIO_PASS: this.settingsPass,
+            }
           }),
         });
         this.settingsUser = '';
@@ -4019,6 +5302,120 @@ function studioApp() {
       this.copyCharCount = this.copyText.length;
     },
 
+    // Assets — Biblioteca
+    assetTotalProducts() {
+      return Object.values(this.productImages).reduce((sum, arr) => sum + arr.length, 0);
+    },
+    assetFilteredCategories() {
+      let cats = Object.keys(this.productImages).sort();
+      if (this.assetCategoryFilter) cats = cats.filter(c => c === this.assetCategoryFilter);
+      if (this.assetSearch) {
+        const q = this.assetSearch.toLowerCase();
+        cats = cats.filter(c => this.productImages[c].some(img => img.name.toLowerCase().includes(q)));
+      }
+      return cats;
+    },
+    assetFilteredItems(cat) {
+      const items = this.productImages[cat] || [];
+      if (!this.assetSearch) return items;
+      const q = this.assetSearch.toLowerCase();
+      return items.filter(img => img.name.toLowerCase().includes(q));
+    },
+    assetFilteredCount() {
+      return this.assetFilteredCategories().reduce((sum, cat) => sum + this.assetFilteredItems(cat).length, 0);
+    },
+    assetCatSize(cat) {
+      const total = (this.productImages[cat] || []).reduce((s, img) => s + (img.size_kb || 0), 0);
+      return total > 1024 ? (total / 1024).toFixed(1) + ' MB' : Math.round(total) + ' KB';
+    },
+    openAssetModal(img, cat) {
+      this.selectedImage = img;
+      const list = this.assetTab === 'logos'
+        ? this.logos.filter(l => !this.logoSearch || l.name.toLowerCase().includes(this.logoSearch.toLowerCase()))
+        : this.assetFilteredItems(cat);
+      this.assetModalList = list;
+      this.assetModalIndex = list.findIndex(i => i.path === img.path);
+      if (this.assetModalIndex < 0) this.assetModalIndex = 0;
+      this.showImageModal = true;
+    },
+    navigateAsset(dir) {
+      if (!this.assetModalList.length) return;
+      this.assetModalIndex = (this.assetModalIndex + dir + this.assetModalList.length) % this.assetModalList.length;
+      this.selectedImage = this.assetModalList[this.assetModalIndex];
+    },
+    copyAssetUrl(img) {
+      if (!img) return;
+      const url = window.location.origin + img.url;
+      navigator.clipboard.writeText(url).then(() => this.notify('URL copiada!')).catch(() => this.notify('Erro ao copiar', 'error'));
+    },
+    logoGroupedBrands() {
+      const brands = [...new Set(this.logos.map(l => l.category))].sort();
+      if (!this.logoSearch) return brands;
+      const q = this.logoSearch.toLowerCase();
+      return brands.filter(b => this.logos.some(l => l.category === b && l.name.toLowerCase().includes(q)));
+    },
+    logoFilteredByBrand(brand) {
+      let items = this.logos.filter(l => l.category === brand);
+      if (this.logoSearch) {
+        const q = this.logoSearch.toLowerCase();
+        items = items.filter(l => l.name.toLowerCase().includes(q));
+      }
+      return items;
+    },
+
+    // Reference / Upload helpers
+    refFilteredCategories(context) {
+      const search = context === 'video' ? this.refProductSearchVideo : this.refProductSearch;
+      let cats = Object.keys(this.productImages).sort();
+      if (search) {
+        const q = search.toLowerCase();
+        cats = cats.filter(c => this.productImages[c].some(img => img.name.toLowerCase().includes(q)));
+      }
+      return cats;
+    },
+    refFilteredProducts(cat) {
+      const items = this.productImages[cat] || [];
+      if (!this.refProductSearch) return items;
+      const q = this.refProductSearch.toLowerCase();
+      return items.filter(img => img.name.toLowerCase().includes(q));
+    },
+    refFilteredProductsVideo(cat) {
+      const items = this.productImages[cat] || [];
+      if (!this.refProductSearchVideo) return items;
+      const q = this.refProductSearchVideo.toLowerCase();
+      return items.filter(img => img.name.toLowerCase().includes(q));
+    },
+    async handleRefUpload(files, context) {
+      if (!files || !files.length) return;
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const resp = await fetch(`/api/uploads?purpose=${context}`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('studio_token') },
+            body: formData,
+          });
+          if (!resp.ok) {
+            const err = await resp.json();
+            this.notify(err.detail || 'Erro no upload', 'error');
+            continue;
+          }
+          const result = await resp.json();
+          if (context === 'studio') {
+            this.studioRefUploads.push(result);
+          } else if (context === 'video') {
+            result.is_video = file.type.startsWith('video/');
+            this.videoRefUpload = result;
+            this.videoImagePath = result.url;
+          }
+          this.notify('Upload concluido: ' + file.name);
+        } catch(e) {
+          this.notify('Erro no upload: ' + e.message, 'error');
+        }
+      }
+    },
+
     // Review
     filteredReviews() {
       if (!this.reviewFilter) return this.reviews;
@@ -4053,6 +5450,15 @@ function studioApp() {
         this.calSlots = data.slots || [];
         this.notify('Calendario gerado');
       } catch(e) { this.notify('Erro ao gerar calendario: ' + e.message, 'error'); }
+    },
+
+    async saveCalSlot() {
+      const slot = this.selectedCalSlot;
+      if (!slot) return;
+      const idx = this.calSlots.findIndex(s => s.platform === slot.platform && s.day === slot.day && s.time === slot.time);
+      if (idx >= 0) this.calSlots[idx] = { ...slot };
+      this.showCalSlotModal = false;
+      this.notify('Slot atualizado — clique "Salvar Ajustes" para persistir');
     },
 
     async saveCalendar() {
@@ -4101,14 +5507,45 @@ function studioApp() {
       } catch(e) { this.notify('Erro ao carregar hashtags: ' + e.message, 'error'); }
     },
 
+    hashtagMaxForPlatform() {
+      const limits = { instagram: 11, linkedin: 5, facebook: 3 };
+      return limits[this.hashtagPlatform] || 11;
+    },
+
     toggleHashtag(h) {
       const idx = this.selectedHashtags.indexOf(h);
-      if (idx >= 0) this.selectedHashtags.splice(idx, 1);
-      else this.selectedHashtags.push(h);
+      if (idx >= 0) {
+        this.selectedHashtags.splice(idx, 1);
+      } else {
+        const max = this.hashtagMaxForPlatform();
+        if (this.selectedHashtags.length >= max) {
+          this.notify(`Limite de ${max} hashtags para ${this.hashtagPlatform}`, 'error');
+          return;
+        }
+        this.selectedHashtags.push(h);
+      }
+    },
+
+    addCustomHashtag() {
+      let tag = (this.customHashtag || '').trim();
+      if (!tag) return;
+      if (!tag.startsWith('#')) tag = '#' + tag;
+      const max = this.hashtagMaxForPlatform();
+      if (this.selectedHashtags.length >= max) {
+        this.notify(`Limite de ${max} hashtags para ${this.hashtagPlatform}`, 'error');
+        return;
+      }
+      if (!this.selectedHashtags.includes(tag)) {
+        this.selectedHashtags.push(tag);
+        this.notify(`Hashtag ${tag} adicionada`);
+      }
+      this.customHashtag = '';
     },
 
     copySelectedHashtags() {
+      if (this.selectedHashtags.length === 0) { this.notify('Selecione hashtags primeiro', 'error'); return; }
       navigator.clipboard.writeText(this.selectedHashtags.join(' '));
+      this.notify(`${this.selectedHashtags.length} hashtags copiadas!`);
     },
 
     // Performance

@@ -1039,7 +1039,28 @@ class StudioService:
 
     def get_hashtags_for_brand(self, brand: str, platform: str = "instagram") -> dict:
         bank = self.load_hashtag_bank()
-        brand_data = bank.get("brands", bank).get(brand, {})
+
+        # Map short brand names to YAML keys
+        brand_key_map = {
+            "salk": "salk_medical",
+            "mendel": "mendel_medical",
+            "manager": "manager_grupo",
+            "dayho": "dayho",
+        }
+        yaml_key = brand_key_map.get(brand, brand)
+
+        # Try mapped key first, then original, then inside "brands" dict
+        brand_data = bank.get(yaml_key, bank.get(brand, {}))
+        if not brand_data and "brands" in bank:
+            brand_data = bank["brands"].get(yaml_key, bank["brands"].get(brand, {}))
+
+        def _extract_tags(section) -> list:
+            """Extract tags from a section that may be a list or a dict with 'tags' key."""
+            if isinstance(section, list):
+                return section
+            if isinstance(section, dict):
+                return section.get("tags", [])
+            return []
 
         result = {
             "core": [],
@@ -1050,12 +1071,13 @@ class StudioService:
         }
 
         if isinstance(brand_data, dict):
-            result["core"] = brand_data.get("core", brand_data.get("always", []))
-            result["product"] = brand_data.get("product", brand_data.get("rotate_by_post", []))
-            result["niche"] = brand_data.get("niche", brand_data.get("complement", []))
-            result["platform_specific"] = brand_data.get(
-                f"{platform}_tags",
-                brand_data.get("linkedin", []) if platform == "linkedin" else [],
+            result["core"] = _extract_tags(brand_data.get("core", []))
+            result["product"] = _extract_tags(
+                brand_data.get("produto", brand_data.get("product", brand_data.get("tecnico", [])))
+            )
+            result["niche"] = _extract_tags(brand_data.get("nicho", brand_data.get("niche", [])))
+            result["platform_specific"] = _extract_tags(
+                brand_data.get(platform, brand_data.get(f"{platform}_tags", []))
             )
 
         return result

@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +36,7 @@ from content_pipeline.web.models import (
     ProductionPiece,
     PromptPreviewRequest,
     ReviewItem,
+    ReviewUpdate,
     VDPCreateRequest,
 )
 from content_pipeline.automation.copywriter import BrandCopywriter, PersonaClone
@@ -91,41 +92,9 @@ async def lifespan(app: FastAPI):
             logger.error("Falha ao inicializar StudioService: %s", exc2)
             _service = None
 
-    if config and _service:
-        try:
-            _mount_static_dirs(app, config)
-        except Exception as exc:
-            logger.warning("Falha ao montar diretórios estáticos: %s", exc)
     yield
     _service = None
 
-
-def _mount_static_dirs(app: FastAPI, config) -> None:
-    product_dir = config.product_images_dir
-    if product_dir.exists():
-        app.mount(
-            "/assets/produtos",
-            StaticFiles(directory=str(product_dir)),
-            name="produtos",
-        )
-
-    logos_dir = config.assets_dir / "logomarcas"
-    if not logos_dir.exists():
-        logos_dir = config.assets_dir / "logos"
-    if logos_dir.exists():
-        app.mount(
-            "/assets/logos",
-            StaticFiles(directory=str(logos_dir)),
-            name="logos",
-        )
-
-    output_dir = config.output_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
-    app.mount(
-        "/output",
-        StaticFiles(directory=str(output_dir)),
-        name="output",
-    )
 
 
 # --- App ---
@@ -166,6 +135,27 @@ app.add_middleware(
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# --- Mount static asset directories (must be at module level, not in lifespan) ---
+_project_root = Path.cwd()
+for _candidate in [Path.cwd()] + list(Path.cwd().parents):
+    if (_candidate / "docs_user").exists() or (_candidate / "squads").exists():
+        _project_root = _candidate
+        break
+
+_product_dir = _project_root / "docs_user" / "imagem_produtos"
+if _product_dir.exists():
+    app.mount("/assets/produtos", StaticFiles(directory=str(_product_dir)), name="produtos")
+
+_logos_dir = _project_root / "docs_user" / "logomarcas"
+if not _logos_dir.exists():
+    _logos_dir = _project_root / "docs_user" / "logos"
+if _logos_dir.exists():
+    app.mount("/assets/logos", StaticFiles(directory=str(_logos_dir)), name="logos")
+
+_output_dir = _project_root / "output"
+_output_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/output", StaticFiles(directory=str(_output_dir)), name="output")
 
 
 @app.exception_handler(Exception)
@@ -264,34 +254,62 @@ async def test_connections(user: dict = Depends(require_auth)):
     svc = get_service()
     results = {}
 
-    # OpenRouter
-    or_key = svc.settings.get("OPENROUTER_API_KEY")
-    results["openrouter"] = {
-        "configured": bool(or_key),
-        "status": "ready" if or_key else "not_configured",
+    # --- Geração de Imagem ---
+    fal_key = svc.settings.get("FAL_API_KEY")
+    results["fal.ai (NB2)"] = {
+        "configured": bool(fal_key),
+        "status": "ready" if fal_key else "not_configured",
     }
 
-    # Gemini
     gemini_key = svc.settings.get("GOOGLE_API_KEY")
     results["gemini"] = {
         "configured": bool(gemini_key),
         "status": "ready" if gemini_key else "not_configured",
     }
 
-    # Kling
+    # --- LLM ---
+    or_key = svc.settings.get("OPENROUTER_API_KEY")
+    results["openrouter"] = {
+        "configured": bool(or_key),
+        "status": "ready" if or_key else "not_configured",
+    }
+
+    # --- Video & Animação ---
+    grok_key = svc.settings.get("GROK_API_KEY")
+    results["grok"] = {
+        "configured": bool(grok_key),
+        "status": "ready" if grok_key else "not_configured",
+    }
+
+    minimax_key = svc.settings.get("MINIMAX_API_KEY")
+    results["minimax"] = {
+        "configured": bool(minimax_key),
+        "status": "ready" if minimax_key else "not_configured",
+    }
+
+    pika_key = svc.settings.get("PIKA_API_KEY")
+    results["pika"] = {
+        "configured": bool(pika_key),
+        "status": "ready" if pika_key else "not_configured",
+    }
+
+    runway_key = svc.settings.get("RUNWAY_API_KEY")
+    results["runway"] = {
+        "configured": bool(runway_key),
+        "status": "ready" if runway_key else "not_configured",
+    }
+
     results["kling"] = {
         "configured": svc.kling_client.configured if hasattr(svc, "kling_client") else False,
         "status": "ready" if (hasattr(svc, "kling_client") and svc.kling_client.configured) else "not_configured",
     }
 
-    # Veo 3
     results["veo3"] = {
         "configured": svc.veo3_client.configured if hasattr(svc, "veo3_client") else False,
         "status": "ready" if (hasattr(svc, "veo3_client") and svc.veo3_client.configured) else "not_configured",
         "mode": svc.veo3_client.mode if hasattr(svc, "veo3_client") else "not_configured",
     }
 
-    # ElevenLabs
     results["elevenlabs"] = {
         "configured": svc.tts_client.configured if hasattr(svc, "tts_client") else False,
         "status": "ready" if (hasattr(svc, "tts_client") and svc.tts_client.configured) else "not_configured",
@@ -426,6 +444,55 @@ async def list_claims():
 @app.get("/api/assets/brands")
 async def get_brands():
     return get_service().load_brand_guidelines()
+
+
+@app.post("/api/uploads")
+async def upload_file(file: UploadFile = File(...), purpose: str = Query("reference")):
+    """Upload a reference file (image/video) for use in content generation."""
+    allowed_ext = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".mp4", ".mov", ".webm"}
+    ext = Path(file.filename).suffix.lower() if file.filename else ""
+    if ext not in allowed_ext:
+        raise HTTPException(400, f"Tipo de arquivo nao suportado: {ext}. Permitidos: {', '.join(allowed_ext)}")
+    max_size = 50 * 1024 * 1024  # 50MB
+    contents = await file.read()
+    if len(contents) > max_size:
+        raise HTTPException(400, "Arquivo excede o limite de 50MB")
+
+    upload_dir = _project_root / "output" / "uploads" / purpose
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    import uuid
+    safe_name = f"{uuid.uuid4().hex[:8]}_{file.filename}"
+    dest = upload_dir / safe_name
+    dest.write_bytes(contents)
+
+    url = f"/output/uploads/{purpose}/{safe_name}"
+    size_kb = round(len(contents) / 1024, 1)
+    return {"url": url, "path": str(dest), "name": file.filename, "size_kb": size_kb, "purpose": purpose}
+
+
+@app.get("/api/uploads")
+async def list_uploads(purpose: str = Query("")):
+    """List uploaded reference files."""
+    base = _project_root / "output" / "uploads"
+    if not base.exists():
+        return []
+    results = []
+    search_dirs = [base / purpose] if purpose else [d for d in base.iterdir() if d.is_dir()]
+    for d in search_dirs:
+        if not d.exists():
+            continue
+        for f in sorted(d.iterdir()):
+            if f.is_file() and f.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".mp4", ".mov", ".webm"}:
+                results.append({
+                    "url": f"/output/uploads/{d.name}/{f.name}",
+                    "path": str(f),
+                    "name": f.name,
+                    "size_kb": round(f.stat().st_size / 1024, 1),
+                    "purpose": d.name,
+                    "is_video": f.suffix.lower() in {".mp4", ".mov", ".webm"},
+                })
+    return results
 
 
 # =========================================================================
@@ -704,7 +771,7 @@ async def create_review(req: ReviewItem):
 
 
 @app.put("/api/reviews/{review_id}")
-async def update_review(review_id: str, req: ReviewItem):
+async def update_review(review_id: str, req: ReviewUpdate):
     svc = get_service()
     result = svc.update_review(review_id, req.verdict, req.comments)
     if result is None:
@@ -881,10 +948,15 @@ async def llm_usage(user: dict = Depends(require_auth)):
 @app.get("/api/video/status")
 async def video_status(user: dict = Depends(require_auth)):
     svc = get_service()
+    settings = svc.settings_store if hasattr(svc, "settings_store") else None
     return {
         "kling_configured": hasattr(svc, "kling_client") and svc.kling_client is not None and svc.kling_client.configured,
         "veo3_configured": hasattr(svc, "veo3_client") and svc.veo3_client is not None and svc.veo3_client.configured,
         "veo3_mode": svc.veo3_client.mode if hasattr(svc, "veo3_client") and svc.veo3_client else "not_configured",
+        "minimax_configured": hasattr(svc, "minimax_client") and svc.minimax_client is not None and svc.minimax_client.configured,
+        "grok_configured": bool(settings and settings.get("GROK_API_KEY")) if settings else bool(os.getenv("GROK_API_KEY")),
+        "pika_configured": bool(settings and settings.get("PIKA_API_KEY")) if settings else bool(os.getenv("PIKA_API_KEY")),
+        "runway_configured": bool(settings and settings.get("RUNWAY_API_KEY")) if settings else bool(os.getenv("RUNWAY_API_KEY")),
         "elevenlabs_configured": hasattr(svc, "tts_client") and svc.tts_client is not None and svc.tts_client.configured,
         "ffmpeg_available": hasattr(svc, "video_assembler") and svc.video_assembler is not None and svc.video_assembler.available,
     }
@@ -1035,6 +1107,320 @@ async def assemble_video(request: Request, user: dict = Depends(require_auth)):
 
 
 # =========================================================================
+# VIDEO EDITOR — Edicao inteligente com FFmpeg + instrucoes naturais
+# =========================================================================
+
+@app.get("/api/video/editor/files")
+async def list_editor_videos(user: dict = Depends(require_auth)):
+    """Lista videos disponiveis para edicao (output/ + uploads/)."""
+    svc = get_service()
+    videos = []
+    out = svc.config.output_dir
+    search_dirs = [
+        (out / "video", "gerado"),
+        (out / "uploads" / "video", "upload"),
+        (out / "video" / "final", "editado"),
+        (out / "video" / "editor", "editado"),
+        (out / "femipa", "femipa"),
+    ]
+    # Also scan all subdirs of output for mp4 files
+    if out.exists():
+        for sub in out.iterdir():
+            if sub.is_dir() and sub.name not in ("video", "uploads", "femipa", "studio", "generated", "logs"):
+                search_dirs.append((sub, sub.name))
+    seen = set()
+    for dir_path, source in search_dirs:
+        if not dir_path.exists():
+            continue
+        for f in dir_path.iterdir():
+            if f.suffix.lower() in (".mp4", ".mov", ".avi", ".mkv", ".webm") and f.name not in seen:
+                seen.add(f.name)
+                videos.append({
+                    "name": f.name,
+                    "path": str(f),
+                    "url": f"/output/{f.relative_to(out)}" if str(f).startswith(str(out)) else "",
+                    "size_mb": round(f.stat().st_size / (1024 * 1024), 2),
+                    "source": source,
+                })
+    return {"videos": sorted(videos, key=lambda v: v["name"])}
+
+
+@app.get("/api/video/editor/audio")
+async def list_editor_audio(user: dict = Depends(require_auth)):
+    """Lista arquivos de audio disponiveis (narracoes, musicas)."""
+    svc = get_service()
+    audio_files = []
+    out = svc.config.output_dir
+    search_dirs = [
+        (out / "video" / "audio", "narracao"),
+        (out / "uploads" / "audio", "upload"),
+        (out / "audio", "audio"),
+    ]
+    seen = set()
+    for dir_path, source in search_dirs:
+        if not dir_path.exists():
+            continue
+        for f in dir_path.iterdir():
+            if f.suffix.lower() in (".mp3", ".wav", ".aac", ".ogg", ".m4a") and f.name not in seen:
+                seen.add(f.name)
+                audio_files.append({
+                    "name": f.name,
+                    "path": str(f),
+                    "size_mb": round(f.stat().st_size / (1024 * 1024), 2),
+                    "source": source,
+                })
+    return {"audio": sorted(audio_files, key=lambda a: a["name"])}
+
+
+@app.post("/api/video/editor/analyze")
+async def analyze_video(request: Request, user: dict = Depends(require_auth)):
+    """Analisa video com ffprobe — retorna duracao, resolucao, codec, audio."""
+    import json as _json
+    import shutil
+    import subprocess as _sp
+
+    data = await request.json()
+    video_path = data.get("video_path", "")
+    if not video_path or not Path(video_path).exists():
+        raise HTTPException(404, "Video nao encontrado")
+
+    ffprobe = shutil.which("ffprobe")
+    if not ffprobe:
+        raise HTTPException(503, "ffprobe nao disponivel")
+
+    try:
+        result = _sp.run(
+            [ffprobe, "-v", "quiet", "-print_format", "json",
+             "-show_format", "-show_streams", video_path],
+            capture_output=True, text=True, timeout=15,
+        )
+        info = _json.loads(result.stdout)
+        fmt = info.get("format", {})
+        streams = info.get("streams", [])
+
+        video_stream = next((s for s in streams if s.get("codec_type") == "video"), {})
+        audio_stream = next((s for s in streams if s.get("codec_type") == "audio"), None)
+
+        return {
+            "duration": round(float(fmt.get("duration", 0)), 2),
+            "size_mb": round(int(fmt.get("size", 0)) / (1024 * 1024), 2),
+            "width": int(video_stream.get("width", 0)),
+            "height": int(video_stream.get("height", 0)),
+            "codec": video_stream.get("codec_name", "unknown"),
+            "fps": round(int(video_stream.get("r_frame_rate", "0/1").split("/")[0]) / max(int(video_stream.get("r_frame_rate", "0/1").split("/")[1]), 1), 1) if "/" in str(video_stream.get("r_frame_rate", "")) else float(video_stream.get("r_frame_rate", 0)),
+            "has_audio": audio_stream is not None,
+            "audio_codec": audio_stream.get("codec_name", "") if audio_stream else "",
+            "bitrate_kbps": round(int(fmt.get("bit_rate", 0)) / 1000),
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Erro ao analisar video: {str(e)}")
+
+
+@app.post("/api/video/editor/execute")
+async def execute_video_edit(request: Request, user: dict = Depends(require_auth)):
+    """
+    Executa edicao de video via FFmpeg com instrucoes em linguagem natural.
+
+    Recebe instrucoes do usuario, converte em comando FFmpeg via LLM,
+    executa e retorna o resultado.
+    """
+    import shutil
+    import subprocess as _sp
+    import time as _time
+
+    svc = get_service()
+    data = await request.json()
+
+    video_path = data.get("video_path", "")
+    instruction = data.get("instruction", "")
+    audio_path = data.get("audio_path", "")
+    extra_context = data.get("context", "")
+
+    if not video_path or not Path(video_path).exists():
+        raise HTTPException(404, "Video nao encontrado")
+    if not instruction.strip():
+        raise HTTPException(400, "Instrucao obrigatoria")
+
+    ffmpeg_bin = shutil.which("ffmpeg")
+    if not ffmpeg_bin:
+        raise HTTPException(503, "FFmpeg nao disponivel")
+
+    # --- Analisar video ---
+    ffprobe = shutil.which("ffprobe")
+    video_info = ""
+    if ffprobe:
+        try:
+            import json as _json
+            probe = _sp.run(
+                [ffprobe, "-v", "quiet", "-print_format", "json",
+                 "-show_format", "-show_streams", video_path],
+                capture_output=True, text=True, timeout=10,
+            )
+            info = _json.loads(probe.stdout)
+            fmt = info.get("format", {})
+            vs = next((s for s in info.get("streams", []) if s.get("codec_type") == "video"), {})
+            video_info = (
+                f"Duracao: {fmt.get('duration', '?')}s, "
+                f"Resolucao: {vs.get('width', '?')}x{vs.get('height', '?')}, "
+                f"Codec: {vs.get('codec_name', '?')}, "
+                f"FPS: {vs.get('r_frame_rate', '?')}, "
+                f"Audio: {'sim' if any(s.get('codec_type') == 'audio' for s in info.get('streams', [])) else 'nao'}"
+            )
+        except Exception:
+            video_info = "Nao foi possivel analisar o video"
+
+    # --- Gerar comando FFmpeg via LLM ---
+    output_dir = svc.config.output_dir / "video" / "editor"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = int(_time.time())
+    output_path = output_dir / f"edit_{timestamp}.mp4"
+
+    system_prompt = f"""Voce e um especialista em edicao de video com FFmpeg.
+O usuario quer editar um video e deu instrucoes em linguagem natural.
+Converta as instrucoes em UM UNICO comando FFmpeg valido.
+
+REGRAS:
+- Responda APENAS com o comando FFmpeg, sem explicacoes
+- Use o path do ffmpeg: {ffmpeg_bin}
+- Video de entrada: {video_path}
+- Output DEVE ser: {output_path}
+- Sempre use -y para sobrescrever
+- Use -movflags +faststart para web
+- Codec video: libx264 -preset medium -crf 23
+- Codec audio: aac -b:a 192k
+- Se houver audio adicional: {audio_path or 'nenhum fornecido'}
+- Info do video: {video_info}
+- NAO use filtros complexos a menos que necessario
+- Para fade use: fade=t=in:st=0:d=0.5,fade=t=out:st=<calc>:d=1
+- Para cortar use: -ss <inicio> -t <duracao>
+- Para texto/legenda use: drawtext=text='...':fontsize=24:fontcolor=white:x=(w-text_w)/2:y=h-50
+{f'- Contexto adicional: {extra_context}' if extra_context else ''}"""
+
+    user_prompt = f"Instrucao do usuario: {instruction}"
+
+    # Tentar via OpenRouter
+    or_key = svc.settings.get("OPENROUTER_API_KEY")
+    ffmpeg_command = ""
+
+    if or_key:
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {or_key}"},
+                    json={
+                        "model": "anthropic/claude-sonnet-4",
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        "max_tokens": 1000,
+                        "temperature": 0,
+                    },
+                )
+                resp.raise_for_status()
+                content = resp.json()["choices"][0]["message"]["content"].strip()
+                # Limpar — extrair apenas o comando
+                for line in content.split("\n"):
+                    line = line.strip()
+                    if line.startswith(ffmpeg_bin) or line.startswith("ffmpeg"):
+                        ffmpeg_command = line
+                        break
+                if not ffmpeg_command and content.startswith(ffmpeg_bin):
+                    ffmpeg_command = content.split("\n")[0]
+                if not ffmpeg_command:
+                    # Se LLM retornou bloco de codigo
+                    import re
+                    code_match = re.search(r"```(?:bash|sh)?\s*\n(.+?)```", content, re.DOTALL)
+                    if code_match:
+                        for line in code_match.group(1).strip().split("\n"):
+                            if "ffmpeg" in line:
+                                ffmpeg_command = line.strip()
+                                break
+                if not ffmpeg_command:
+                    ffmpeg_command = content.strip().split("\n")[0]
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Erro ao gerar comando via LLM: {str(e)}",
+                "ffmpeg_command": "",
+            }
+    else:
+        return {
+            "success": False,
+            "error": "OpenRouter API Key nao configurada. Va em Configuracoes para ativar.",
+            "ffmpeg_command": "",
+        }
+
+    # Validacao de seguranca — bloquear comandos perigosos
+    dangerous = ["rm ", "del ", "format ", "mkfs", "|", "&&", ";", "`"]
+    if any(d in ffmpeg_command.lower() for d in dangerous):
+        return {
+            "success": False,
+            "error": "Comando bloqueado por seguranca",
+            "ffmpeg_command": ffmpeg_command,
+        }
+
+    # --- Executar FFmpeg ---
+    start = _time.monotonic()
+    try:
+        import shlex
+        # No Windows, shell=True com o comando completo
+        result = await asyncio.to_thread(
+            _sp.run, ffmpeg_command, shell=True,
+            capture_output=True, text=True, timeout=300,
+        )
+        elapsed = _time.monotonic() - start
+
+        if result.returncode != 0:
+            return {
+                "success": False,
+                "error": result.stderr[:800] if result.stderr else "FFmpeg retornou erro",
+                "ffmpeg_command": ffmpeg_command,
+                "elapsed_seconds": round(elapsed, 1),
+            }
+
+        if not output_path.exists():
+            return {
+                "success": False,
+                "error": "Arquivo de saida nao foi gerado",
+                "ffmpeg_command": ffmpeg_command,
+                "elapsed_seconds": round(elapsed, 1),
+            }
+
+        size_mb = round(output_path.stat().st_size / (1024 * 1024), 2)
+        # URL relativa para output
+        try:
+            rel = output_path.relative_to(svc.config.output_dir)
+            url = f"/output/{rel}"
+        except ValueError:
+            url = ""
+
+        return {
+            "success": True,
+            "output_path": str(output_path),
+            "output_url": url,
+            "size_mb": size_mb,
+            "ffmpeg_command": ffmpeg_command,
+            "elapsed_seconds": round(elapsed, 1),
+        }
+
+    except _sp.TimeoutExpired:
+        return {
+            "success": False,
+            "error": "FFmpeg timeout (>5 min)",
+            "ffmpeg_command": ffmpeg_command,
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "ffmpeg_command": ffmpeg_command,
+        }
+
+
+# =========================================================================
 # VIDEO — Complete Pipeline
 # =========================================================================
 
@@ -1049,7 +1435,7 @@ async def video_pipeline(request: Request, user: dict = Depends(require_auth)):
     video_result = None
     engine = data.get("engine", "veo3")
     try:
-        if engine == "kling" and svc.kling_client and svc.kling_client.api_key:
+        if engine == "kling" and svc.kling_client and svc.kling_client.configured:
             if data.get("image_path"):
                 video_result = await svc.kling_client.image_to_video(
                     image_path=data["image_path"],
@@ -1064,7 +1450,13 @@ async def video_pipeline(request: Request, user: dict = Depends(require_auth)):
                     aspect_ratio=data.get("aspect_ratio", "16:9"),
                 )
             results["steps"].append({"step": "video", "engine": "kling", "status": "ok"})
-        elif svc.veo3_client and svc.veo3_client.api_key:
+        elif engine == "minimax" and svc.minimax_client and svc.minimax_client.configured:
+            video_result = await svc.minimax_client.image_to_video(
+                image_path=data.get("image_path", ""),
+                prompt=data.get("prompt", ""),
+            )
+            results["steps"].append({"step": "video", "engine": "minimax", "status": "ok"})
+        elif engine == "veo3" and svc.veo3_client and svc.veo3_client.configured:
             if data.get("image_path"):
                 video_result = await svc.veo3_client.image_to_video(
                     image_path=data["image_path"],
@@ -1077,8 +1469,10 @@ async def video_pipeline(request: Request, user: dict = Depends(require_auth)):
                     aspect_ratio=data.get("aspect_ratio", "16:9"),
                 )
             results["steps"].append({"step": "video", "engine": "veo3", "status": "ok"})
+        elif engine in ("grok", "pika", "runway"):
+            results["errors"].append(f"Engine '{engine}' — cliente em desenvolvimento. Configure a API key em Configuracoes para ativar quando disponivel.")
         else:
-            results["errors"].append("Nenhum engine de video configurado (Kling ou Veo3)")
+            results["errors"].append(f"Engine '{engine}' nao configurado. Verifique a API key em Configuracoes.")
     except Exception as e:
         results["errors"].append(f"Erro gerando video: {str(e)}")
 
