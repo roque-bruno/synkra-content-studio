@@ -2058,6 +2058,266 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   a { color: #000 !important; text-decoration: underline; }
 }
+
+/* === TEMPLATE GRID (New Piece Modal) === */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+@media (max-width: 768px) {
+  .template-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.template-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+.template-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+.template-card .tmpl-icon {
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+}
+.template-card .tmpl-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.template-card .tmpl-meta {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* === A/B COMPARISON GRID === */
+.ab-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+@media (max-width: 600px) {
+  .ab-comparison-grid { grid-template-columns: 1fr; }
+}
+.ab-variation-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  transition: var(--transition);
+  position: relative;
+}
+.ab-variation-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+}
+.ab-variation-card.ab-best {
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(16,185,129,0.15);
+}
+.ab-variation-card .ab-best-badge {
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+.ab-variation-card .ab-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.ab-variation-card .ab-copy-excerpt {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* === PIPELINE FLOW ANIMATION === */
+@keyframes pipelineFlow {
+  0% { transform: translateX(-8px); opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translateX(8px); opacity: 0; }
+}
+@keyframes pipelinePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79,142,255,0); }
+  50% { box-shadow: 0 0 12px 2px var(--accent-glow); }
+}
+.pipeline-stage { position: relative; overflow: hidden; }
+.pipeline-stage.has-pieces {
+  animation: pipelinePulse 2.5s ease-in-out infinite;
+}
+.pipeline-flow-dots {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.pipeline-flow-dots span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  animation: pipelineFlow 1.8s ease-in-out infinite;
+}
+.pipeline-flow-dots span:nth-child(2) { animation-delay: 0.3s; }
+.pipeline-flow-dots span:nth-child(3) { animation-delay: 0.6s; }
+.pipeline-flow-dots span:nth-child(4) { animation-delay: 0.9s; }
+
+/* === NOTIFICATION CATEGORIES === */
+.notif-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.notif-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 8px 4px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+  position: relative;
+}
+.notif-tab:hover { color: var(--text-secondary); }
+.notif-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.notif-tab .notif-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 0.55rem;
+  font-weight: 800;
+  margin-left: 3px;
+  padding: 0 3px;
+}
+
+/* === COMPARE PANEL === */
+.compare-panel {
+  position: fixed;
+  bottom: 0;
+  left: var(--sidebar-w);
+  right: 0;
+  background: var(--bg-card);
+  border-top: 2px solid var(--accent);
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+  z-index: 250;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+.compare-columns {
+  display: grid;
+  gap: 14px;
+}
+.compare-columns.cols-2 { grid-template-columns: 1fr 1fr; }
+.compare-columns.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.compare-col {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.compare-col .compare-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.compare-col .compare-field {
+  margin-bottom: 6px;
+}
+.compare-col .compare-field-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.compare-col .compare-field-value {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+.compare-col .compare-copy-text {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--bg-darker);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  margin-top: 4px;
+}
+
+/* === SEASONAL CALENDAR HIGHLIGHTS === */
+.seasonal-date-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.seasonal-date-card.health { border-left: 3px solid var(--green); }
+.seasonal-date-card.general { border-left: 3px solid var(--accent); }
+.seasonal-date-card .seasonal-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.seasonal-date-card .seasonal-info .seasonal-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.seasonal-date-card .seasonal-info .seasonal-meta {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+/* === KPI SPARKLINES === */
+.kpi-sparkline {
+  margin-top: 4px;
+}
+.kpi-sparkline svg {
+  display: block;
+  width: 60px;
+  height: 20px;
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -2335,13 +2595,31 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
            style="position: absolute; right: 0; top: 100%; margin-top: 8px; width: 340px; max-height: 400px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 100; overflow: hidden;">
         <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
           <span style="font-weight: 700; font-size: 0.85rem;">Notificacoes</span>
-          <button class="btn btn-sm" style="font-size: 0.68rem; padding: 2px 8px;" @click="notifications.forEach(n => n.read = true)">Marcar lidas</button>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn btn-sm" style="font-size: 0.62rem; padding: 2px 6px; color: var(--red); border-color: var(--red);" @click="notifications = []">Limpar Tudo</button>
+            <button class="btn btn-sm" style="font-size: 0.62rem; padding: 2px 6px;" @click="notifications.forEach(n => n.read = true)">Marcar lidas</button>
+          </div>
         </div>
-        <div style="max-height: 340px; overflow-y: auto;">
-          <template x-if="notifications.length === 0">
+        <!-- Category Tabs -->
+        <div class="notif-tabs">
+          <button class="notif-tab" :class="notifFilter === '' ? 'active' : ''" @click="notifFilter = ''">
+            Todas <span class="notif-tab-badge" x-text="notifications.length" x-show="notifications.length > 0"></span>
+          </button>
+          <button class="notif-tab" :class="notifFilter === 'producao' ? 'active' : ''" @click="notifFilter = 'producao'">
+            Producao <span class="notif-tab-badge" x-text="notifications.filter(n => notifCategory(n) === 'producao').length" x-show="notifications.filter(n => notifCategory(n) === 'producao').length > 0"></span>
+          </button>
+          <button class="notif-tab" :class="notifFilter === 'ia' ? 'active' : ''" @click="notifFilter = 'ia'">
+            IA <span class="notif-tab-badge" x-text="notifications.filter(n => notifCategory(n) === 'ia').length" x-show="notifications.filter(n => notifCategory(n) === 'ia').length > 0"></span>
+          </button>
+          <button class="notif-tab" :class="notifFilter === 'erros' ? 'active' : ''" @click="notifFilter = 'erros'">
+            Erros <span class="notif-tab-badge" x-text="notifications.filter(n => notifCategory(n) === 'erros').length" x-show="notifications.filter(n => notifCategory(n) === 'erros').length > 0"></span>
+          </button>
+        </div>
+        <div style="max-height: 300px; overflow-y: auto;">
+          <template x-if="filteredNotifications().length === 0">
             <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.82rem;">Nenhuma notificacao</div>
           </template>
-          <template x-for="(n, idx) in notifications.slice(0, 30)" :key="idx">
+          <template x-for="(n, idx) in filteredNotifications().slice(0, 30)" :key="idx">
             <div style="padding: 10px 16px; border-bottom: 1px solid var(--border); transition: all 0.15s; cursor: default;"
                  :style="!n.read ? 'background: rgba(79,142,255,0.04)' : ''" @click="n.read = true">
               <div style="display: flex; align-items: start; gap: 8px;">
@@ -2458,10 +2736,13 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   <div class="card" style="margin-bottom: 20px;">
     <div class="pipeline-funnel">
       <template x-for="(stage, idx) in stages" :key="stage">
-        <div class="pipeline-stage" @click="boardBrandFilter = ''; tab = 'board';">
+        <div class="pipeline-stage" :class="piecesInStage(stage).length > 0 ? 'has-pieces' : ''" @click="boardBrandFilter = ''; tab = 'board';">
           <div class="pipeline-count" :style="'color:' + stageColors[stage]" x-text="piecesInStage(stage).length"></div>
           <div class="pipeline-label" x-text="stageLabels[stage]"></div>
           <div class="pipeline-bar" :style="'background:' + stageColors[stage] + '; width:' + Math.min(100, Math.max(8, piecesInStage(stage).length * 15)) + '%'"></div>
+          <div x-show="piecesInStage(stage).length > 0 && idx < stages.length - 1" class="pipeline-flow-dots">
+            <span></span><span></span><span></span><span></span>
+          </div>
           <div x-show="idx < stages.length - 1" class="pipeline-arrow">&#8250;</div>
         </div>
       </template>
@@ -2475,6 +2756,11 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <div class="kpi-data">
         <div class="kpi-value" x-text="pieces.length">0</div>
         <div class="kpi-label">Total de Pecas</div>
+        <div class="kpi-sparkline">
+          <svg viewBox="0 0 60 20" preserveAspectRatio="none">
+            <polyline :points="kpiSparklinePoints('total')" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
     </div>
     <div class="kpi-card">
@@ -2482,6 +2768,11 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <div class="kpi-data">
         <div class="kpi-value" style="color: var(--green);" x-text="pieces.filter(p => p.stage === 'approved' || p.stage === 'published').length">0</div>
         <div class="kpi-label">Aprovadas</div>
+        <div class="kpi-sparkline">
+          <svg viewBox="0 0 60 20" preserveAspectRatio="none">
+            <polyline :points="kpiSparklinePoints('approved')" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
     </div>
     <div class="kpi-card">
@@ -2775,6 +3066,9 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <button class="btn btn-sm" @click="boardSelectMode = !boardSelectMode; if(!boardSelectMode) boardSelected = []"
             :style="boardSelectMode ? 'background: var(--accent); color: white;' : ''"
             style="font-size: 0.72rem;" x-text="boardSelectMode ? 'Sair Selecao (' + boardSelected.length + ')' : 'Selecionar'"></button>
+    <button class="btn btn-sm" @click="compareMode = !compareMode; if(!compareMode) comparePieces = []"
+            :style="compareMode ? 'background: var(--purple); color: white;' : ''"
+            style="font-size: 0.72rem;" x-text="compareMode ? 'Sair Comparacao (' + comparePieces.length + '/3)' : '&#9878; Comparar'"></button>
     <button class="btn-clear-filters" x-show="boardBrandFilter || boardPlatformFilter || boardFormatFilter || boardPillarFilter || globalSearch"
             @click="boardBrandFilter = ''; boardPlatformFilter = ''; boardFormatFilter = ''; boardPillarFilter = ''; globalSearch = ''; loadPieces();">
       &#10005; Limpar Filtros
@@ -2829,6 +3123,9 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
               <div x-show="boardSelectMode" style="position: absolute; top: 6px; right: 6px; z-index: 2;" @click.stop>
                 <input type="checkbox" :value="piece.id" x-model="boardSelected" style="width: 16px; height: 16px; accent-color: var(--accent);">
               </div>
+              <div x-show="compareMode && !boardSelectMode" style="position: absolute; top: 6px; right: 6px; z-index: 2;" @click.stop>
+                <input type="checkbox" :value="piece.id" x-model="comparePieces" :disabled="comparePieces.length >= 3 && !comparePieces.includes(piece.id)" style="width: 16px; height: 16px; accent-color: var(--purple);">
+              </div>
               <div class="kc-title" x-text="piece.title || piece.id"></div>
               <img x-show="piece.image_url" :src="piece.image_url" class="kc-image-thumb" loading="lazy" onerror="this.style.display='none'">
               <div class="kc-meta">
@@ -2872,6 +3169,43 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <div style="width: 1px; height: 24px; background: var(--border);"></div>
     <button class="btn btn-sm" @click="bulkExport()" style="font-size: 0.7rem; padding: 4px 8px;">Exportar</button>
     <button class="btn btn-sm" @click="bulkDelete()" style="font-size: 0.7rem; padding: 4px 8px; color: var(--red); border-color: var(--red);">Excluir</button>
+  </div>
+
+  <!-- Compare Panel -->
+  <div class="compare-panel" x-show="compareMode && comparePieces.length >= 2" x-transition x-cloak>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <span style="font-weight: 700; font-size: 0.9rem; color: var(--purple);">&#9878; Comparacao de Pecas (<span x-text="comparePieces.length"></span>)</span>
+      <button class="btn btn-sm" @click="compareMode = false; comparePieces = []" style="font-size: 0.7rem;">Fechar Comparacao</button>
+    </div>
+    <div class="compare-columns" :class="comparePieces.length === 2 ? 'cols-2' : 'cols-3'">
+      <template x-for="pid in comparePieces" :key="pid">
+        <div class="compare-col" x-data="{ cp: null }" x-init="cp = pieces.find(p => p.id === pid)">
+          <div class="compare-title" x-text="cp?.title || pid"></div>
+          <div class="compare-field">
+            <div class="compare-field-label">Estagio</div>
+            <div class="compare-field-value"><span class="badge" :style="'background:' + stageColors[cp?.stage] + '22; color:' + stageColors[cp?.stage]" x-text="stageLabels[cp?.stage]"></span></div>
+          </div>
+          <div class="compare-field">
+            <div class="compare-field-label">Marca / Produto</div>
+            <div class="compare-field-value"><span class="badge" :class="'badge-' + (cp?.brand || '')" x-text="cp?.brand"></span> <span x-text="cp?.product || '-'" style="font-weight: 600;"></span></div>
+          </div>
+          <div class="compare-field">
+            <div class="compare-field-label">Plataforma / Formato</div>
+            <div class="compare-field-value" x-text="(cp?.platform || '-') + ' / ' + (cp?.format || '-')"></div>
+          </div>
+          <div class="compare-field">
+            <div class="compare-field-label">Criado em</div>
+            <div class="compare-field-value" x-text="fmtDate(cp?.created_at)"></div>
+          </div>
+          <img x-show="cp?.image_url" :src="cp?.image_url" style="width: 100%; border-radius: var(--radius-sm); margin: 8px 0;" loading="lazy" onerror="this.style.display='none'">
+          <div class="compare-field" x-show="cp?.copy_text">
+            <div class="compare-field-label">Copy</div>
+            <div class="compare-copy-text" x-text="cp?.copy_text || ''"></div>
+          </div>
+          <button class="btn btn-sm" style="margin-top: 8px; width: 100%; font-size: 0.7rem;" @click="selectedPiece = cp; drawerTab = 'resumo'; showPieceDetail = true;">Abrir Detalhe</button>
+        </div>
+      </template>
+    </div>
   </div>
 </div>
 
@@ -2969,12 +3303,19 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
   </template>
 
-  <!-- Seasonal Dates -->
+  <!-- Seasonal Dates — Enhanced -->
   <div class="card" style="margin-top: 20px;">
-    <div class="card-title">Datas Sazonais</div>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-      <template x-for="d in seasonalDates">
-        <span class="badge badge-cyan" x-text="d"></span>
+    <div class="card-title">&#9733; Datas Importantes — Proximas</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;">
+      <template x-for="sd in seasonalDatesEnriched" :key="sd.name">
+        <div class="seasonal-date-card" :class="sd.health ? 'health' : 'general'">
+          <div class="seasonal-icon" x-text="sd.health ? '&#9764;' : '&#9733;'"></div>
+          <div class="seasonal-info">
+            <div class="seasonal-name" x-text="sd.name"></div>
+            <div class="seasonal-meta" x-text="sd.date"></div>
+          </div>
+          <span class="badge" :class="sd.health ? 'badge-green' : 'badge-blue'" style="margin-left: auto; font-size: 0.58rem;" x-text="sd.health ? 'Saude' : 'Geral'"></span>
+        </div>
       </template>
     </div>
   </div>
@@ -5440,6 +5781,19 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <button class="modal-close" @click="showNewPiece = false">&times;</button>
     </div>
     <div class="modal-body">
+      <!-- Quick Templates -->
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Templates Rapidos</div>
+        <div class="template-grid">
+          <template x-for="tmpl in pieceTemplates" :key="tmpl.name">
+            <div class="template-card" @click="applyPieceTemplate(tmpl)">
+              <div class="tmpl-icon" x-text="tmpl.icon"></div>
+              <div class="tmpl-name" x-text="tmpl.name"></div>
+              <div class="tmpl-meta" x-text="tmpl.brand + ' / ' + tmpl.platform"></div>
+            </div>
+          </template>
+        </div>
+      </div>
       <div class="form-group">
         <label>Titulo <span style="color: var(--red); font-size: 0.7rem;">*obrigatorio</span></label>
         <input class="form-input" x-model="newPiece.title" placeholder="ex: Hero Shot LEV 4LEV - Instagram" required>
@@ -5933,6 +6287,21 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <div x-show="abTestResults.errors?.length > 0" style="color: var(--red); font-size: 0.75rem; margin-top: 6px;">
             <template x-for="e in abTestResults.errors"><div x-text="e"></div></template>
           </div>
+          <!-- Visual Comparator Grid -->
+          <div class="ab-comparison-grid" x-show="abTestResults.variations?.length > 0">
+            <template x-for="(v, vi) in (abTestResults.variations || []).slice(0, 6)" :key="vi">
+              <div class="ab-variation-card" :class="vi === 0 ? 'ab-best' : ''">
+                <div x-show="vi === 0" class="ab-best-badge">Melhor Variacao</div>
+                <div class="ab-title" x-text="v.title || ('Variacao ' + (vi + 1))"></div>
+                <div class="ab-copy-excerpt" x-text="((v.copy || v.text || v.content || '')).substring(0, 100) + ((v.copy || v.text || v.content || '').length > 100 ? '...' : '')"></div>
+                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px;">
+                  <span class="badge badge-blue" x-text="v.platform || abTestConfig.platforms?.[0] || 'instagram'" style="font-size: 0.6rem;"></span>
+                  <span class="badge badge-purple" x-text="v.pillar || abTestConfig.pillar || 'produto'" style="font-size: 0.6rem;"></span>
+                </div>
+                <button class="btn btn-sm" style="font-size: 0.65rem; padding: 2px 8px;" @click="selectPiece(pieces.find(p => p.id === v.piece_id) || v); showABTest = false;">Usar esta</button>
+              </div>
+            </template>
+          </div>
           <button class="btn btn-sm" style="margin-top: 8px;" @click="boardBrandFilter = abTestConfig.brand; tab = 'board'; showABTest = false;">Ver no Board</button>
         </div>
       </template>
@@ -6228,6 +6597,8 @@ function studioApp() {
     // Board
     boardSelectMode: false,
     boardSelected: [],
+    compareMode: false,
+    comparePieces: [],
     dragPiece: null,
     stages: ['briefing', 'copy', 'visual', 'review', 'approved', 'published'],
     stageLabels: { briefing: 'Briefing', copy: 'Texto', visual: 'Visual', review: 'Revisao', approved: 'Aprovado', published: 'Publicado' },
@@ -6277,6 +6648,18 @@ function studioApp() {
     videoUploadDrag: false,
     selectedCalSlot: {},
     vdpDetail: null,
+
+    // Piece Templates
+    pieceTemplates: [
+      { name: 'Hero Shot LEV - Feed', icon: '\u{1F4F7}', brand: 'salk', product: 'LEV', platform: 'instagram', pillar: 'produto', format: 'imagem', title: 'Hero Shot LEV - Instagram Feed' },
+      { name: 'Carousel Tecnico KRATUS', icon: '\u{1F4DA}', brand: 'mendel', product: 'KRATUS', platform: 'linkedin', pillar: 'educacional', format: 'carousel', title: 'Carousel Tecnico KRATUS - LinkedIn' },
+      { name: 'Reels Demonstracao', icon: '\u{1F3AC}', brand: 'salk', product: 'LEV', platform: 'instagram_reels', pillar: 'cases', format: 'reels', title: 'Reels Demonstracao LEV' },
+      { name: 'Post Institucional', icon: '\u{1F3E2}', brand: 'manager', product: '', platform: 'instagram', pillar: 'institucional', format: 'texto', title: 'Post Institucional Manager' },
+      { name: 'Video Produto OSTUS', icon: '\u{1F3A5}', brand: 'salk', product: 'OSTUS', platform: 'youtube_shorts', pillar: 'produto', format: 'reels', title: 'Video Produto OSTUS - Shorts' },
+      { name: 'Stories Engajamento', icon: '\u{2728}', brand: 'salk', product: '', platform: 'instagram_stories', pillar: 'employer_branding', format: 'imagem', title: 'Stories Engajamento Salk' },
+      { name: 'LinkedIn Tecnico', icon: '\u{1F4DD}', brand: 'mendel', product: 'KRONUS', platform: 'linkedin', pillar: 'educacional', format: 'texto', title: 'Artigo Tecnico KRONUS - LinkedIn' },
+      { name: 'Facebook Licitacao', icon: '\u{1F4CB}', brand: 'salk', product: '', platform: 'facebook', pillar: 'licitacoes', format: 'texto', title: 'Post Licitacao - Facebook' },
+    ],
 
     // New Piece form
     newPiece: { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'imagem', persona_target: '', notes: '' },
@@ -6334,6 +6717,16 @@ function studioApp() {
     weekProducing: false,
     weekResult: null,
     seasonalDates: ['7 Abr - Dia da Saude', '1 Mai - Trabalho', '12 Mai - Enfermagem', '12 Jun - Cirurgiao', '11 Jul - Engenheiro', '18 Ago - Medico', 'Nov - Hospitalar', 'Dez - Retrospectiva'],
+    seasonalDatesEnriched: [
+      { name: 'Dia Mundial da Saude', date: '7 Abril', health: true },
+      { name: 'Dia do Trabalho', date: '1 Maio', health: false },
+      { name: 'Dia da Enfermagem', date: '12 Maio', health: true },
+      { name: 'Dia do Cirurgiao', date: '12 Junho', health: true },
+      { name: 'Dia do Engenheiro', date: '11 Julho', health: false },
+      { name: 'Dia do Medico', date: '18 Agosto', health: true },
+      { name: 'Semana Hospitalar', date: 'Novembro', health: true },
+      { name: 'Retrospectiva', date: 'Dezembro', health: false },
+    ],
 
     // Hashtags
     hashtagBrand: 'salk',
@@ -6422,6 +6815,7 @@ function studioApp() {
     // Notifications
     notifications: [],
     showNotifPanel: false,
+    notifFilter: '',
 
     // Approval
     approvalPending: [],
@@ -6661,6 +7055,62 @@ function studioApp() {
       if (this.notifications.length > 50) this.notifications.pop();
       if (this._toastTimer) clearTimeout(this._toastTimer);
       this._toastTimer = setTimeout(() => { this.toastVisible = false; }, 3500);
+    },
+
+    // Piece Template apply
+    applyPieceTemplate(tmpl) {
+      this.newPiece.title = tmpl.title || '';
+      this.newPiece.brand = tmpl.brand || 'salk';
+      this.newPiece.product = tmpl.product || '';
+      this.newPiece.platform = tmpl.platform || 'instagram';
+      this.newPiece.pillar = tmpl.pillar || 'produto';
+      this.newPiece.format = tmpl.format || 'imagem';
+      // Scroll down to form
+      this.$nextTick(() => {
+        const modal = document.querySelector('.modal-body');
+        if (modal) modal.scrollTo({ top: modal.scrollHeight, behavior: 'smooth' });
+      });
+    },
+
+    // Notification categories
+    notifCategory(n) {
+      const msg = (n.message || '').toLowerCase();
+      if (n.type === 'error') return 'erros';
+      if (msg.match(/copy|prompt|imagem|video|gera|nb2|anima|fal\.ai|minimax/)) return 'ia';
+      if (msg.match(/peca|criada|movida|aprovad|publicad|estagio|stage|briefing|calendar|exporta|csv/)) return 'producao';
+      return 'producao';
+    },
+
+    filteredNotifications() {
+      if (!this.notifFilter) return this.notifications;
+      return this.notifications.filter(n => this.notifCategory(n) === this.notifFilter);
+    },
+
+    // KPI Sparklines
+    kpiSparklinePoints(type) {
+      const now = new Date();
+      const days = 7;
+      const counts = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const ds = d.toISOString().substring(0, 10);
+        if (type === 'total') {
+          counts.push(this.pieces.filter(p => p.created_at && p.created_at.substring(0, 10) <= ds).length);
+        } else if (type === 'approved') {
+          counts.push(this.pieces.filter(p => (p.stage === 'approved' || p.stage === 'published') && p.created_at && p.created_at.substring(0, 10) <= ds).length);
+        } else {
+          counts.push(0);
+        }
+      }
+      const max = Math.max(...counts, 1);
+      const min = Math.min(...counts);
+      const range = max - min || 1;
+      return counts.map((v, i) => {
+        const x = (i / (days - 1)) * 58 + 1;
+        const y = 18 - ((v - min) / range) * 16;
+        return x.toFixed(1) + ',' + y.toFixed(1);
+      }).join(' ');
     },
 
     // Piece helpers
