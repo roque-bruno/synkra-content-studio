@@ -1880,6 +1880,184 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.8; }
 }
+
+/* === MICRO-INTERACTIONS === */
+.btn:active { transform: scale(0.97); transition: transform 0.08s ease; }
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.kanban-card { animation: cardEntrance 0.3s cubic-bezier(0.4,0,0.2,1) backwards; }
+.kanban-card:nth-child(1) { animation-delay: 0s; }
+.kanban-card:nth-child(2) { animation-delay: 0.04s; }
+.kanban-card:nth-child(3) { animation-delay: 0.08s; }
+.kanban-card:nth-child(4) { animation-delay: 0.12s; }
+.kanban-card:nth-child(5) { animation-delay: 0.16s; }
+.kanban-card:nth-child(6) { animation-delay: 0.2s; }
+.kanban-card:nth-child(7) { animation-delay: 0.24s; }
+.kanban-card:nth-child(8) { animation-delay: 0.28s; }
+.kanban-card:nth-child(n+9) { animation-delay: 0.32s; }
+.form-input:focus, .form-select:focus {
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 0 12px var(--accent-dim);
+}
+.kanban-card.dragging { transform: rotate(2deg) scale(0.95); box-shadow: 0 12px 32px rgba(0,0,0,0.5); }
+
+/* === KANBAN CARD ENHANCEMENTS === */
+.kc-stage-border { border-top: 3px solid var(--accent); border-radius: var(--radius-sm); }
+.kc-product-badge {
+  font-size: 0.6rem; padding: 1px 6px; border-radius: 8px;
+  background: var(--purple-bg); color: var(--purple); font-weight: 600;
+}
+.kc-days-in-stage {
+  font-size: 0.58rem; color: var(--text-muted); display: inline-flex;
+  align-items: center; gap: 2px; margin-left: auto;
+}
+.kc-days-in-stage.stale { color: var(--amber); }
+.kc-icons { display: flex; gap: 4px; align-items: center; margin-top: 4px; }
+.kc-icon-tiny {
+  width: 16px; height: 16px; border-radius: 4px; display: flex;
+  align-items: center; justify-content: center; font-size: 0.55rem;
+  background: var(--bg-darker); color: var(--text-muted);
+}
+
+/* === TOOLTIP === */
+.tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+.tooltip-trigger {
+  width: 18px; height: 18px; border-radius: 50%; display: inline-flex;
+  align-items: center; justify-content: center; font-size: 0.65rem;
+  color: var(--text-muted); background: var(--bg-darker); cursor: help;
+  border: 1px solid var(--border); margin-left: 6px; transition: var(--transition);
+  flex-shrink: 0;
+}
+.tooltip-trigger:hover { color: var(--accent); border-color: var(--accent); }
+.tooltip-content {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: #1a1e2e; color: #eaecf2; font-size: 0.72rem; line-height: 1.45;
+  padding: 10px 14px; border-radius: var(--radius-sm); max-width: 260px;
+  width: max-content; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  border: 1px solid var(--border-hover); pointer-events: none;
+  opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 100;
+}
+.tooltip-content::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: #1a1e2e;
+}
+.tooltip-wrap:hover .tooltip-content { opacity: 1; visibility: visible; }
+
+/* === WEEKLY PRODUCTION WIDGET === */
+.week-chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; padding: 0 4px; }
+.week-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.week-bar-count { font-size: 0.65rem; font-weight: 700; color: var(--text-primary); }
+.week-bar {
+  width: 100%; min-height: 4px; border-radius: 4px 4px 0 0;
+  background: var(--accent-gradient); transition: height 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.week-bar-label { font-size: 0.62rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+
+/* === STATUS FOOTER === */
+.status-footer {
+  height: 28px; display: flex; align-items: center; gap: 16px;
+  padding: 0 20px; font-size: 0.68rem; color: var(--text-muted);
+  border-top: 1px solid var(--border); background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+.status-footer .sf-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.status-footer .sf-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-footer .sf-dot.offline { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.status-footer .sf-sep { width: 1px; height: 12px; background: var(--border); }
+
+/* === COPY PREVIEW PHONE FRAME === */
+.phone-frame {
+  width: 280px; margin: 0 auto; border-radius: 24px; border: 2px solid #333;
+  background: #fff; overflow: hidden; font-family: -apple-system, 'Segoe UI', sans-serif;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.phone-frame.instagram { aspect-ratio: auto; }
+.phone-frame.linkedin { width: 340px; border-radius: 12px; }
+.phone-frame.facebook { width: 320px; border-radius: 12px; }
+.phone-notch { height: 24px; background: #000; border-radius: 0 0 16px 16px; margin: 0 40px; }
+.phone-header {
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  border-bottom: 1px solid #eee;
+}
+.phone-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #4f8eff, #7c5cfc);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 0.6rem;
+}
+.phone-username { font-weight: 700; font-size: 0.75rem; color: #1a1a2e; }
+.phone-body { padding: 12px 14px; color: #333; font-size: 0.78rem; line-height: 1.5; }
+.phone-body .ph-headline { font-weight: 700; margin-bottom: 6px; color: #1a1a2e; }
+.phone-body .ph-text { white-space: pre-wrap; margin-bottom: 8px; max-height: 160px; overflow-y: auto; }
+.phone-body .ph-hashtags { color: #4f8eff; font-size: 0.72rem; margin-bottom: 8px; }
+.phone-body .ph-cta { font-weight: 700; color: #4f8eff; font-size: 0.8rem; }
+.phone-char-bar { height: 3px; background: #eee; margin: 0 14px 10px; border-radius: 2px; overflow: hidden; }
+.phone-char-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.phone-footer {
+  display: flex; justify-content: space-between; padding: 8px 14px;
+  border-top: 1px solid #eee; font-size: 0.65rem; color: #888;
+}
+
+/* === PRINT-ONLY / NO-PRINT === */
+.print-only { display: none !important; }
+.no-print { }
+
+/* === PRINT STYLESHEET === */
+@media print {
+  /* Hide non-content elements */
+  .sidebar, .header-bar, .toast-notify, .modal-overlay, .drawer-overlay,
+  .skip-link, .status-footer, .btn, button, select, input, .form-input, .form-select,
+  .kanban-card .kc-quick-actions, .kc-quick-btn, .tab-bar, .welcome-banner,
+  .sidebar-collapse-btn, .cmd-section-header, .tooltip-content,
+  [x-show*="showCommandPalette"], [x-show*="showShortcuts"],
+  [x-show*="showNewPiece"], [x-show*="showPieceDetail"],
+  .no-print { display: none !important; }
+
+  .print-only { display: block !important; }
+
+  body {
+    background: #fff !important; color: #000 !important;
+    font-size: 11pt; overflow: visible !important; display: block !important;
+  }
+  .main {
+    width: 100% !important; margin: 0 !important; padding: 0 !important;
+    background: #fff !important; overflow: visible !important;
+  }
+  .main-content {
+    padding: 0 !important; overflow: visible !important;
+    max-height: none !important; height: auto !important;
+  }
+  .card {
+    background: #fff !important; border: 1px solid #ccc !important;
+    box-shadow: none !important; break-inside: avoid; margin-bottom: 12pt;
+    color: #000 !important; border-radius: 4pt !important;
+  }
+  .card-title { color: #000 !important; }
+  .stat-box { border-color: #ccc !important; }
+  .stat-value, .stat-label { color: #000 !important; }
+  .badge { border: 1px solid #999 !important; }
+
+  /* Tab sections page breaks */
+  [x-show*="tab === 'board'"],
+  [x-show*="tab === 'calendar'"],
+  [x-show*="tab === 'copy'"],
+  [x-show*="tab === 'studio'"],
+  [x-show*="tab === 'settings'"] { page-break-before: always; }
+
+  /* Print header */
+  body::before {
+    content: 'Salk Content Studio v2.0 — Impresso em ' attr(data-print-date);
+    display: block; font-size: 10pt; color: #666; border-bottom: 1px solid #ccc;
+    padding-bottom: 8pt; margin-bottom: 16pt; font-weight: 600;
+  }
+
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  a { color: #000 !important; text-decoration: underline; }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -2254,7 +2432,13 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   <!-- Welcome Banner -->
   <div class="welcome-banner">
     <div>
-      <div style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">Pipeline de Producao</div>
+      <div style="display: flex; align-items: center;">
+        <span style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">Pipeline de Producao</span>
+        <span class="tooltip-wrap">
+          <span class="tooltip-trigger">&#8505;</span>
+          <span class="tooltip-content">Briefing: definicao do conteudo. Texto: copy pronta. Visual: imagem gerada. Revisao: aguardando aprovacao. Aprovado: pronto p/ publicar. Publicado: no ar.</span>
+        </span>
+      </div>
       <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px;">Acompanhe o fluxo de conteudo em tempo real</div>
     </div>
     <div style="display: flex; gap: 8px;">
@@ -2530,6 +2714,27 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       </div>
     </div>
   </div>
+
+  <!-- Weekly Production Widget -->
+  <div class="card" style="grid-column: 1 / -1;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+      <div class="card-title" style="margin: 0;">Producao desta Semana</div>
+      <span style="font-size: 0.72rem; color: var(--text-muted);" x-text="'Semana ' + currentWeekId()"></span>
+    </div>
+    <div class="week-chart">
+      <template x-for="d in weeklyProductionData()" :key="d.day">
+        <div class="week-bar-col">
+          <div class="week-bar-count" x-text="d.count"></div>
+          <div class="week-bar" :style="'height:' + (d.count > 0 ? Math.max(8, d.count / Math.max(1, weeklyProductionMax()) * 80) : 4) + 'px'"></div>
+          <div class="week-bar-label" x-text="d.label"></div>
+        </div>
+      </template>
+    </div>
+    <div style="margin-top: 12px; font-size: 0.78rem; color: var(--text-secondary);">
+      <strong x-text="weeklyProductionData().reduce((s,d) => s + d.count, 0)"></strong> pecas esta semana,
+      <strong x-text="lastWeekProductionCount()"></strong> na semana passada
+    </div>
+  </div>
 </div>
 
 <!-- ===================================================== -->
@@ -2617,6 +2822,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           </div>
           <template x-for="piece in piecesInStage(stage)" :key="piece.id">
             <div class="kanban-card" draggable="true"
+                 :style="'border-top: 3px solid ' + stageColors[stage]"
                  @dragstart="dragPiece = piece; $event.dataTransfer.effectAllowed = 'move'; $el.classList.add('dragging'); document.querySelectorAll('.kanban-column').forEach(c => c.classList.add('drag-dim'))"
                  @dragend="dragPiece = null; $el.classList.remove('dragging'); document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('drag-dim'))"
                  @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true">
@@ -2627,8 +2833,15 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
               <img x-show="piece.image_url" :src="piece.image_url" class="kc-image-thumb" loading="lazy" onerror="this.style.display='none'">
               <div class="kc-meta">
                 <span class="badge" :class="'badge-' + piece.brand" x-text="piece.brand"></span>
-                <span x-show="piece.product" style="font-size: 0.7rem;" x-text="piece.product"></span>
+                <span x-show="piece.product" class="kc-product-badge" x-text="piece.product"></span>
                 <span x-show="piece.platform" style="font-size: 0.7rem;" x-text="piece.platform"></span>
+                <span class="kc-days-in-stage" :class="{ stale: daysInStage(piece) > 3 }" x-show="piece.updated_at">
+                  <span x-text="daysInStage(piece) + 'd'"></span>
+                </span>
+              </div>
+              <div class="kc-icons" x-show="piece.copy_text || piece.image_url">
+                <span class="kc-icon-tiny" x-show="piece.copy_text" title="Tem copy">&#128196;</span>
+                <span class="kc-icon-tiny" x-show="piece.image_url" title="Tem imagem">&#128247;</span>
               </div>
               <div class="kc-progress" title="Progresso: Copy, Prompt, Imagem, Review">
                 <div class="kc-progress-dot" :class="piece.copy_text ? 'done' : ''"></div>
@@ -2678,10 +2891,14 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <button class="btn btn-primary" @click="await generateCalendar(); await autoFillCalendar()">Nova Semana</button>
     <button class="btn btn-success" @click="saveCalendar()" x-show="calSlots.length > 0">Salvar Ajustes</button>
       <button class="btn btn-sm" @click="exportCalendarCSV()" x-show="calSlots.length > 0" title="Exportar calendario">&#128229; CSV</button>
-    <button class="btn" style="background: var(--green); color: #000; font-weight: 600;" @click="produceWeek()" x-show="calSlots.length > 0" :disabled="weekProducing">
-      <span x-show="!weekProducing">Gerar Conteudo da Semana</span>
-      <span x-show="weekProducing">Gerando conteudo...</span>
-    </button>
+    <span class="tooltip-wrap" x-show="calSlots.length > 0">
+      <button class="btn" style="background: var(--green); color: #000; font-weight: 600;" @click="produceWeek()" :disabled="weekProducing">
+        <span x-show="!weekProducing">Gerar Conteudo da Semana</span>
+        <span x-show="weekProducing">Gerando conteudo...</span>
+      </button>
+      <span class="tooltip-trigger">&#8505;</span>
+      <span class="tooltip-content">Gera briefing, copy e prompts visuais para todos os slots planejados da semana. Pecas sao criadas e enviadas para revisao.</span>
+    </span>
     <button class="btn" style="background: var(--purple); color: #fff; font-weight: 600;" @click="generateFullWeek()" :disabled="weekProducing">
       <span x-show="!weekProducing">Gerar Tudo</span>
       <span x-show="weekProducing">Gerando...</span>
@@ -2915,23 +3132,28 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <button class="btn btn-sm" @click="showCopyPreview = !showCopyPreview" style="font-size: 0.68rem; padding: 2px 8px;" x-text="showCopyPreview ? 'Fechar' : 'Mostrar'"></button>
         </div>
         <div x-show="showCopyPreview" x-transition>
-          <div style="background: #fff; border-radius: 12px; padding: 16px; color: #1a1a2e; max-width: 380px; margin: 0 auto; box-shadow: 0 2px 12px rgba(0,0,0,0.15);">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-              <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #4f8eff, #7c5cfc); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.75rem;" x-text="(copyBrand || 'S').charAt(0).toUpperCase()"></div>
+          <div class="phone-frame" :class="copyPlatform">
+            <div class="phone-notch" x-show="copyPlatform === 'instagram'"></div>
+            <div class="phone-header">
+              <div class="phone-avatar" x-text="(copyBrand || 'S').charAt(0).toUpperCase()"></div>
               <div>
-                <div style="font-weight: 700; font-size: 0.82rem; color: #1a1a2e;" x-text="copyBrand === 'salk' ? 'Salk Medical' : copyBrand === 'mendel' ? 'Mendel Medical' : copyBrand === 'manager' ? 'Manager Grupo' : 'Dayho'"></div>
-                <div style="font-size: 0.65rem; color: #888;">Patrocinado</div>
+                <div class="phone-username" x-text="copyBrand === 'salk' ? 'Salk Medical' : copyBrand === 'mendel' ? 'Mendel Medical' : copyBrand === 'manager' ? 'Manager Grupo' : 'Dayho'"></div>
+                <div style="font-size: 0.6rem; color: #888;">Patrocinado</div>
               </div>
             </div>
-            <div style="font-size: 0.82rem; line-height: 1.5; color: #333; white-space: pre-wrap; margin-bottom: 8px; max-height: 120px; overflow-y: auto;" x-text="(copyHeadline ? copyHeadline + '\n\n' : '') + copyText"></div>
-            <div x-show="selectedHashtags.length > 0" style="font-size: 0.75rem; color: #4f8eff; margin-bottom: 8px;" x-text="selectedHashtags.join(' ')"></div>
-            <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #eee; font-size: 0.7rem; color: #888;">
+            <div class="phone-body">
+              <div class="ph-headline" x-show="copyHeadline" x-text="copyHeadline"></div>
+              <div class="ph-text" x-text="copyText"></div>
+              <div class="ph-cta" x-show="copyCTA" x-text="copyCTA"></div>
+              <div class="ph-hashtags" x-show="selectedHashtags.length > 0" x-text="selectedHashtags.join(' ')"></div>
+            </div>
+            <div class="phone-char-bar">
+              <div class="phone-char-fill"
+                   :style="'width:' + copyCharPercent() + '%; background:' + (copyCharPercent() > 90 ? '#ef4444' : copyCharPercent() > 70 ? '#f59e0b' : '#10b981')"></div>
+            </div>
+            <div class="phone-footer">
               <span style="text-transform: capitalize;" x-text="copyPlatform"></span>
               <span x-text="copyCharCount + ' / ' + (copyCharLimits[copyPlatform] || 2200) + ' chars'"></span>
-            </div>
-            <div style="height: 3px; background: #eee; border-radius: 2px; margin-top: 6px; overflow: hidden;">
-              <div style="height: 100%; border-radius: 2px; transition: width 0.3s;"
-                   :style="'width:' + copyCharPercent() + '%; background:' + (copyCharPercent() > 90 ? '#ef4444' : copyCharPercent() > 70 ? '#f59e0b' : '#10b981')"></div>
             </div>
           </div>
         </div>
@@ -3101,9 +3323,13 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
             <span x-show="!creativePromptLoading">&#10024; Prompt Criativo</span>
             <span x-show="creativePromptLoading">Gerando...</span>
           </button>
-          <button class="btn btn-sm" style="background: var(--cyan); color: #000;" @click="generateDirectImage()" :disabled="directImageGenerating || !directImagePrompt">
-            &#9889; Gerar Direto
-          </button>
+          <span class="tooltip-wrap">
+            <button class="btn btn-sm" style="background: var(--cyan); color: #000;" @click="generateDirectImage()" :disabled="directImageGenerating || !directImagePrompt">
+              &#9889; Gerar Direto
+            </button>
+            <span class="tooltip-trigger">&#8505;</span>
+            <span class="tooltip-content">Envia o prompt diretamente para o gerador de imagens (fal.ai), sem passar pelo fluxo VDP. Ideal para testes rapidos.</span>
+          </span>
           <input class="form-input" style="flex: 1; min-width: 200px; font-size: 0.78rem;" x-model="directImagePrompt" placeholder="Prompt direto para geracao (bypass VDP)...">
         </div>
         <template x-if="creativePromptResult">
@@ -5093,7 +5319,11 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
     <!-- Connection Health Bar -->
     <div x-show="settingsList.length > 0" style="margin-top: 12px; display: flex; align-items: center; gap: 10px;">
-      <span style="font-size: 0.7rem; color: var(--text-muted); white-space: nowrap;">Saude:</span>
+      <span class="tooltip-wrap">
+        <span style="font-size: 0.7rem; color: var(--text-muted); white-space: nowrap;">Saude:</span>
+        <span class="tooltip-trigger" style="margin-left: 2px;">&#8505;</span>
+        <span class="tooltip-content">Indica a porcentagem de servicos configurados: OpenRouter (IA), fal.ai (imagens), Minimax (video), ElevenLabs (narracao), etc.</span>
+      </span>
       <div class="health-bar-bg">
         <div class="health-bar-fill" :style="'width:' + (settingsList.length ? Math.round(settingsList.filter(s => s.configured).length / settingsList.length * 100) : 0) + '%'"></div>
       </div>
@@ -5185,6 +5415,17 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 
 
 </div> <!-- /main-content -->
+
+<!-- Status Footer -->
+<div class="status-footer no-print">
+  <span>Salk Content Studio v2.0</span>
+  <span class="sf-sep"></span>
+  <span x-text="pieces.length + ' pecas'"></span>
+  <span class="sf-sep"></span>
+  <span x-text="'Ultima sync: ' + (lastSyncTime || '--:--')"></span>
+  <span class="sf-dot" :class="connectionOk ? 'online' : 'offline'" :title="connectionOk ? 'Conectado' : 'Desconectado'"></span>
+</div>
+
 </div> <!-- /main -->
 
 <!-- ============================================= -->
@@ -5914,6 +6155,7 @@ function studioApp() {
     autoRefresh: false,
     autoRefreshInterval: null,
     connectionOk: true,
+    lastSyncTime: null,
     showOnboarding: !localStorage.getItem('studio_onboarded'),
 
     // Toast notifications
@@ -6261,6 +6503,7 @@ function studioApp() {
 
     async init() {
       if (!this.authenticated) return;
+      document.body.setAttribute('data-print-date', new Date().toLocaleDateString('pt-BR'));
       await this.refreshData();
       // Brand theme
       const savedTheme = localStorage.getItem('studio_theme') || 'salk';
@@ -6373,6 +6616,7 @@ function studioApp() {
       this.loadVideoStatus();
       this.loadPublishStatus();
       this.loadBudgetData();
+      this.lastSyncTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       this.dataLoading = false;
     },
 
@@ -6522,6 +6766,64 @@ function studioApp() {
         }
         return true;
       });
+    },
+
+    // Weekly production helpers
+    currentWeekId() {
+      const now = new Date();
+      const jan1 = new Date(now.getFullYear(), 0, 1);
+      const days = Math.floor((now - jan1) / 86400000);
+      const weekNum = Math.ceil((days + jan1.getDay() + 1) / 7);
+      return now.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
+    },
+
+    weeklyProductionData() {
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0=Sun
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      monday.setHours(0, 0, 0, 0);
+      const labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
+      const result = [];
+      for (let i = 0; i < 7; i++) {
+        const dayStart = new Date(monday);
+        dayStart.setDate(monday.getDate() + i);
+        const dayEnd = new Date(dayStart);
+        dayEnd.setDate(dayStart.getDate() + 1);
+        const count = this.pieces.filter(p => {
+          if (!p.created_at) return false;
+          const d = new Date(p.created_at);
+          return d >= dayStart && d < dayEnd;
+        }).length;
+        result.push({ day: i, label: labels[i], count });
+      }
+      return result;
+    },
+
+    weeklyProductionMax() {
+      return Math.max(1, ...this.weeklyProductionData().map(d => d.count));
+    },
+
+    lastWeekProductionCount() {
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      monday.setHours(0, 0, 0, 0);
+      const lastMonday = new Date(monday);
+      lastMonday.setDate(monday.getDate() - 7);
+      return this.pieces.filter(p => {
+        if (!p.created_at) return false;
+        const d = new Date(p.created_at);
+        return d >= lastMonday && d < monday;
+      }).length;
+    },
+
+    daysInStage(piece) {
+      if (!piece.updated_at) return 0;
+      const updated = new Date(piece.updated_at);
+      const now = new Date();
+      return Math.floor((now - updated) / 86400000);
     },
 
     async createNewPiece() {
