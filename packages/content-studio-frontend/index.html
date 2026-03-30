@@ -77,6 +77,37 @@ a:hover { color: var(--accent-hover); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
 
+/* === SKELETON LOADING === */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius-sm);
+}
+.skeleton-text { height: 14px; margin-bottom: 8px; border-radius: 4px; }
+.skeleton-text.short { width: 60%; }
+.skeleton-text.medium { width: 80%; }
+.skeleton-card { height: 100px; margin-bottom: 12px; }
+.skeleton-kpi { height: 80px; }
+
+/* === TAB TRANSITIONS === */
+.main-content > div { animation: fadeIn 0.2s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === CARD HOVER POLISH === */
+.card { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.card:hover { border-color: var(--border-hover); }
+.kanban-card { transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+.kanban-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); border-color: var(--border-hover); }
+
+/* === KPI CARD HOVER === */
+.kpi-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+
 /* === SIDEBAR === */
 .sidebar {
   width: var(--sidebar-w);
@@ -560,6 +591,16 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   gap: 8px;
   flex-wrap: wrap;
 }
+
+.kanban-card[draggable="true"] { cursor: grab; }
+.kanban-card[draggable="true"]:active { cursor: grabbing; }
+.kanban-card.dragging { opacity: 0.4; transform: scale(0.95); }
+.kanban-column.drag-over { background: rgba(79,142,255,0.05); }
+.kanban-column.drag-over .kanban-body { border: 2px dashed var(--accent); border-radius: 8px; }
+.kc-quick-actions { display: flex; gap: 3px; margin-top: 6px; opacity: 0; transition: opacity 0.15s; }
+.kanban-card:hover .kc-quick-actions { opacity: 1; }
+.kc-quick-btn { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-darker); color: var(--text-muted); cursor: pointer; transition: var(--transition); }
+.kc-quick-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
 
 /* === MODAL === */
 .modal-overlay {
@@ -1120,6 +1161,12 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 /* === PREMIUM KANBAN CARDS === */
 .kanban-card { box-shadow: var(--shadow-card); }
 .kanban-card:hover { box-shadow: var(--shadow-card), var(--shadow-glow); }
+
+.kc-progress { display: flex; gap: 2px; margin-top: 6px; }
+.kc-progress-dot { height: 3px; flex: 1; border-radius: 2px; background: var(--border); transition: background 0.2s; }
+.kc-progress-dot.done { background: var(--green); }
+.kc-progress-dot.partial { background: var(--amber); }
+.kc-image-thumb { width: 100%; height: 60px; object-fit: cover; border-radius: 4px; margin-bottom: 6px; background: var(--bg-darker); }
 
 /* === PREMIUM SIDEBAR ACTIVE GLOW === */
 .sidebar-item.active {
@@ -1879,7 +1926,19 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <div class="main-content">
 
 <!-- Loading Indicator -->
-<div x-show="dataLoading" class="loading-bar" x-cloak>Carregando dados...</div>
+<div x-show="dataLoading" x-cloak style="padding: 0;">
+  <div class="kpi-grid" style="margin-bottom: 20px;">
+    <div class="skeleton skeleton-kpi"></div>
+    <div class="skeleton skeleton-kpi"></div>
+    <div class="skeleton skeleton-kpi"></div>
+    <div class="skeleton skeleton-kpi"></div>
+  </div>
+  <div class="skeleton skeleton-card" style="height: 140px; margin-bottom: 16px;"></div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+  </div>
+</div>
 
 <!-- ===================================================== -->
 <!-- TAB: DASHBOARD -->
@@ -1954,6 +2013,61 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <div class="kpi-data">
         <div class="kpi-value" style="color: var(--amber);" x-text="'$' + (budgetSummary.total_usd || 0).toFixed(2)">$0</div>
         <div class="kpi-label">Gasto Mensal IA</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage Distribution Donut + Activity -->
+  <div style="display: grid; grid-template-columns: 300px 1fr; gap: 16px; margin-bottom: 20px;">
+    <!-- Donut Chart -->
+    <div class="card" style="text-align: center;">
+      <div class="card-title">Distribuicao por Estagio</div>
+      <svg viewBox="0 0 120 120" width="160" height="160" style="margin: 0 auto;">
+        <template x-for="(stage, idx) in stages.filter(s => piecesInStage(s).length > 0)">
+          <circle cx="60" cy="60" r="50" fill="none" :stroke="stageColors[stage]" stroke-width="18"
+                  :stroke-dasharray="(piecesInStage(stage).length / Math.max(1, pieces.length)) * 314 + ' 314'"
+                  :stroke-dashoffset="'-' + stages.filter(s => piecesInStage(s).length > 0).slice(0, stages.filter(s => piecesInStage(s).length > 0).indexOf(stage)).reduce((acc, s) => acc + (piecesInStage(s).length / Math.max(1, pieces.length)) * 314, 0)"
+                  style="transition: all 0.5s ease;"></circle>
+        </template>
+        <text x="60" y="56" text-anchor="middle" fill="var(--text-primary)" font-size="18" font-weight="800" x-text="pieces.length"></text>
+        <text x="60" y="72" text-anchor="middle" fill="var(--text-muted)" font-size="8">pecas</text>
+      </svg>
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px;">
+        <template x-for="stage in stages.filter(s => piecesInStage(s).length > 0)">
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; color: var(--text-secondary);">
+            <span style="width: 8px; height: 8px; border-radius: 2px;" :style="'background:' + stageColors[stage]"></span>
+            <span x-text="stageLabels[stage]"></span>
+            <strong x-text="piecesInStage(stage).length"></strong>
+          </span>
+        </template>
+      </div>
+    </div>
+
+    <!-- Activity Timeline -->
+    <div class="card">
+      <div class="card-title">Atividade Recente</div>
+      <div style="max-height: 200px; overflow-y: auto;">
+        <template x-if="recentLog.length > 0">
+          <div>
+            <template x-for="entry in recentLog.slice(0, 12)">
+              <div style="display: flex; align-items: start; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.75rem;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;"
+                      :style="(entry.result || entry.status) === 'success' ? 'background: var(--green)' : (entry.result || entry.status) === 'error' ? 'background: var(--red)' : 'background: var(--amber)'"></span>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="color: var(--text-secondary);" x-text="entry.message || entry.action || entry.phase || 'Operacao'"></div>
+                  <div style="font-size: 0.65rem; color: var(--text-muted);" x-text="fmtDate(entry.timestamp || entry.created_at || entry.date)"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+        <template x-if="recentLog.length === 0">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; color: var(--text-muted);">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin-bottom: 8px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span style="font-size: 0.82rem;">Nenhuma atividade registrada</span>
+            <span style="font-size: 0.72rem; margin-top: 4px;">Crie uma peca ou gere conteudo para comecar</span>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -2137,24 +2251,41 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   <!-- Kanban Board -->
   <div class="kanban">
     <template x-for="stage in stages">
-      <div class="kanban-column">
+      <div class="kanban-column"
+             @dragover.prevent="$el.classList.add('drag-over')"
+             @dragleave="$el.classList.remove('drag-over')"
+             @drop.prevent="$el.classList.remove('drag-over'); if(dragPiece) movePieceToStage(dragPiece, stage)">
         <div class="kanban-header" :style="'border-top: 3px solid ' + stageColors[stage]">
           <span x-text="stageLabels[stage]"></span>
           <span class="count" x-text="piecesInStage(stage).length"></span>
         </div>
         <div class="kanban-body">
-          <div x-show="piecesInStage(stage).length === 0" style="text-align: center; padding: 20px 8px; color: var(--text-muted); font-size: 0.75rem;">Nenhuma peca</div>
+          <div x-show="piecesInStage(stage).length === 0" style="text-align: center; padding: 24px 8px; color: var(--text-muted);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.25; margin-bottom: 4px;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <div style="font-size: 0.72rem;">Vazio</div>
+          </div>
           <template x-for="piece in piecesInStage(stage)" :key="piece.id">
-            <div class="kanban-card" @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true">
+            <div class="kanban-card" draggable="true"
+                 @dragstart="dragPiece = piece; $event.dataTransfer.effectAllowed = 'move'; $el.classList.add('dragging')"
+                 @dragend="dragPiece = null; $el.classList.remove('dragging')"
+                 @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true">
               <div class="kc-title" x-text="piece.title || piece.id"></div>
+              <img x-show="piece.image_url" :src="piece.image_url" class="kc-image-thumb" loading="lazy" onerror="this.style.display='none'">
               <div class="kc-meta">
                 <span class="badge" :class="'badge-' + piece.brand" x-text="piece.brand"></span>
                 <span x-show="piece.product" style="font-size: 0.7rem;" x-text="piece.product"></span>
                 <span x-show="piece.platform" style="font-size: 0.7rem;" x-text="piece.platform"></span>
               </div>
-              <div style="display: flex; gap: 4px; margin-top: 6px;">
-                <span style="font-size: 0.6rem; padding: 1px 5px; border-radius: 3px;" :style="piece.copy_text ? 'background: rgba(34,197,94,0.2); color: var(--green);' : 'background: rgba(255,255,255,0.05); color: var(--text-muted);'" x-text="piece.copy_text ? 'Copy &#10003;' : 'Copy'"></span>
-                <span style="font-size: 0.6rem; padding: 1px 5px; border-radius: 3px;" :style="piece.notes && piece.notes.includes('nb2_prompt') ? 'background: rgba(59,130,246,0.2); color: var(--accent);' : 'background: rgba(255,255,255,0.05); color: var(--text-muted);'" x-text="piece.notes && piece.notes.includes('nb2_prompt') ? 'Prompt &#10003;' : 'Prompt'"></span>
+              <div class="kc-progress" title="Progresso: Copy, Prompt, Imagem, Review">
+                <div class="kc-progress-dot" :class="piece.copy_text ? 'done' : ''"></div>
+                <div class="kc-progress-dot" :class="piece.notes && piece.notes.includes('nb2_prompt') ? 'done' : ''"></div>
+                <div class="kc-progress-dot" :class="piece.image_url ? 'done' : ''"></div>
+                <div class="kc-progress-dot" :class="piece.stage === 'approved' || piece.stage === 'published' ? 'done' : piece.stage === 'review' ? 'partial' : ''"></div>
+              </div>
+              <div class="kc-quick-actions">
+                <button class="kc-quick-btn" @click.stop="movePieceBack(piece)" x-show="stages.indexOf(piece.stage) > 0" title="Voltar estagio">&#9664;</button>
+                <button class="kc-quick-btn" @click.stop="movePieceForward(piece)" x-show="stages.indexOf(piece.stage) < stages.length - 1" title="Avancar estagio">&#9654;</button>
+                <button class="kc-quick-btn" @click.stop="deletePieceConfirm(piece)" title="Excluir" style="margin-left: auto;">&#10005;</button>
               </div>
             </div>
           </template>
@@ -5221,6 +5352,7 @@ function studioApp() {
     selectedHashtags: [],
 
     // Board
+    dragPiece: null,
     stages: ['briefing', 'copy', 'visual', 'review', 'approved', 'published'],
     stageLabels: { briefing: 'Briefing', copy: 'Texto', visual: 'Visual', review: 'Revisao', approved: 'Aprovado', published: 'Publicado' },
     stageColors: { briefing: '#7a7a96', copy: '#4a7dff', visual: '#a78bfa', review: '#f59e0b', approved: '#34d399', published: '#22d3ee' },
@@ -7035,6 +7167,37 @@ function studioApp() {
         });
         return result;
       } catch(e) { this.notify('Erro compliance: ' + e.message, 'error'); return null; }
+    },
+
+    async movePieceToStage(piece, newStage) {
+      if (!piece || piece.stage === newStage) return;
+      try {
+        await this.api('/api/production/pieces/' + piece.id + '/stage', {
+          method: 'PUT',
+          body: JSON.stringify({ stage: newStage }),
+        });
+        piece.stage = newStage;
+        this.notify('"' + (piece.title || piece.id) + '" movida para ' + this.stageLabels[newStage]);
+      } catch(e) { this.notify('Erro ao mover: ' + e.message, 'error'); }
+    },
+
+    movePieceForward(piece) {
+      const idx = this.stages.indexOf(piece.stage);
+      if (idx < this.stages.length - 1) this.movePieceToStage(piece, this.stages[idx + 1]);
+    },
+
+    movePieceBack(piece) {
+      const idx = this.stages.indexOf(piece.stage);
+      if (idx > 0) this.movePieceToStage(piece, this.stages[idx - 1]);
+    },
+
+    async deletePieceConfirm(piece) {
+      if (!confirm('Excluir "' + (piece.title || piece.id) + '"?')) return;
+      try {
+        await this.api('/api/production/pieces/' + piece.id, { method: 'DELETE' });
+        this.pieces = this.pieces.filter(p => p.id !== piece.id);
+        this.notify('Peca excluida');
+      } catch(e) { this.notify('Erro: ' + e.message, 'error'); }
     },
 
     formatNumber(n) {
