@@ -1762,6 +1762,53 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   body { font-size: 13px; }
   .sidebar-brand .brand-logo { height: 56px; }
 }
+
+/* Activity Timeline */
+.activity-timeline { display: flex; flex-direction: column; gap: 0; }
+.activity-timeline-item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 8px 4px;
+  border-bottom: 1px solid var(--border); font-size: 0.78rem; transition: background 0.15s;
+}
+.activity-timeline-item:last-child { border-bottom: none; }
+.activity-timeline-item:hover { background: var(--surface-hover); border-radius: 6px; }
+.atl-dot {
+  width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+  box-shadow: 0 0 0 3px var(--bg-card);
+}
+.atl-dot-create { background: var(--green); }
+.atl-dot-move { background: var(--accent); }
+.atl-dot-generate { background: var(--purple); }
+.atl-dot-error { background: var(--red); }
+.atl-dot-default { background: var(--amber); }
+.atl-msg { flex: 1; min-width: 0; color: var(--text-secondary); line-height: 1.35; }
+.atl-time { font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+/* Drag feedback: dim non-target columns */
+.kanban-column.drag-dim { opacity: 0.45; transition: opacity 0.2s; }
+.kanban-column.drag-over { opacity: 1 !important; }
+
+/* Board clear filters button */
+.btn-clear-filters {
+  font-size: 0.7rem; padding: 4px 10px; border-radius: 12px;
+  background: rgba(239,68,68,0.08); color: var(--red); border: 1px solid rgba(239,68,68,0.15);
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.btn-clear-filters:hover { background: rgba(239,68,68,0.15); }
+
+/* Settings health bar */
+.health-bar-bg {
+  height: 8px; background: var(--bg-darker); border-radius: 4px; overflow: hidden; flex: 1;
+}
+.health-bar-fill {
+  height: 100%; border-radius: 4px; transition: width 0.4s ease;
+  background: linear-gradient(90deg, var(--green), #22d3ee);
+}
+
+/* Command palette section header */
+.cmd-section-header {
+  padding: 4px 12px; font-size: 0.62rem; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-top: 4px;
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -1798,7 +1845,8 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <div style="padding: 12px 16px; border-bottom: 1px solid var(--border);">
       <input class="form-input" x-model="commandQuery" @keydown.escape="showCommandPalette = false" x-ref="cmdInput" placeholder="Buscar acao, tab ou peca..." style="border: none; background: transparent; font-size: 0.95rem; width: 100%; padding: 4px 0;" autofocus x-init="$watch('showCommandPalette', v => { if(v) $nextTick(() => $refs.cmdInput?.focus()) })">
     </div>
-    <div style="max-height: 320px; overflow-y: auto; padding: 8px;">
+    <div style="max-height: 380px; overflow-y: auto; padding: 8px;">
+      <!-- Navigation commands -->
       <template x-for="cmd in [
         {label: 'Painel', icon: '&#9638;', action: () => { tab = 'dashboard'; showCommandPalette = false; }},
         {label: 'Board de Producao', icon: '&#9776;', action: () => { tab = 'board'; showCommandPalette = false; }},
@@ -1819,6 +1867,31 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
              @click="cmd.action()" @mouseenter="$el.style.background='var(--accent-dim)'" @mouseleave="$el.style.background='transparent'">
           <span style="width: 28px; text-align: center; font-size: 0.9rem;" x-html="cmd.icon"></span>
           <span style="font-size: 0.85rem;" x-text="cmd.label"></span>
+        </div>
+      </template>
+      <!-- Piece search results (when query > 2 chars) -->
+      <template x-if="commandQuery.length > 2 && pieces.filter(p => {
+        const q = commandQuery.toLowerCase();
+        return ((p.title||'')+' '+(p.product||'')+' '+(p.brand||'')).toLowerCase().includes(q);
+      }).length > 0">
+        <div>
+          <div class="cmd-section-header">Pecas</div>
+          <template x-for="piece in pieces.filter(p => {
+            const q = commandQuery.toLowerCase();
+            return ((p.title||'')+' '+(p.product||'')+' '+(p.brand||'')).toLowerCase().includes(q);
+          }).slice(0, 8)" :key="'cmd-p-' + piece.id">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s;"
+                 @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true; tab = 'board'; showCommandPalette = false;"
+                 @mouseenter="$el.style.background='var(--accent-dim)'" @mouseleave="$el.style.background='transparent'">
+              <span style="width: 28px; text-align: center;">
+                <span style="width: 8px; height: 8px; border-radius: 2px; display: inline-block;" :style="'background:' + stageColors[piece.stage]"></span>
+              </span>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="piece.title || piece.id"></div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);" x-text="(piece.brand || '') + ' / ' + (piece.product || '') + ' — ' + stageLabels[piece.stage]"></div>
+              </div>
+            </div>
+          </template>
         </div>
       </template>
     </div>
@@ -2181,18 +2254,24 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 
     <!-- Activity Timeline -->
     <div class="card">
-      <div class="card-title">Atividade Recente</div>
-      <div style="max-height: 200px; overflow-y: auto;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <div class="card-title" style="margin-bottom: 0;">Atividade Recente</div>
+        <span style="font-size: 0.65rem; color: var(--text-muted);" x-text="recentLog.length + ' eventos'"></span>
+      </div>
+      <div style="max-height: 280px; overflow-y: auto;">
         <template x-if="recentLog.length > 0">
-          <div>
-            <template x-for="entry in recentLog.slice(0, 12)">
-              <div style="display: flex; align-items: start; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.75rem;">
-                <span style="width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;"
-                      :style="(entry.result || entry.status) === 'success' ? 'background: var(--green)' : (entry.result || entry.status) === 'error' ? 'background: var(--red)' : 'background: var(--amber)'"></span>
-                <div style="flex: 1; min-width: 0;">
-                  <div style="color: var(--text-secondary);" x-text="entry.message || entry.action || entry.phase || 'Operacao'"></div>
-                  <div style="font-size: 0.65rem; color: var(--text-muted);" x-text="fmtDate(entry.timestamp || entry.created_at || entry.date)"></div>
-                </div>
+          <div class="activity-timeline">
+            <template x-for="(entry, idx) in recentLog.slice(0, 15)" :key="'atl-' + idx">
+              <div class="activity-timeline-item">
+                <div class="atl-dot" :class="
+                  (entry.action || entry.phase || '').match(/cri|new|nova|create/i) ? 'atl-dot-create' :
+                  (entry.action || entry.phase || '').match(/mov|stage|etapa/i) ? 'atl-dot-move' :
+                  (entry.action || entry.phase || '').match(/ger|gen|imag|video|prompt|copy/i) ? 'atl-dot-generate' :
+                  (entry.result || entry.status) === 'error' ? 'atl-dot-error' :
+                  'atl-dot-default'
+                "></div>
+                <div class="atl-msg" x-text="entry.message || entry.action || entry.phase || 'Operacao'"></div>
+                <div class="atl-time" x-text="relativeTime(entry.timestamp || entry.created_at || entry.date)"></div>
               </div>
             </template>
           </div>
@@ -2394,6 +2473,10 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <button class="btn btn-sm" @click="boardSelectMode = !boardSelectMode; if(!boardSelectMode) boardSelected = []"
             :style="boardSelectMode ? 'background: var(--accent); color: white;' : ''"
             style="font-size: 0.72rem;" x-text="boardSelectMode ? 'Sair Selecao (' + boardSelected.length + ')' : 'Selecionar'"></button>
+    <button class="btn-clear-filters" x-show="boardBrandFilter || boardPlatformFilter || boardFormatFilter || boardPillarFilter || globalSearch"
+            @click="boardBrandFilter = ''; boardPlatformFilter = ''; boardFormatFilter = ''; boardPillarFilter = ''; globalSearch = ''; loadPieces();">
+      &#10005; Limpar Filtros
+    </button>
     <div style="flex: 1;"></div>
     <button class="btn btn-sm btn-primary" @click="batchGenerateCopy()" x-show="piecesInStage('briefing').length > 0" :disabled="batchProcessing" title="Gerar copy para todas as pecas em briefing">
       <span x-show="!batchProcessing">Gerar Copy p/ Briefings (<span x-text="piecesInStage('briefing').length"></span>)</span>
@@ -2427,8 +2510,8 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           </div>
           <template x-for="piece in piecesInStage(stage)" :key="piece.id">
             <div class="kanban-card" draggable="true"
-                 @dragstart="dragPiece = piece; $event.dataTransfer.effectAllowed = 'move'; $el.classList.add('dragging')"
-                 @dragend="dragPiece = null; $el.classList.remove('dragging')"
+                 @dragstart="dragPiece = piece; $event.dataTransfer.effectAllowed = 'move'; $el.classList.add('dragging'); document.querySelectorAll('.kanban-column').forEach(c => c.classList.add('drag-dim'))"
+                 @dragend="dragPiece = null; $el.classList.remove('dragging'); document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('drag-dim'))"
                  @click="selectedPiece = piece; drawerTab = 'resumo'; showPieceDetail = true">
               <div x-show="boardSelectMode" style="position: absolute; top: 6px; right: 6px; z-index: 2;" @click.stop>
                 <input type="checkbox" :value="piece.id" x-model="boardSelected" style="width: 16px; height: 16px; accent-color: var(--accent);">
@@ -2497,6 +2580,16 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <span x-show="weekProducing">Gerando...</span>
     </button>
     <button class="btn" style="background: var(--cyan); color: #000; font-weight: 600;" @click="smartBriefing()">Smart Briefing</button>
+  </div>
+  <!-- Week Navigator -->
+  <div x-show="calWeeksList.length > 0" style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;">
+    <span style="font-size: 0.72rem; color: var(--text-muted); margin-right: 4px;">Semanas salvas:</span>
+    <template x-for="w in calWeeksList" :key="w.week_id || w">
+      <button class="btn btn-sm" :style="(w.week_id || w) === calWeekId ? 'background: var(--accent); color: #fff;' : ''"
+              @click="calWeekId = w.week_id || w; loadCalendar();"
+              style="font-size: 0.7rem; padding: 3px 10px;"
+              x-text="(w.week_id || w) + (w.slot_count ? ' (' + w.slot_count + ')' : '')"></button>
+    </template>
   </div>
 
   <!-- Production Summary -->
@@ -2892,6 +2985,25 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <div class="form-group">
           <label><input type="checkbox" x-model="studioIsLEV"> Produto LEV (anti-dispersao)</label>
         </div>
+
+        <!-- Quick actions row -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+          <button class="btn btn-sm" style="background: var(--purple); color: #fff;" @click="generateCreativePrompt()" :disabled="creativePromptLoading || !studioProductType">
+            <span x-show="!creativePromptLoading">&#10024; Prompt Criativo</span>
+            <span x-show="creativePromptLoading">Gerando...</span>
+          </button>
+          <button class="btn btn-sm" style="background: var(--cyan); color: #000;" @click="generateDirectImage()" :disabled="directImageGenerating || !directImagePrompt">
+            &#9889; Gerar Direto
+          </button>
+          <input class="form-input" style="flex: 1; min-width: 200px; font-size: 0.78rem;" x-model="directImagePrompt" placeholder="Prompt direto para geracao (bypass VDP)...">
+        </div>
+        <template x-if="creativePromptResult">
+          <div style="background: var(--bg-darker); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 12px; font-size: 0.78rem;">
+            <div style="font-weight: 600; font-size: 0.7rem; color: var(--purple); margin-bottom: 4px;">Prompt Criativo Gerado:</div>
+            <div style="color: var(--text-secondary); line-height: 1.4;" x-text="creativePromptResult.prompt || creativePromptResult.creative_prompt || ''"></div>
+            <button class="btn btn-sm" style="margin-top: 6px;" @click="directImagePrompt = creativePromptResult.prompt || creativePromptResult.creative_prompt || ''">Usar como Prompt Direto</button>
+          </div>
+        </template>
 
         <!-- Reference: Product PNG + Upload -->
         <div class="ref-section">
@@ -3306,6 +3418,12 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <option value="">Todas Categorias</option>
         <template x-for="cat in Object.keys(productImages).sort()">
           <option :value="cat" x-text="cat"></option>
+        </template>
+      </select>
+      <select class="form-select" style="width: 140px; font-size: 0.78rem;" x-model="assetBrandFilter" x-show="assetBrands.length > 0">
+        <option value="">Todas Marcas</option>
+        <template x-for="b in assetBrands">
+          <option :value="b" x-text="b"></option>
         </template>
       </select>
       <div style="display:flex; gap:6px; margin-left:auto;">
@@ -3938,12 +4056,16 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Motor</label>
             <select class="form-select" x-model="videoEngine">
-              <option value="veo3">Veo 3 (Google)</option>
-              <option value="kling">Kling 3.0 Pro</option>
-              <option value="minimax">Minimax / Hailuo</option>
-              <option value="grok">Grok (xAI)</option>
-              <option value="pika">Pika Labs</option>
-              <option value="runway">Runway Gen-3</option>
+              <template x-for="eng in (videoEnginesList.length > 0 ? videoEnginesList : [
+                {key: 'veo3', label: 'Veo 3 (Google)'},
+                {key: 'kling', label: 'Kling 3.0 Pro'},
+                {key: 'minimax', label: 'Minimax / Hailuo'},
+                {key: 'grok', label: 'Grok (xAI)'},
+                {key: 'pika', label: 'Pika Labs'},
+                {key: 'runway', label: 'Runway Gen-3'},
+              ])" :key="eng.key || eng.id || eng">
+                <option :value="eng.key || eng.id || eng" x-text="eng.label || eng.name || eng"></option>
+              </template>
             </select>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
@@ -4784,7 +4906,19 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           Testar Conexoes
         </button>
+        <button class="btn btn-sm" @click="exportSettingsJSON()" style="white-space: nowrap;" title="Exportar configuracoes como JSON">
+          &#128229; Exportar Config
+        </button>
       </div>
+    </div>
+    <!-- Connection Health Bar -->
+    <div x-show="settingsList.length > 0" style="margin-top: 12px; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 0.7rem; color: var(--text-muted); white-space: nowrap;">Saude:</span>
+      <div class="health-bar-bg">
+        <div class="health-bar-fill" :style="'width:' + (settingsList.length ? Math.round(settingsList.filter(s => s.configured).length / settingsList.length * 100) : 0) + '%'"></div>
+      </div>
+      <span style="font-size: 0.72rem; font-weight: 700;" :style="settingsList.filter(s => s.configured).length === settingsList.length ? 'color: var(--green)' : 'color: var(--amber)'"
+            x-text="Math.round(settingsList.filter(s => s.configured).length / Math.max(1, settingsList.length) * 100) + '%'"></span>
     </div>
     <!-- Test results inline -->
     <template x-if="connectionTestResult && connectionTestResult.services">
@@ -5852,6 +5986,16 @@ function studioApp() {
     showShortcuts: false,
     commandQuery: '',
     pieceNewNote: '',
+
+    // Round 11: new endpoint data
+    videoEnginesList: [],
+    creativePromptLoading: false,
+    creativePromptResult: null,
+    calWeeksList: [],
+    assetBrands: [],
+    assetBrandFilter: '',
+    directImageGenerating: false,
+    directImagePrompt: '',
     // Notifications
     notifications: [],
     showNotifPanel: false,
@@ -5946,7 +6090,7 @@ function studioApp() {
         localStorage.setItem('studio_theme', val);
       });
       this.$watch('tab', (val) => {
-        if (val === 'video') { this.loadVideoStatus(); this.loadVeo3Models(); }
+        if (val === 'video') { this.loadVideoStatus(); this.loadVeo3Models(); this.loadVideoEngines(); }
         if (val === 'editor') this.loadEditorData();
         if (val === 'publish') { this.loadApprovedPieces(); this.loadPublishStatus(); }
         if (val === 'settings') { this.loadSettings(); this.loadLLMUsage(); }
@@ -5955,7 +6099,8 @@ function studioApp() {
         if (val === 'performance') { this.loadJourneyAnalytics(); this.loadCollectorStatus(); }
         if (val === 'studio') { this.loadStudioHistory(); this.loadPromptDimensions(); }
         if (val === 'copy') this.loadCopywriters();
-        if (val === 'assets') this.loadUploadsList();
+        if (val === 'assets') { this.loadUploadsList(); this.loadAssetBrands(); }
+        if (val === 'calendar') this.loadCalWeeks();
       });
 
       // Keyboard shortcuts
@@ -7617,6 +7762,113 @@ function studioApp() {
         this.autoRefreshInterval = null;
         this.notify('Auto-refresh desligado');
       }
+    },
+
+    // --- Round 11: New methods ---
+
+    relativeTime(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const d = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now - d;
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'agora';
+        if (diffMin < 60) return diffMin + ' min atras';
+        const diffH = Math.floor(diffMin / 60);
+        if (diffH < 24) return diffH + 'h atras';
+        const diffD = Math.floor(diffH / 24);
+        if (diffD < 7) return diffD + 'd atras';
+        return d.toLocaleDateString('pt-BR');
+      } catch { return dateStr; }
+    },
+
+    // Video engines list
+    async loadVideoEngines() {
+      try {
+        const data = await this.api('/api/automation/video-engines');
+        this.videoEnginesList = Array.isArray(data) ? data : (data.engines || []);
+      } catch(e) { console.warn('Video engines nao carregados:', e); }
+    },
+
+    // Creative prompt generation
+    async generateCreativePrompt() {
+      if (!this.studioProductType) { this.notify('Informe o tipo de produto', 'error'); return; }
+      this.creativePromptLoading = true;
+      this.creativePromptResult = null;
+      try {
+        this.creativePromptResult = await this.api('/api/automation/prompt/generate-creative', {
+          method: 'POST',
+          body: JSON.stringify({
+            product: this.studioProductType,
+            concept: this.studioScene || 'dramatic studio',
+            style: this.studioStyle || 'premium advertising',
+            mood: this.studioMood || 'professional authority',
+          }),
+        });
+        this.notify('Prompt criativo gerado');
+      } catch(e) { this.notify('Erro ao gerar prompt criativo: ' + e.message, 'error'); }
+      this.creativePromptLoading = false;
+    },
+
+    // Calendar weeks list
+    async loadCalWeeks() {
+      try {
+        const data = await this.api('/api/calendar');
+        this.calWeeksList = Array.isArray(data) ? data : (data.weeks || []);
+      } catch(e) { console.warn('Semanas nao carregadas:', e); }
+    },
+
+    // Assets brands
+    async loadAssetBrands() {
+      try {
+        const data = await this.api('/api/assets/brands');
+        this.assetBrands = Array.isArray(data) ? data : (data.brands || []);
+      } catch(e) { console.warn('Marcas de ativos nao carregadas:', e); }
+    },
+
+    // Direct image generation (bypass VDP)
+    async generateDirectImage() {
+      if (!this.directImagePrompt) { this.notify('Informe um prompt para geracao direta', 'error'); return; }
+      this.directImageGenerating = true;
+      try {
+        const result = await this.api('/api/automation/generate-image', {
+          method: 'POST',
+          body: JSON.stringify({
+            prompt: this.directImagePrompt,
+            product_type: this.studioProductType || '',
+            width: 1080,
+            height: 1350,
+          }),
+        });
+        this.nb2GeneratedImage = result;
+        this.notify('Imagem gerada com sucesso (direto)');
+      } catch(e) { this.notify('Erro na geracao direta: ' + e.message, 'error'); }
+      this.directImageGenerating = false;
+    },
+
+    // Export settings as JSON
+    exportSettingsJSON() {
+      const data = {
+        exported_at: new Date().toISOString(),
+        total_keys: this.settingsList.length,
+        configured: this.settingsList.filter(s => s.configured).length,
+        settings: this.settingsList.map(s => ({
+          key: s.key,
+          label: s.label,
+          group: s.group,
+          configured: s.configured,
+        })),
+        connection_test: this.connectionTestResult || null,
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'studio-config-' + new Date().toISOString().substring(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      this.notify('Configuracoes exportadas');
     },
 
     formatNumber(n) {
