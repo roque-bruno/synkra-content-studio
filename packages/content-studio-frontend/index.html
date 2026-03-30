@@ -1812,6 +1812,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         <span class="badge badge-green">LIVE</span>
       </template>
     </div>
+    <span x-show="currentUser" style="font-size: 0.72rem; color: var(--text-secondary);" x-text="currentUser?.username || currentUser?.sub || 'Gestora'"></span>
     <button class="btn-logout" @click="logout()">Sair</button>
   </div>
 </aside>
@@ -2183,6 +2184,11 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       <span x-show="!weekProducing">Gerar Conteudo da Semana</span>
       <span x-show="weekProducing">Gerando conteudo...</span>
     </button>
+    <button class="btn" style="background: var(--purple); color: #fff; font-weight: 600;" @click="generateFullWeek()" :disabled="weekProducing">
+      <span x-show="!weekProducing">Gerar Tudo</span>
+      <span x-show="weekProducing">Gerando...</span>
+    </button>
+    <button class="btn" style="background: var(--cyan); color: #000; font-weight: 600;" @click="smartBriefing()">Smart Briefing</button>
   </div>
 
   <!-- Production Summary -->
@@ -2666,6 +2672,34 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       </div>
     </div>
   </div>
+
+  <!-- Prompt Dimensions Reference -->
+  <div class="card" style="margin-top: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" @click="promptDimsOpen = !promptDimsOpen">
+      <div class="card-title" style="margin-bottom: 0;">Dimensoes do Prompt (Referencia)</div>
+      <span style="color: var(--text-muted); font-size: 0.8rem;" x-text="promptDimsOpen ? '−' : '+ (' + (promptDimensions.length || 0) + ')'"></span>
+    </div>
+    <div x-show="promptDimsOpen" x-transition style="margin-top: 12px;">
+      <template x-if="promptDimensions.length === 0">
+        <div style="text-align: center; padding: 16px; color: var(--text-muted); font-size: 0.82rem;">Nenhuma dimensao disponivel</div>
+      </template>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;">
+        <template x-for="dim in promptDimensions" :key="dim.name || dim.id">
+          <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; background: var(--bg-darker);">
+            <div style="font-weight: 600; font-size: 0.78rem; color: var(--accent);" x-text="dim.name || dim.id"></div>
+            <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;" x-text="dim.description || ''"></div>
+            <template x-if="dim.options && dim.options.length > 0">
+              <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px;">
+                <template x-for="opt in dim.options.slice(0, 6)" :key="opt">
+                  <span style="font-size: 0.62rem; padding: 2px 6px; background: var(--accent-dim); border-radius: 4px; color: var(--text-secondary);" x-text="opt"></span>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ===================================================== -->
@@ -2986,6 +3020,27 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         </div>
       </div>
     </template>
+  </div>
+
+  <!-- Uploads Recentes -->
+  <div class="card" style="margin-top: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" @click="uploadsOpen = !uploadsOpen">
+      <div class="card-title" style="margin-bottom: 0;">Uploads Recentes</div>
+      <span style="color: var(--text-muted); font-size: 0.8rem;" x-text="uploadsOpen ? '−' : '+ (' + (uploadsList.length || 0) + ')'"></span>
+    </div>
+    <div x-show="uploadsOpen" x-transition style="margin-top: 12px;">
+      <template x-if="uploadsList.length === 0">
+        <div style="text-align: center; padding: 16px; color: var(--text-muted); font-size: 0.82rem;">Nenhum upload encontrado</div>
+      </template>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+        <template x-for="file in uploadsList.slice(0, 20)" :key="file.filename || file.name">
+          <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; background: var(--bg-darker); font-size: 0.75rem;">
+            <div style="font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="file.filename || file.name"></div>
+            <div style="color: var(--text-muted); font-size: 0.68rem; margin-top: 4px;" x-text="(file.purpose || 'geral') + ' — ' + (file.size_kb ? Math.round(file.size_kb) + 'KB' : '')"></div>
+          </div>
+        </template>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -5249,9 +5304,14 @@ function studioApp() {
 
     // Assets
     assetTab: 'products',
+    uploadsList: [],
+    uploadsOpen: false,
 
     // Claims
     claimsFilter: '',
+
+    // User
+    currentUser: null,
 
     // Calendar
     calWeekId: '2026-W14',
@@ -5267,6 +5327,8 @@ function studioApp() {
     customHashtag: '',
 
     // Studio
+    promptDimensions: [],
+    promptDimsOpen: false,
     studioProductType: '',
     studioScene: '',
     studioCamera: 'dramatic_studio',
@@ -5426,8 +5488,9 @@ function studioApp() {
         if (val === 'budget') this.loadBudgetData();
         if (val === 'approval') this.loadApprovalData();
         if (val === 'performance') { this.loadJourneyAnalytics(); this.loadCollectorStatus(); }
-        if (val === 'studio') this.loadStudioHistory();
+        if (val === 'studio') { this.loadStudioHistory(); this.loadPromptDimensions(); }
         if (val === 'copy') this.loadCopywriters();
+        if (val === 'assets') this.loadUploadsList();
       });
 
       // Keyboard shortcuts
@@ -5454,6 +5517,7 @@ function studioApp() {
         this.authenticated = true;
         this.loginUser = '';
         this.loginPass = '';
+        await this.loadCurrentUser();
         await this.refreshData();
       } catch (e) {
         this.loginError = 'Usuario ou senha incorretos';
@@ -5462,9 +5526,14 @@ function studioApp() {
       }
     },
 
+    async loadCurrentUser() {
+      try { this.currentUser = await this.api('/api/auth/me'); } catch(e) { this.currentUser = null; }
+    },
+
     logout() {
       localStorage.removeItem('studio_token');
       this.authenticated = false;
+      this.currentUser = null;
     },
 
     async refreshData() {
@@ -6593,6 +6662,35 @@ function studioApp() {
       } finally {
         this.weekProducing = false;
       }
+    },
+
+    async generateFullWeek() {
+      this.weekProducing = true;
+      try {
+        const result = await this.api('/api/calendar/' + this.calWeekId + '/generate-full', { method: 'POST', body: JSON.stringify({ brand: this.calBrand }) });
+        this.weekResult = result;
+        this.notify('Semana completa gerada!');
+        await this.loadCalendar();
+      } catch(e) { this.notify('Erro: ' + e.message, 'error'); } finally { this.weekProducing = false; }
+    },
+
+    async smartBriefing() {
+      try {
+        const result = await this.api('/api/automation/briefing/smart', {
+          method: 'POST',
+          body: JSON.stringify({ brand: this.calBrand, platform: 'instagram', pillar: 'produto' }),
+        });
+        this.notify('Smart briefing gerado!');
+        return result;
+      } catch(e) { this.notify('Erro briefing: ' + e.message, 'error'); return null; }
+    },
+
+    async loadUploadsList() {
+      try { this.uploadsList = await this.api('/api/uploads'); } catch(e) { this.uploadsList = []; }
+    },
+
+    async loadPromptDimensions() {
+      try { this.promptDimensions = await this.api('/api/automation/prompt/dimensions'); } catch(e) { this.promptDimensions = []; }
     },
 
     // Hashtags
