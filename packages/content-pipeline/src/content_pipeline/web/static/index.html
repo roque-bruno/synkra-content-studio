@@ -1795,6 +1795,9 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'; sidebarOpen=false">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Regras
     </div>
+    <div class="sidebar-item" :class="{ active: tab === 'reference' }" @click="tab='reference'; sidebarOpen=false">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4v4H2zM10 2h4v4h-4zM2 10h4v4H2zM10 10h4v4h-4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></span> Referencia
+    </div>
     <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'; sidebarOpen=false">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6l1.4 1.4M13 3l-1.4 1.4M4.4 11.6L3 13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Config
     </div>
@@ -3164,6 +3167,18 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- TAB: PERFORMANCE (Pulse) -->
 <!-- ===================================================== -->
 <div x-show="tab === 'performance'">
+  <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 12px;">
+    <template x-if="metricsCollectorStatus.last_run">
+      <span style="font-size: 0.7rem; color: var(--text-muted);" x-text="'Ultima coleta: ' + metricsCollectorStatus.last_run"></span>
+    </template>
+    <button class="btn btn-sm btn-primary" @click="collectMetrics()" :disabled="metricsCollecting" style="font-size: 0.75rem; padding: 6px 14px;">
+      <span x-show="!metricsCollecting">Coletar Automaticamente</span>
+      <span x-show="metricsCollecting" style="display: inline-flex; align-items: center; gap: 4px;">
+        <div style="width: 10px; height: 10px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        Coletando...
+      </span>
+    </button>
+  </div>
   <div class="stats-grid">
     <div class="stat-card">
       <div class="label">Posts Publicados</div>
@@ -3680,6 +3695,41 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
           </div>
         </template>
       </div>
+
+      <!-- Assembly -->
+      <div class="card" style="margin-top: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+          <span style="font-weight: 600; font-size: 0.85rem;">Montar Video Final</span>
+        </div>
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label class="form-label">Caminho do Clip</label>
+          <input class="form-input" x-model="assemblyVideoPath" placeholder="output/video/clip.mp4" style="font-size: 0.78rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label class="form-label">Narracao (opcional)</label>
+          <input class="form-input" x-model="assemblyAudioPath" placeholder="output/audio/narracao.mp3" style="font-size: 0.78rem;">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Legenda</label>
+            <input class="form-input" x-model="assemblySubtitle" placeholder="Texto da legenda..." style="font-size: 0.78rem;">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Vol. BGM</label>
+            <input class="form-input" type="number" x-model="assemblyBGMVol" min="0" max="1" step="0.05" style="font-size: 0.78rem;">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width: 100%; font-size: 0.82rem;" @click="assembleVideo()" :disabled="assemblyLoading || !assemblyVideoPath">
+          <span x-show="!assemblyLoading">Montar Video</span>
+          <span x-show="assemblyLoading">Montando...</span>
+        </button>
+        <template x-if="assemblyResult">
+          <div style="margin-top: 8px; padding: 8px; border-radius: var(--radius-sm); font-size: 0.75rem;"
+               :style="assemblyResult.output_path ? 'background: var(--green-bg); color: var(--green)' : 'background: var(--red-bg); color: var(--red)'"
+               x-text="assemblyResult.output_path ? 'Pronto: ' + assemblyResult.output_path : 'Erro: ' + (assemblyResult.error || 'Falha')"></div>
+        </template>
+      </div>
     </div>
   </div>
 
@@ -4155,6 +4205,81 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       </div>
     </template>
   </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- TAB: BIBLIOTECA DE REFERENCIA -->
+<!-- ===================================================== -->
+<div x-show="tab === 'reference'">
+  <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+    <template x-for="sec in [{key:'specs',label:'Specs Plataforma'},{key:'guidelines',label:'Diretrizes Marca'},{key:'brandbooks',label:'Brandbooks'},{key:'editorial',label:'Template Editorial'},{key:'prohibited',label:'Termos Proibidos'},{key:'hashbank',label:'Banco Hashtags'}]">
+      <button class="btn btn-sm" :class="refActiveSection === sec.key ? 'btn-primary' : ''" @click="refActiveSection = sec.key; loadRefSection(sec.key)" style="font-size: 0.75rem; padding: 6px 14px;" x-text="sec.label"></button>
+    </template>
+  </div>
+
+  <div class="card" style="min-height: 300px;">
+    <template x-if="refLoading">
+      <div style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</div>
+    </template>
+    <template x-if="!refLoading && refData !== null">
+      <div>
+        <!-- Object display -->
+        <template x-if="typeof refData === 'object' && !Array.isArray(refData)">
+          <div>
+            <template x-for="[key, val] in Object.entries(refData)">
+              <div style="margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
+                <div style="padding: 8px 12px; background: var(--bg-darker); font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; justify-content: space-between;" @click="refExpandedKeys[key] = !refExpandedKeys[key]" x-text="key">
+                </div>
+                <div x-show="refExpandedKeys[key]" x-transition style="padding: 10px 12px; font-size: 0.75rem; color: var(--text-secondary); max-height: 300px; overflow-y: auto;">
+                  <pre style="white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 0.72rem; line-height: 1.6;" x-text="typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)"></pre>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+        <!-- Array display -->
+        <template x-if="Array.isArray(refData)">
+          <div>
+            <template x-for="(item, idx) in refData.slice(0, 50)" :key="idx">
+              <div style="padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.78rem;">
+                <template x-if="typeof item === 'object'">
+                  <div>
+                    <span style="font-weight: 600;" x-text="item.name || item.title || item.brand || ('Item ' + (idx+1))"></span>
+                    <span style="color: var(--text-muted); margin-left: 8px; font-size: 0.7rem;" x-text="item.description || item.value || ''"></span>
+                  </div>
+                </template>
+                <template x-if="typeof item !== 'object'">
+                  <span x-text="item"></span>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+        <!-- String display -->
+        <template x-if="typeof refData === 'string'">
+          <pre style="white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 0.75rem; line-height: 1.6; color: var(--text-secondary);" x-text="refData"></pre>
+        </template>
+      </div>
+    </template>
+    <template x-if="!refLoading && refData === null">
+      <div style="text-align: center; padding: 40px; color: var(--text-muted);">Selecione uma secao acima para visualizar</div>
+    </template>
+  </div>
+
+  <!-- Brandbook detail -->
+  <template x-if="refActiveSection === 'brandbooks' && Array.isArray(refData) && refData.length > 0">
+    <div class="card" style="margin-top: 12px;">
+      <div class="card-title">Detalhe do Brandbook</div>
+      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+        <template x-for="bb in refData">
+          <button class="btn btn-sm" @click="loadBrandbook(bb.brand || bb.name || bb)" style="font-size: 0.72rem; padding: 4px 10px;" x-text="bb.brand || bb.name || bb"></button>
+        </template>
+      </div>
+      <template x-if="refBrandbookDetail">
+        <pre style="white-space: pre-wrap; font-family: var(--mono); font-size: 0.72rem; line-height: 1.6; color: var(--text-secondary); max-height: 400px; overflow-y: auto;" x-text="JSON.stringify(refBrandbookDetail, null, 2)"></pre>
+      </template>
+    </div>
+  </template>
 </div>
 
 <!-- ===================================================== -->
@@ -4999,6 +5124,7 @@ function studioApp() {
       editor: 'Editor de Video',
       publish: 'Publicar',
       approval: 'Aprovacoes em Lote',
+      reference: 'Biblioteca de Referencia',
       settings: 'Configuracoes'
     },
     tabSubtitles: {
@@ -5019,6 +5145,7 @@ function studioApp() {
       editor: 'Edite videos com instrucoes em linguagem natural + FFmpeg',
       publish: 'Agende e publique nas redes sociais',
       approval: 'Aprove ou rejeite pecas em lote',
+      reference: 'Diretrizes, specs, brandbooks e templates da marca',
       settings: 'Chaves de API e configuracoes do sistema'
     },
 
@@ -5171,6 +5298,12 @@ function studioApp() {
     videoTTSResult: null,
     videoTTSLoading: false,
     veo3Models: [],
+    assemblyVideoPath: '',
+    assemblyAudioPath: '',
+    assemblySubtitle: '',
+    assemblyBGMVol: 0.15,
+    assemblyLoading: false,
+    assemblyResult: null,
 
     // Publishing
     publishStatus: {},
@@ -5227,6 +5360,22 @@ function studioApp() {
     studioHistory: [],
     studioHistoryOpen: false,
 
+    // Reference Library
+    refActiveSection: '',
+    refData: null,
+    refLoading: false,
+    refExpandedKeys: {},
+    refBrandbookDetail: null,
+
+    // Smart Automation extras
+    copywritersList: [],
+    atomizeSuggestions: null,
+    atomizePlatformsList: [],
+
+    // Metrics Collection
+    metricsCollecting: false,
+    metricsCollectorStatus: {},
+
     // Settings
     settingsList: [],
     settingsGroups: [],
@@ -5276,8 +5425,9 @@ function studioApp() {
         if (val === 'settings') { this.loadSettings(); this.loadLLMUsage(); }
         if (val === 'budget') this.loadBudgetData();
         if (val === 'approval') this.loadApprovalData();
-        if (val === 'performance') this.loadJourneyAnalytics();
+        if (val === 'performance') { this.loadJourneyAnalytics(); this.loadCollectorStatus(); }
         if (val === 'studio') this.loadStudioHistory();
+        if (val === 'copy') this.loadCopywriters();
       });
 
       // Keyboard shortcuts
@@ -5708,20 +5858,48 @@ function studioApp() {
       this.videoGenerating = true;
       this.videoResult = null;
       try {
-        const payload = {
-          engine: this.videoEngine,
-          prompt: this.videoPrompt,
-          aspect_ratio: this.videoAspect,
-          duration: parseInt(this.videoDuration),
-          narration_text: this.videoNarration || undefined,
-          voice_id: this.videoVoiceId || undefined,
-          bgm: this.videoBGM || undefined,
-        };
-        if (this.videoType === 'i2v') payload.image_path = this.videoImagePath;
-        this.videoResult = await this.api('/api/video/pipeline', {
-          method: 'POST',
-          body: JSON.stringify(payload),
-        });
+        let result;
+        const engine = this.videoEngine;
+        const isI2V = this.videoType === 'i2v';
+
+        if (engine === 'veo3') {
+          const endpoint = isI2V ? '/api/video/veo3/i2v' : '/api/video/veo3/t2v';
+          const payload = {
+            prompt: this.videoPrompt,
+            duration: parseInt(this.videoDuration),
+            aspect_ratio: this.videoAspect,
+            resolution: '720p',
+            negative_prompt: 'text, watermark, logo, blurry, distorted',
+            generate_audio: false,
+            person_generation: 'dont_allow',
+          };
+          if (isI2V) payload.image_path = this.videoImagePath;
+          result = await this.api(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+        } else if (engine === 'kling') {
+          const endpoint = isI2V ? '/api/video/kling/i2v' : '/api/video/kling/t2v';
+          const payload = {
+            prompt: this.videoPrompt,
+            duration: parseInt(this.videoDuration),
+            aspect_ratio: this.videoAspect,
+          };
+          if (isI2V) payload.image_path = this.videoImagePath;
+          result = await this.api(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+        } else {
+          // Fallback to pipeline for minimax, grok, pika, runway
+          const payload = {
+            engine: engine,
+            prompt: this.videoPrompt,
+            aspect_ratio: this.videoAspect,
+            duration: parseInt(this.videoDuration),
+            narration_text: this.videoNarration || undefined,
+            voice_id: this.videoVoiceId || undefined,
+            bgm: this.videoBGM || undefined,
+          };
+          if (isI2V) payload.image_path = this.videoImagePath;
+          result = await this.api('/api/video/pipeline', { method: 'POST', body: JSON.stringify(payload) });
+        }
+        this.videoResult = result;
+        if (result.video_url || result.output_path) this.notify('Video gerado com sucesso!');
       } catch (e) {
         this.videoResult = { errors: [e.message || 'Erro ao gerar video'], steps: [] };
       }
@@ -6580,6 +6758,23 @@ function studioApp() {
       } catch(e) { this.notify('Erro TTS: ' + e.message, 'error'); } finally { this.videoTTSLoading = false; }
     },
 
+    async assembleVideo() {
+      this.assemblyLoading = true;
+      this.assemblyResult = null;
+      try {
+        this.assemblyResult = await this.api('/api/video/assemble', {
+          method: 'POST',
+          body: JSON.stringify({
+            video_path: this.assemblyVideoPath,
+            audio_path: this.assemblyAudioPath || undefined,
+            subtitle_text: this.assemblySubtitle || undefined,
+            bgm_volume: parseFloat(this.assemblyBGMVol) || 0.15,
+          }),
+        });
+        this.notify('Video montado!');
+      } catch(e) { this.notify('Erro assembly: ' + e.message, 'error'); } finally { this.assemblyLoading = false; }
+    },
+
     async loadVeo3Models() {
       try { this.veo3Models = await this.api('/api/video/veo3/models'); } catch(e) { this.veo3Models = []; }
     },
@@ -6664,6 +6859,84 @@ function studioApp() {
     // === Feature 6: Studio History ===
     async loadStudioHistory() {
       try { this.studioHistory = await this.api('/api/studio/history'); } catch(e) { this.studioHistory = []; }
+    },
+
+    // === Reference Library ===
+    async loadRefSection(section) {
+      this.refLoading = true;
+      this.refData = null;
+      this.refExpandedKeys = {};
+      this.refBrandbookDetail = null;
+      const endpoints = {
+        specs: '/api/data/platform-specs',
+        guidelines: '/api/data/brand-guidelines',
+        brandbooks: '/api/data/brandbooks',
+        editorial: '/api/data/editorial-template',
+        prohibited: '/api/data/prohibited-terms',
+        hashbank: '/api/data/hashtag-bank',
+      };
+      try {
+        this.refData = await this.api(endpoints[section]);
+      } catch(e) { this.notify('Erro ao carregar: ' + e.message, 'error'); this.refData = null; }
+      this.refLoading = false;
+    },
+
+    async loadBrandbook(brand) {
+      try {
+        this.refBrandbookDetail = await this.api('/api/data/brandbook/' + encodeURIComponent(brand));
+      } catch(e) { this.notify('Erro brandbook: ' + e.message, 'error'); }
+    },
+
+    // === Smart Automation Extras ===
+    async loadCopywriters() {
+      try { this.copywritersList = await this.api('/api/automation/copy/copywriters'); } catch(e) { this.copywritersList = []; }
+    },
+
+    async loadPersonaList() {
+      try {
+        const list = await this.api('/api/automation/persona/list');
+        if (Array.isArray(list) && list.length > 0) this.personas = list;
+      } catch(e) { /* fallback to buyer-personas */ }
+    },
+
+    async loadAtomizePlatforms() {
+      try { this.atomizePlatformsList = await this.api('/api/automation/atomize/platforms'); } catch(e) { this.atomizePlatformsList = []; }
+    },
+
+    async suggestAtomize(piece) {
+      if (!piece) return;
+      try {
+        this.atomizeSuggestions = await this.api('/api/automation/atomize/suggest', {
+          method: 'POST',
+          body: JSON.stringify({ content: piece.copy_text || piece.title || '', brand: piece.brand || 'salk' }),
+        });
+        this.notify('Sugestoes de atomizacao geradas');
+      } catch(e) { this.notify('Erro: ' + e.message, 'error'); }
+    },
+
+    // === Metrics Collection + Compliance ===
+    async collectMetrics() {
+      this.metricsCollecting = true;
+      try {
+        const result = await this.api('/api/metrics/collect', { method: 'POST' });
+        this.notify('Metricas coletadas: ' + (result.collected || 0) + ' novos registros');
+        this.metrics = await this.api('/api/metrics');
+        this.perfSummary = await this.api('/api/metrics/summary');
+      } catch(e) { this.notify('Erro ao coletar: ' + e.message, 'error'); } finally { this.metricsCollecting = false; }
+    },
+
+    async loadCollectorStatus() {
+      try { this.metricsCollectorStatus = await this.api('/api/metrics/collector-status'); } catch(e) { this.metricsCollectorStatus = {}; }
+    },
+
+    async checkPromptCompliance(prompt, brand) {
+      try {
+        const result = await this.api('/api/compliance/check-prompt', {
+          method: 'POST',
+          body: JSON.stringify({ prompt: prompt, brand: brand || 'salk' }),
+        });
+        return result;
+      } catch(e) { this.notify('Erro compliance: ' + e.message, 'error'); return null; }
     },
 
     formatNumber(n) {
