@@ -1303,6 +1303,24 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 }
 .loading-bar::before { content: ''; display: block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.operation-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+}
+.operation-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border: 3px solid rgba(79,142,255,0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
 /* === TOAST NOTIFICATION === */
@@ -1892,6 +1910,78 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       </table>
     </div>
   </div>
+
+  <!-- Approval Queue Summary -->
+  <div class="actions-grid" style="margin-top: 16px;">
+    <div class="card">
+      <div class="card-title">Fila de Aprovacao</div>
+      <template x-if="reviews.filter(r => r.verdict === 'pending').length > 0">
+        <div>
+          <template x-for="r in reviews.filter(r => r.verdict === 'pending').slice(0, 5)" :key="r.id">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+              <div>
+                <div style="font-size: 0.82rem; font-weight: 600;" x-text="getPieceTitle(r.piece_id)"></div>
+                <div style="font-size: 0.68rem; color: var(--text-muted);" x-text="(r.review_type || 'editorial') + ' — ' + fmtDate(r.created_at)"></div>
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-success" @click="submitReview(r.id, 'approved'); refreshData()">Aprovar</button>
+                <button class="btn btn-sm btn-danger" @click="submitReview(r.id, 'rejected', prompt('Motivo:') || ''); refreshData()">Rejeitar</button>
+              </div>
+            </div>
+          </template>
+          <button class="btn btn-sm" style="margin-top: 10px; width: 100%;" @click="tab = 'review'">Ver todos (<span x-text="reviews.filter(r => r.verdict === 'pending').length"></span>)</button>
+        </div>
+      </template>
+      <template x-if="reviews.filter(r => r.verdict === 'pending').length === 0">
+        <div style="text-align: center; padding: 16px 0; color: var(--text-muted); font-size: 0.82rem;">
+          Nenhuma aprovacao pendente
+        </div>
+      </template>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Insights &amp; Progresso</div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Pipeline velocity -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border);">
+          <span style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; background: var(--green-bg); color: var(--green);">&#9889;</span>
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 600;">Velocidade do Pipeline</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">
+              <span x-text="pieces.filter(p => p.stage === 'published').length"></span> publicadas de <span x-text="pieces.length"></span> total
+              (<span x-text="pieces.length > 0 ? Math.round(pieces.filter(p => p.stage === 'published').length / pieces.length * 100) : 0"></span>% conclusao)
+            </div>
+          </div>
+        </div>
+        <!-- Pieces needing attention -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border);">
+          <span style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; background: var(--amber-bg); color: var(--amber);">&#9888;</span>
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 600;">Precisam de Atencao</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">
+              <span x-text="piecesInStage('briefing').length"></span> em briefing,
+              <span x-text="piecesInStage('review').length"></span> aguardando revisao
+            </div>
+          </div>
+        </div>
+        <!-- Platform distribution -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0;">
+          <span style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; background: var(--purple-bg); color: var(--purple);">&#9881;</span>
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 600;">Plataformas</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">
+              <template x-for="plat in ['instagram', 'linkedin', 'facebook', 'youtube'].filter(p => pieces.filter(x => x.platform === p).length > 0)">
+                <span style="margin-right: 8px;">
+                  <span style="text-transform: capitalize;" x-text="plat"></span>: <strong x-text="pieces.filter(x => x.platform === plat).length"></strong>
+                </span>
+              </template>
+              <span x-show="pieces.length === 0" style="color: var(--text-muted);">Nenhuma peca criada</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ===================================================== -->
@@ -2243,7 +2333,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
         </tr>
       </thead>
       <tbody>
-        <template x-for="v in vdps">
+        <template x-for="v in filteredVdps()
           <tr>
             <td x-text="v.file_name"></td>
             <td><strong x-text="v.produto"></strong></td>
@@ -2552,41 +2642,65 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- ===================================================== -->
 <div x-show="tab === 'review'">
   <div class="tabs">
-    <button class="tab-btn" :class="{ active: reviewFilter === '' }" @click="reviewFilter = ''">Todos</button>
-    <button class="tab-btn" :class="{ active: reviewFilter === 'pending' }" @click="reviewFilter = 'pending'">Pendentes</button>
+    <button class="tab-btn" :class="{ active: reviewFilter === '' }" @click="reviewFilter = ''">Todos <span class="badge badge-muted" style="font-size:0.6rem; margin-left:2px;" x-text="reviews.length"></span></button>
+    <button class="tab-btn" :class="{ active: reviewFilter === 'pending' }" @click="reviewFilter = 'pending'">Pendentes <span class="badge badge-amber" style="font-size:0.6rem; margin-left:2px;" x-text="reviews.filter(r=>r.verdict==='pending').length"></span></button>
     <button class="tab-btn" :class="{ active: reviewFilter === 'approved' }" @click="reviewFilter = 'approved'">Aprovados</button>
     <button class="tab-btn" :class="{ active: reviewFilter === 'rejected' }" @click="reviewFilter = 'rejected'">Rejeitados</button>
   </div>
 
   <template x-if="filteredReviews().length > 0">
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Peca</th><th>Tipo</th><th>Veredicto</th><th>Reviewer</th><th>Data</th><th></th></tr></thead>
-        <tbody>
-          <template x-for="r in filteredReviews()">
-            <tr>
-              <td x-text="getPieceTitle(r.piece_id)"></td>
-              <td x-text="r.review_type"></td>
-              <td>
-                <span class="badge" :class="{
-                  'badge-amber': r.verdict === 'pending',
-                  'badge-green': r.verdict === 'approved',
-                  'badge-red': r.verdict === 'rejected',
-                  'badge-purple': r.verdict === 'revision'
-                }" x-text="r.verdict"></span>
-              </td>
-              <td x-text="r.reviewer || '-'"></td>
-              <td x-text="(r.created_at || '').substring(0, 10)"></td>
-              <td>
-                <div class="btn-group" x-show="r.verdict === 'pending'">
-                  <button class="btn btn-sm btn-success" @click="submitReview(r.id, 'approved')">Aprovar</button>
-                  <button class="btn btn-sm btn-danger" @click="submitReview(r.id, 'rejected', prompt('Motivo:') || '')">Rejeitar</button>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <template x-for="r in filteredReviews()" :key="r.id">
+        <div class="card" style="padding: 14px 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="badge" :class="{
+                'badge-amber': r.verdict === 'pending',
+                'badge-green': r.verdict === 'approved',
+                'badge-red': r.verdict === 'rejected',
+                'badge-purple': r.verdict === 'revision'
+              }" x-text="r.verdict" style="text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.5px;"></span>
+              <div>
+                <div style="font-weight: 600; font-size: 0.88rem;" x-text="getPieceTitle(r.piece_id)"></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">
+                  <span x-text="r.review_type || 'editorial'"></span> &middot;
+                  <span x-text="r.reviewer || 'Sistema'"></span> &middot;
+                  <span x-text="fmtDate(r.created_at)"></span>
                 </div>
-              </td>
-            </tr>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <template x-if="r.verdict === 'pending'">
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-success" @click="submitReview(r.id, 'approved')">Aprovar</button>
+                  <button class="btn btn-sm btn-danger" @click="submitReview(r.id, 'rejected', prompt('Motivo da rejeicao:') || '')">Rejeitar</button>
+                </div>
+              </template>
+            </div>
+          </div>
+          <!-- Comments -->
+          <div x-show="r.comments" style="margin-top: 10px; padding: 10px 12px; background: var(--bg-secondary); border-radius: 8px; font-size: 0.8rem; color: var(--text-secondary); white-space: pre-wrap;" x-text="r.comments"></div>
+          <!-- Checklist -->
+          <template x-if="r.checklist && r.checklist.length > 0">
+            <div style="margin-top: 10px; padding: 10px 12px; background: var(--bg-secondary); border-radius: 8px;">
+              <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Checklist</div>
+              <template x-for="item in r.checklist">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; padding: 3px 0;">
+                  <span :style="item.checked ? 'color: var(--green)' : 'color: var(--text-muted)'" x-text="item.checked ? '&#10003;' : '&#9675;'"></span>
+                  <span x-text="item.label || item.text || item"></span>
+                </div>
+              </template>
+            </div>
           </template>
-        </tbody>
-      </table>
+          <!-- Copy preview from piece -->
+          <template x-if="pieces.find(p => p.id === r.piece_id)?.copy_text">
+            <details style="margin-top: 8px;">
+              <summary style="font-size: 0.72rem; color: var(--text-muted); cursor: pointer;">Ver copy da peca</summary>
+              <div style="margin-top: 6px; padding: 8px 12px; background: var(--bg-secondary); border-radius: 6px; font-size: 0.78rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 150px; overflow-y: auto;" x-text="pieces.find(p => p.id === r.piece_id)?.copy_text"></div>
+            </details>
+          </template>
+        </div>
+      </template>
     </div>
   </template>
 
@@ -2887,6 +3001,33 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <div class="stat-card">
       <div class="label">Taxa Engajamento</div>
       <div class="value" style="color: var(--green);" x-text="(perfSummary.avg_engagement_rate || 0) + '%'"></div>
+    </div>
+  </div>
+
+  <!-- Performance Chart -->
+  <div class="card" style="margin-bottom: 16px;" x-show="metrics.length > 0">
+    <div class="card-title">Desempenho por Plataforma</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+      <template x-for="metric_type in ['impressions', 'reach', 'engagement']">
+        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 14px;">
+          <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px;" x-text="metric_type === 'impressions' ? 'Impressoes' : metric_type === 'reach' ? 'Alcance' : 'Engajamento'"></div>
+          <template x-for="plat in ['instagram', 'linkedin', 'facebook', 'youtube']">
+            <div x-show="metrics.filter(m => m.platform === plat).length > 0" style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <div style="width: 65px; font-size: 0.72rem; color: var(--text-secondary); text-transform: capitalize;" x-text="plat"></div>
+              <div style="flex: 1; height: 20px; background: var(--bg-darker); border-radius: 4px; overflow: hidden; position: relative;">
+                <div style="height: 100%; border-radius: 4px; transition: width 0.5s ease;" :style="(() => {
+                  const vals = metrics.filter(m => m.platform === plat).reduce((s, m) => s + (m[metric_type] || 0), 0);
+                  const maxVal = Math.max(1, ...['instagram','linkedin','facebook','youtube'].map(p => metrics.filter(m => m.platform === p).reduce((s, m) => s + (m[metric_type] || 0), 0)));
+                  const pct = Math.round((vals / maxVal) * 100);
+                  const colors = {instagram: 'var(--purple)', linkedin: 'var(--accent)', facebook: 'var(--cyan)', youtube: 'var(--red)'};
+                  return 'width:' + pct + '%; background:' + (colors[plat] || 'var(--accent)');
+                })()"></div>
+              </div>
+              <div style="width: 55px; font-size: 0.72rem; font-weight: 600; text-align: right;" x-text="formatNumber(metrics.filter(m => m.platform === plat).reduce((s, m) => s + (m[metric_type] || 0), 0))"></div>
+            </div>
+          </template>
+        </div>
+      </template>
     </div>
   </div>
 
@@ -3266,6 +3407,12 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
               <template x-for="h in (p.hashtags || [])">
                 <span class="badge badge-cyan" style="font-size: 0.6rem;" x-text="h"></span>
               </template>
+            </div>
+            <!-- Publish result feedback -->
+            <div x-show="publishResults[p.id]" style="margin-top: 8px; padding: 8px 12px; border-radius: 6px; font-size: 0.78rem;"
+                 :style="publishResults[p.id]?.success ? 'background: rgba(16,185,129,0.08); color: var(--green); border: 1px solid rgba(16,185,129,0.2);' : 'background: rgba(239,68,68,0.08); color: var(--red); border: 1px solid rgba(239,68,68,0.2);'">
+              <span x-show="publishResults[p.id]?.success">&#10003; Publicado com sucesso as <span x-text="publishResults[p.id]?.time"></span></span>
+              <span x-show="!publishResults[p.id]?.success">&#10007; Erro: <span x-text="publishResults[p.id]?.error"></span></span>
             </div>
           </div>
         </template>
@@ -4415,6 +4562,7 @@ function studioApp() {
     publishStatus: {},
     approvedPieces: [],
     publishingPiece: null,
+    publishResults: {},
 
     // Settings
     settingsList: [],
@@ -4561,7 +4709,7 @@ function studioApp() {
       this.toastType = type;
       this.toastVisible = true;
       if (this._toastTimer) clearTimeout(this._toastTimer);
-      this._toastTimer = setTimeout(() => { this.toastVisible = false; }, 2500);
+      this._toastTimer = setTimeout(() => { this.toastVisible = false; }, 3500);
     },
 
     // Piece helpers
@@ -4933,10 +5081,12 @@ function studioApp() {
           body: JSON.stringify({ stage: 'published' }),
         });
         this.notify('Peca publicada com sucesso!');
+        this.publishResults[piece.id] = { success: true, time: new Date().toLocaleTimeString() };
         await this.loadApprovedPieces();
         await this.loadPieces();
       } catch(e) {
         this.notify('Erro ao publicar: ' + e.message, 'error');
+        this.publishResults[piece.id] = { success: false, error: e.message, time: new Date().toLocaleTimeString() };
       }
       this.publishingPiece = null;
     },
@@ -5293,8 +5443,19 @@ function studioApp() {
     },
 
     filteredClaimsAll() {
-      if (!this.claimsFilter) return this.claims;
-      return this.claims.filter(c => c.produto === this.claimsFilter);
+      let items = this.claims;
+      if (this.claimsFilter) items = items.filter(c => c.produto === this.claimsFilter);
+      if (this.globalSearch) {
+        const q = this.globalSearch.toLowerCase();
+        items = items.filter(c => (c.texto || '').toLowerCase().includes(q) || (c.claim_id || '').toLowerCase().includes(q) || (c.fonte || '').toLowerCase().includes(q));
+      }
+      return items;
+    },
+
+    filteredVdps() {
+      if (!this.globalSearch) return this.vdps;
+      const q = this.globalSearch.toLowerCase();
+      return this.vdps.filter(v => (v.produto || '').toLowerCase().includes(q) || (v.marca || '').toLowerCase().includes(q) || (v.conceito || '').toLowerCase().includes(q) || (v.slug || '').toLowerCase().includes(q));
     },
 
     insertClaim(claim) {
@@ -5418,8 +5579,13 @@ function studioApp() {
 
     // Review
     filteredReviews() {
-      if (!this.reviewFilter) return this.reviews;
-      return this.reviews.filter(r => r.verdict === this.reviewFilter);
+      let items = this.reviews;
+      if (this.reviewFilter) items = items.filter(r => r.verdict === this.reviewFilter);
+      if (this.globalSearch) {
+        const q = this.globalSearch.toLowerCase();
+        items = items.filter(r => (this.getPieceTitle(r.piece_id) || '').toLowerCase().includes(q) || (r.reviewer || '').toLowerCase().includes(q) || (r.comments || '').toLowerCase().includes(q));
+      }
+      return items;
     },
 
     async submitReview(reviewId, verdict, comments = '') {
