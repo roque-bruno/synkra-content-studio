@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Salk Content Studio v2.0 — Manager Grupo</title>
+<meta name="theme-color" content="#080a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Salk Content Studio — Producao criativa de conteudo para redes sociais">
+<link rel="manifest" href="manifest.json">
 <script src="config.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -101,8 +106,7 @@ a:hover { color: var(--accent-hover); }
 .skeleton-kpi { height: 80px; }
 
 /* === TAB TRANSITIONS === */
-.main-content > div { animation: fadeIn 0.2s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+/* tab transitions moved to end of stylesheet (tabSlideUp) */
 
 /* === CARD HOVER POLISH === */
 .card { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
@@ -1809,31 +1813,118 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   padding: 4px 12px; font-size: 0.62rem; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-top: 4px;
 }
+
+/* === SKIP LINK (a11y) === */
+.skip-link {
+  position: fixed; top: -100%; left: 16px; z-index: 99999;
+  background: var(--accent); color: #fff; padding: 10px 20px;
+  border-radius: 0 0 var(--radius) var(--radius); font-size: 0.85rem; font-weight: 600;
+  text-decoration: none; transition: top 0.2s ease;
+}
+.skip-link:focus { top: 0; }
+
+/* === ENHANCED EMPTY STATE === */
+.empty-state-rich {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 56px 24px; color: var(--text-muted);
+}
+.empty-state-rich .es-icon {
+  font-size: 3rem; margin-bottom: 16px; opacity: 0.35;
+  width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--accent-dim);
+}
+.empty-state-rich .es-title {
+  font-size: 1rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;
+}
+.empty-state-rich .es-desc {
+  font-size: 0.82rem; max-width: 340px; line-height: 1.6; margin-bottom: 18px;
+}
+.empty-state-rich .btn { font-size: 0.78rem; }
+
+/* === BAR CHART COMPONENT === */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-chart-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.bar-chart-label {
+  width: 90px; font-size: 0.75rem; color: var(--text-secondary);
+  text-transform: capitalize; text-align: right; flex-shrink: 0;
+}
+.bar-chart-track {
+  flex: 1; height: 22px; background: var(--bg-darker); border-radius: 6px;
+  overflow: hidden; position: relative;
+}
+.bar-chart-fill {
+  height: 100%; border-radius: 6px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  background: var(--accent-gradient); min-width: 2px;
+}
+.bar-chart-fill.green { background: linear-gradient(90deg, var(--green), #22d3ee); }
+.bar-chart-fill.amber { background: linear-gradient(90deg, var(--amber), #f59e0b); }
+.bar-chart-fill.purple { background: linear-gradient(90deg, var(--purple), #a78bfa); }
+.bar-chart-fill.red { background: linear-gradient(90deg, var(--red), #f87171); }
+.bar-chart-value {
+  width: 70px; font-size: 0.72rem; font-weight: 600; color: var(--text-primary);
+  text-align: right; flex-shrink: 0;
+}
+
+/* === SMOOTH TAB TRANSITIONS === */
+.main-content > div { animation: tabSlideUp 0.25s cubic-bezier(0.4,0,0.2,1); }
+@keyframes tabSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.tab-loading-pulse {
+  animation: tabPulse 1.2s ease-in-out infinite;
+}
+@keyframes tabPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
 
+<!-- Skip to Content (a11y) -->
+<a href="#main-content" class="skip-link">Pular para o conteudo</a>
+
 <!-- Toast Notification -->
 <div x-show="toastVisible" x-cloak @click="toastVisible = false"
-     class="toast-notify" :class="toastType === 'error' ? 'toast-error' : 'toast-success'">
+     class="toast-notify" :class="toastType === 'error' ? 'toast-error' : 'toast-success'"
+     role="alert" aria-live="polite">
   <span x-text="toastType === 'error' ? '✕' : '✓'" style="font-size: 1rem; flex-shrink: 0;"></span>
   <span x-text="toastMessage"></span>
 </div>
 
 <!-- Keyboard Shortcuts Help -->
-<div class="modal-overlay" x-show="showShortcuts" @click.self="showShortcuts = false" x-cloak>
+<div class="modal-overlay" x-show="showShortcuts" @click.self="showShortcuts = false" x-cloak role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
   <div class="modal" style="max-width: 420px;">
     <div class="modal-header">
-      <h3>Atalhos de Teclado</h3>
+      <h3 id="shortcuts-title">Atalhos de Teclado</h3>
       <button class="modal-close" @click="showShortcuts = false">&times;</button>
     </div>
     <div class="modal-body" style="padding: 16px 24px;">
+      <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-bottom: 8px;">Geral</div>
       <div style="display: grid; grid-template-columns: 100px 1fr; gap: 8px; font-size: 0.82rem;">
         <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+K</kbd> <span>Busca rapida</span>
         <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+N</kbd> <span>Nova peca</span>
         <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+B</kbd> <span>Ir para Board</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+D</kbd> <span>Ir para Dashboard</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+S</kbd> <span>Ir para Studio</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Ctrl+/</kbd> <span>Mostrar/ocultar atalhos</span>
         <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">Esc</kbd> <span>Fechar modal/drawer</span>
         <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">?</kbd> <span>Mostrar atalhos</span>
+      </div>
+      <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin: 14px 0 8px;">Tabs Rapidas</div>
+      <div style="display: grid; grid-template-columns: 100px 1fr; gap: 8px; font-size: 0.82rem;">
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">1</kbd> <span>Dashboard</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">2</kbd> <span>Board</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">3</kbd> <span>Calendario</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">4</kbd> <span>Textos</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">5</kbd> <span>Studio</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">6</kbd> <span>Video</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">7</kbd> <span>Aprovar</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">8</kbd> <span>Publicar</span>
+        <kbd style="background: var(--bg-darker); padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-align: center; font-family: var(--mono);">9</kbd> <span>Configuracoes</span>
       </div>
     </div>
   </div>
@@ -1927,7 +2018,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- SIDEBAR -->
 <!-- ============================================= -->
 <div class="sidebar-overlay" :class="{ active: sidebarOpen }" @click="sidebarOpen = false"></div>
-<aside class="sidebar" :class="{ open: sidebarOpen, mini: sidebarMini }">
+<aside class="sidebar" :class="{ open: sidebarOpen, mini: sidebarMini }" role="navigation" aria-label="Menu principal">
   <div class="sidebar-brand">
     <div class="sidebar-brand-bg">
       <img src="/img/salk-logo-white.png" alt="Salk Medical" class="brand-logo" onerror="this.onerror=null; this.src='https://uottkdywmxbwiogxzaqa.supabase.co/storage/v1/object/public/logos/Salk%20Medical/LogSalkMedicalPNG%20-%20W.png';">
@@ -1941,79 +2032,79 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Producao</div>
-    <div class="sidebar-item" :class="{ active: tab === 'dashboard' }" @click="tab='dashboard'; sidebarOpen=false" title="Painel">
+    <div class="sidebar-item" :class="{ active: tab === 'dashboard' }" :aria-current="tab === 'dashboard' ? 'page' : false" role="button" @click="tab='dashboard'; sidebarOpen=false" title="Painel">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.9"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.3"/></svg></span> Painel
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'board' }" @click="tab='board'; sidebarOpen=false" title="Board">
+    <div class="sidebar-item" :class="{ active: tab === 'board' }" :aria-current="tab === 'board' ? 'page' : false" role="button" @click="tab='board'; sidebarOpen=false" title="Board">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="4" height="12" rx="1" fill="currentColor" opacity="0.7"/><rect x="6" y="4" width="4" height="10" rx="1" fill="currentColor" opacity="0.5"/><rect x="11" y="1" width="4" height="13" rx="1" fill="currentColor" opacity="0.3"/></svg></span> Board
       <span class="sidebar-badge badge-blue" x-show="stats.pieces_in_production > 0" x-text="stats.pieces_in_production"></span>
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'calendar' }" @click="tab='calendar'; sidebarOpen=false" title="Calendario">
+    <div class="sidebar-item" :class="{ active: tab === 'calendar' }" :aria-current="tab === 'calendar' ? 'page' : false" role="button" @click="tab='calendar'; sidebarOpen=false" title="Calendario">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="1" x2="5" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="11" y1="1" x2="11" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> Calendario
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Criar</div>
-    <div class="sidebar-item" :class="{ active: tab === 'copy' }" @click="tab='copy'; sidebarOpen=false" title="Textos">
+    <div class="sidebar-item" :class="{ active: tab === 'copy' }" :aria-current="tab === 'copy' ? 'page' : false" role="button" @click="tab='copy'; sidebarOpen=false" title="Textos">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4" fill="none"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="11" x2="9" y2="11" stroke="currentColor" stroke-width="1.2"/></svg></span> Textos
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'studio' }" @click="tab='studio'; sidebarOpen=false" title="Imagens">
+    <div class="sidebar-item" :class="{ active: tab === 'studio' }" :aria-current="tab === 'studio' ? 'page' : false" role="button" @click="tab='studio'; sidebarOpen=false" title="Imagens">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" opacity="0.7"/><path d="M1 12l4-4 2.5 2.5L11 7l4 5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/></svg></span> Imagens
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'video' }" @click="tab='video'; sidebarOpen=false" title="Videos">
+    <div class="sidebar-item" :class="{ active: tab === 'video' }" :aria-current="tab === 'video' ? 'page' : false" role="button" @click="tab='video'; sidebarOpen=false" title="Videos">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M11 6l4-2v8l-4-2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/></svg></span> Videos
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'editor' }" @click="tab='editor'; sidebarOpen=false" title="Editor">
+    <div class="sidebar-item" :class="{ active: tab === 'editor' }" :aria-current="tab === 'editor' ? 'page' : false" role="button" @click="tab='editor'; sidebarOpen=false" title="Editor">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="4" y1="12" x2="4" y2="15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="8" y1="12" x2="8" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="12" y1="12" x2="12" y2="15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="8" r="1" fill="currentColor" opacity="0.6"/><circle cx="8" cy="8" r="1" fill="currentColor" opacity="0.6"/><circle cx="11" cy="8" r="1" fill="currentColor" opacity="0.6"/></svg></span> Editor
     </div>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-section-title">Gerenciar</div>
-    <div class="sidebar-item" :class="{ active: tab === 'review' }" @click="tab='review'; sidebarOpen=false" title="Aprovar">
+    <div class="sidebar-item" :class="{ active: tab === 'review' }" :aria-current="tab === 'review' ? 'page' : false" role="button" @click="tab='review'; sidebarOpen=false" title="Aprovar">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span> Aprovar
       <span class="sidebar-badge badge-amber" x-show="pendingReviews > 0" x-text="pendingReviews"></span>
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'approval' }" @click="tab='approval'; sidebarOpen=false" title="Aprovacoes">
+    <div class="sidebar-item" :class="{ active: tab === 'approval' }" :aria-current="tab === 'approval' ? 'page' : false" role="button" @click="tab='approval'; sidebarOpen=false" title="Aprovacoes">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Aprovacoes
       <span class="sidebar-badge badge-green" x-show="approvalPending.length > 0" x-text="approvalPending.length"></span>
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'publish' }" @click="tab='publish'; sidebarOpen=false" title="Publicar">
+    <div class="sidebar-item" :class="{ active: tab === 'publish' }" :aria-current="tab === 'publish' ? 'page' : false" role="button" @click="tab='publish'; sidebarOpen=false" title="Publicar">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="rotate(180 8 8)"/><path d="M2 12v2h12v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></span> Publicar
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'performance' }" @click="tab='performance'; sidebarOpen=false" title="Resultados">
+    <div class="sidebar-item" :class="{ active: tab === 'performance' }" :aria-current="tab === 'performance' ? 'page' : false" role="button" @click="tab='performance'; sidebarOpen=false" title="Resultados">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polyline points="1,12 5,7 9,9 15,3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="15" cy="3" r="1.5" fill="currentColor" opacity="0.6"/></svg></span> Resultados
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'budget' }" @click="tab='budget'; sidebarOpen=false" title="Custos IA">
+    <div class="sidebar-item" :class="{ active: tab === 'budget' }" :aria-current="tab === 'budget' ? 'page' : false" role="button" @click="tab='budget'; sidebarOpen=false" title="Custos IA">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M4 4h8M5 7h6M4 10h8M6 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> Custos IA
     </div>
   </div>
 
   <div class="sidebar-section" style="border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px;">
     <div class="sidebar-section-title">Recursos</div>
-    <div class="sidebar-item" :class="{ active: tab === 'assets' }" @click="tab='assets'; sidebarOpen=false" title="Biblioteca">
+    <div class="sidebar-item" :class="{ active: tab === 'assets' }" :aria-current="tab === 'assets' ? 'page' : false" role="button" @click="tab='assets'; sidebarOpen=false" title="Biblioteca">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Biblioteca
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" @click="tab='vdp'; sidebarOpen=false" title="Fichas">
+    <div class="sidebar-item" :class="{ active: tab === 'vdp' }" :aria-current="tab === 'vdp' ? 'page' : false" role="button" @click="tab='vdp'; sidebarOpen=false" title="Fichas">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3" fill="none"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1" opacity="0.5"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1" opacity="0.5"/><line x1="5" y1="11" x2="9" y2="11" stroke="currentColor" stroke-width="1" opacity="0.5"/></svg></span> Fichas
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'claims' }" @click="tab='claims'; sidebarOpen=false" title="Argumentos">
+    <div class="sidebar-item" :class="{ active: tab === 'claims' }" :aria-current="tab === 'claims' ? 'page' : false" role="button" @click="tab='claims'; sidebarOpen=false" title="Argumentos">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span> Argumentos
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" @click="tab='hashtags'; sidebarOpen=false" title="Hashtags">
+    <div class="sidebar-item" :class="{ active: tab === 'hashtags' }" :aria-current="tab === 'hashtags' ? 'page' : false" role="button" @click="tab='hashtags'; sidebarOpen=false" title="Hashtags">
       <span class="icon" style="font-weight:700; font-size:0.85rem;">#</span> Hashtags
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'personas' }" @click="tab='personas'; sidebarOpen=false" title="Personas">
+    <div class="sidebar-item" :class="{ active: tab === 'personas' }" :aria-current="tab === 'personas' ? 'page' : false" role="button" @click="tab='personas'; sidebarOpen=false" title="Personas">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M2 15c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Personas
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" @click="tab='compliance'; sidebarOpen=false" title="Regras">
+    <div class="sidebar-item" :class="{ active: tab === 'compliance' }" :aria-current="tab === 'compliance' ? 'page' : false" role="button" @click="tab='compliance'; sidebarOpen=false" title="Regras">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.5 6.5 6 7.5 3.5-1 6-4 6-7.5V4L8 1z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span> Regras
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'reference' }" @click="tab='reference'; sidebarOpen=false" title="Referencia">
+    <div class="sidebar-item" :class="{ active: tab === 'reference' }" :aria-current="tab === 'reference' ? 'page' : false" role="button" @click="tab='reference'; sidebarOpen=false" title="Referencia">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h4v4H2zM10 2h4v4h-4zM2 10h4v4H2zM10 10h4v4h-4z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></span> Referencia
     </div>
-    <div class="sidebar-item" :class="{ active: tab === 'settings' }" @click="tab='settings'; sidebarOpen=false" title="Config">
+    <div class="sidebar-item" :class="{ active: tab === 'settings' }" :aria-current="tab === 'settings' ? 'page' : false" role="button" @click="tab='settings'; sidebarOpen=false" title="Config">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6l1.4 1.4M13 3l-1.4 1.4M4.4 11.6L3 13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Config
     </div>
   </div>
@@ -2105,7 +2196,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   </div>
 </div>
 
-<div class="main-content">
+<div class="main-content" id="main-content">
 
 <!-- Loading Indicator -->
 <div x-show="dataLoading" x-cloak style="padding: 0;">
@@ -2120,6 +2211,12 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <div class="skeleton skeleton-card"></div>
     <div class="skeleton skeleton-card"></div>
   </div>
+</div>
+
+<!-- Tab Loading Pulse (heavy tabs) -->
+<div x-show="tabLoading && !dataLoading" x-cloak class="tab-loading-pulse" style="text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 0.82rem;">
+  <div style="width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px;"></div>
+  Carregando...
 </div>
 
 <!-- ===================================================== -->
@@ -2492,8 +2589,18 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <span style="font-size: 0.75rem; color: var(--text-muted);" x-text="pieces.length + ' pecas total'"></span>
   </div>
 
+  <!-- Empty state: Board -->
+  <template x-if="pieces.length === 0 && !dataLoading">
+    <div class="empty-state-rich">
+      <div class="es-icon">&#9776;</div>
+      <div class="es-title">Nenhuma peca criada ainda</div>
+      <div class="es-desc">Crie sua primeira peca de conteudo para comecar a produzir.</div>
+      <button class="btn btn-primary" @click="showNewPiece = true">+ Criar primeira peca</button>
+    </div>
+  </template>
+
   <!-- Kanban Board -->
-  <div class="kanban">
+  <div class="kanban" x-show="pieces.length > 0">
     <template x-for="stage in stages">
       <div class="kanban-column"
              @dragover.prevent="$el.classList.add('drag-over')"
@@ -2637,9 +2744,11 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   </template>
 
   <template x-if="calSlots.length === 0">
-    <div class="empty-state">
-      <div class="icon">&#9783;</div>
-      <p>Nenhum calendario carregado. Informe a semana e clique "Gerar do Template".</p>
+    <div class="empty-state-rich">
+      <div class="es-icon">&#128197;</div>
+      <div class="es-title">Calendario vazio</div>
+      <div class="es-desc">Informe a semana acima e gere o calendario automaticamente.</div>
+      <button class="btn btn-primary" @click="generateCalendar(); autoFillCalendar()">Gerar Calendario</button>
     </div>
   </template>
 
@@ -3387,9 +3496,10 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   </template>
 
   <template x-if="filteredReviews().length === 0">
-    <div class="empty-state">
-      <div class="icon">&#10003;</div>
-      <p>Nenhum review <span x-text="reviewFilter || ''"></span> encontrado.</p>
+    <div class="empty-state-rich">
+      <div class="es-icon">&#10003;</div>
+      <div class="es-title" x-text="reviews.length === 0 ? 'Nada para revisar' : 'Nenhum review ' + (reviewFilter || '') + ' encontrado'"></div>
+      <div class="es-desc" x-text="reviews.length === 0 ? 'Envie pecas do Board para a etapa de revisao.' : 'Tente outro filtro ou aguarde novas pecas.'"></div>
     </div>
   </template>
 </div>
@@ -3432,6 +3542,15 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
       </div>
       <div class="asset-stat" x-text="assetFilteredCount() + ' imagens'"></div>
     </div>
+
+    <!-- Empty state: Assets products -->
+    <template x-if="Object.keys(productImages).length === 0 && !dataLoading">
+      <div class="empty-state-rich">
+        <div class="es-icon">&#128247;</div>
+        <div class="es-title">Nenhuma imagem de produto</div>
+        <div class="es-desc">Adicione imagens de produto via API ou upload para comecar.</div>
+      </div>
+    </template>
 
     <!-- Categories (accordion) -->
     <template x-for="cat in assetFilteredCategories()" :key="cat">
@@ -3722,6 +3841,46 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     <div class="stat-card">
       <div class="label">Taxa Engajamento</div>
       <div class="value" style="color: var(--green);" x-text="(perfSummary.avg_engagement_rate || 0) + '%'"></div>
+    </div>
+  </div>
+
+  <!-- Empty state: Performance -->
+  <template x-if="metrics.length === 0 && !dataLoading">
+    <div class="empty-state-rich">
+      <div class="es-icon">&#128200;</div>
+      <div class="es-title">Sem metricas registradas</div>
+      <div class="es-desc">Colete metricas das suas publicacoes para acompanhar o desempenho.</div>
+      <button class="btn btn-primary" @click="collectMetrics()">Coletar Metricas</button>
+    </div>
+  </template>
+
+  <!-- Performance Summary Bar Chart -->
+  <div class="card" style="margin-bottom: 16px;" x-show="metrics.length > 0">
+    <div class="card-title">Resumo de Metricas</div>
+    <div class="bar-chart" x-data="{
+      get chartData() {
+        const imp = perfSummary.total_impressions || 0;
+        const reach = perfSummary.total_reach || 0;
+        const eng = perfSummary.total_engagement || 0;
+        const clicks = metrics.reduce((s,m) => s + (m.clicks || 0), 0);
+        const maxVal = Math.max(imp, reach, eng, clicks, 1);
+        return [
+          { label: 'Impressoes', value: imp, pct: (imp/maxVal)*100, color: '' },
+          { label: 'Alcance', value: reach, pct: (reach/maxVal)*100, color: 'green' },
+          { label: 'Engajamento', value: eng, pct: (eng/maxVal)*100, color: 'purple' },
+          { label: 'Cliques', value: clicks, pct: (clicks/maxVal)*100, color: 'amber' },
+        ];
+      }
+    }">
+      <template x-for="item in chartData" :key="item.label">
+        <div class="bar-chart-row">
+          <div class="bar-chart-label" x-text="item.label"></div>
+          <div class="bar-chart-track">
+            <div class="bar-chart-fill" :class="item.color" :style="'width:' + item.pct + '%'"></div>
+          </div>
+          <div class="bar-chart-value" x-text="formatNumber(item.value)"></div>
+        </div>
+      </template>
     </div>
   </div>
 
@@ -4681,6 +4840,23 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
     </div>
   </div>
 
+  <!-- Budget Bar Chart by Category -->
+  <div class="card" style="margin-bottom: 16px;" x-show="budgetSummary.by_category && Object.keys(budgetSummary.by_category).length > 0">
+    <div class="card-title">Distribuicao de Custos</div>
+    <div class="bar-chart">
+      <template x-for="[cat, val] in Object.entries(budgetSummary.by_category || {}).sort((a,b) => b[1] - a[1])" :key="cat">
+        <div class="bar-chart-row">
+          <div class="bar-chart-label" x-text="cat"></div>
+          <div class="bar-chart-track">
+            <div class="bar-chart-fill" :class="['', 'green', 'purple', 'amber', 'red'][Object.entries(budgetSummary.by_category).sort((a,b) => b[1]-a[1]).findIndex(e => e[0]===cat) % 5]"
+                 :style="'width:' + Math.round((val / Math.max(0.01, Object.values(budgetSummary.by_category).reduce((a,b)=>Math.max(a,b),0.01))) * 100) + '%'"></div>
+          </div>
+          <div class="bar-chart-value" x-text="'$' + val.toFixed(2)"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
     <!-- By Category -->
     <div class="card">
@@ -4791,7 +4967,11 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
   <div class="card">
     <div class="card-title">Pecas Pendentes de Aprovacao</div>
     <template x-if="approvalPending.length === 0">
-      <div style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhuma peca pendente de aprovacao</div>
+      <div class="empty-state-rich">
+        <div class="es-icon" style="background: rgba(16,185,129,0.12);">&#10004;</div>
+        <div class="es-title" style="color: var(--green);">Tudo aprovado!</div>
+        <div class="es-desc">Nenhuma peca pendente de aprovacao. Bom trabalho!</div>
+      </div>
     </template>
     <template x-for="piece in approvalPending" :key="piece.id || piece.piece_id">
       <div style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; background: var(--bg-darker);">
@@ -5012,10 +5192,10 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- ============================================= -->
 
 <!-- New Piece Modal -->
-<div class="modal-overlay" x-show="showNewPiece" @click.self="showNewPiece = false" @keydown.escape.window="showNewPiece = false" x-cloak>
+<div class="modal-overlay" x-show="showNewPiece" @click.self="showNewPiece = false" @keydown.escape.window="showNewPiece = false" x-cloak role="dialog" aria-modal="true" aria-labelledby="new-piece-title">
   <div class="modal">
     <div class="modal-header">
-      <h3>Nova Peca de Conteudo</h3>
+      <h3 id="new-piece-title">Nova Peca de Conteudo</h3>
       <button class="modal-close" @click="showNewPiece = false">&times;</button>
     </div>
     <div class="modal-body">
@@ -5107,7 +5287,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 <!-- Piece Detail Modal -->
 <!-- ===== DRAWER: Piece Production Panel ===== -->
 <div class="drawer-overlay" x-show="showPieceDetail" @click="showPieceDetail = false" x-cloak></div>
-<div class="drawer" x-show="showPieceDetail" x-cloak @keydown.escape.window="showPieceDetail = false">
+<div class="drawer" x-show="showPieceDetail" x-cloak @keydown.escape.window="showPieceDetail = false" role="complementary" aria-label="Detalhes da peca">
   <div class="drawer-header">
     <div>
       <h3 x-text="selectedPiece?.title || selectedPiece?.id || 'Peca'"></h3>
@@ -5382,7 +5562,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- Quick Produce Modal -->
-<div class="modal-overlay" x-show="showQuickProduce" @click.self="showQuickProduce = false" @keydown.escape.window="showQuickProduce = false" x-cloak>
+<div class="modal-overlay" x-show="showQuickProduce" @click.self="showQuickProduce = false" @keydown.escape.window="showQuickProduce = false" x-cloak role="dialog" aria-modal="true" aria-label="Producao rapida">
   <div class="modal" style="max-width: 520px;">
     <div class="modal-header">
       <h3>Criar Peca Automatica</h3>
@@ -5445,7 +5625,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- A/B Test Modal -->
-<div class="modal-overlay" x-show="showABTest" @click.self="showABTest = false" x-cloak>
+<div class="modal-overlay" x-show="showABTest" @click.self="showABTest = false" x-cloak role="dialog" aria-modal="true" aria-label="Teste A/B">
   <div class="modal" style="max-width: 580px;">
     <div class="modal-header">
       <h3>Gerar Variacoes</h3>
@@ -5527,7 +5707,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- New VDP Modal -->
-<div class="modal-overlay" x-show="showNewVDP" @click.self="showNewVDP = false" @keydown.escape.window="showNewVDP = false" x-cloak>
+<div class="modal-overlay" x-show="showNewVDP" @click.self="showNewVDP = false" @keydown.escape.window="showNewVDP = false" x-cloak role="dialog" aria-modal="true" aria-label="Nova ficha de produto">
   <div class="modal">
     <div class="modal-header">
       <h3>Criar Novo VDP</h3>
@@ -5593,7 +5773,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- VDP Detail Modal -->
-<div class="modal-overlay" x-show="showVDPDetail" @click.self="showVDPDetail = false" @keydown.escape.window="showVDPDetail = false" x-cloak>
+<div class="modal-overlay" x-show="showVDPDetail" @click.self="showVDPDetail = false" @keydown.escape.window="showVDPDetail = false" x-cloak role="dialog" aria-modal="true" aria-label="Detalhes da ficha">
   <div class="modal">
     <div class="modal-header">
       <h3 x-text="vdpDetail?.produto || 'VDP'"></h3>
@@ -5632,7 +5812,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- Calendar Slot Modal -->
-<div class="modal-overlay" x-show="showCalSlotModal" @click.self="showCalSlotModal = false" @keydown.escape.window="showCalSlotModal = false" x-cloak>
+<div class="modal-overlay" x-show="showCalSlotModal" @click.self="showCalSlotModal = false" @keydown.escape.window="showCalSlotModal = false" x-cloak role="dialog" aria-modal="true" aria-label="Editar slot do calendario">
   <div class="modal" style="max-width: 450px;">
     <div class="modal-header">
       <h3>Editar Slot</h3>
@@ -5688,7 +5868,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 </div>
 
 <!-- Image Modal -->
-<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" @keydown.escape.window="showImageModal = false" @keydown.left.window="navigateAsset(-1)" @keydown.right.window="navigateAsset(1)" x-cloak>
+<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" @keydown.escape.window="showImageModal = false" @keydown.left.window="navigateAsset(-1)" @keydown.right.window="navigateAsset(1)" x-cloak role="dialog" aria-modal="true" aria-label="Visualizar imagem">
   <div class="modal" style="max-width: 700px; position: relative;">
     <div class="modal-header">
       <h3 x-text="selectedImage?.name || ''"></h3>
@@ -5742,6 +5922,7 @@ function studioApp() {
     toastVisible: false,
 
     brandTheme: 'salk',
+    tabLoading: false,
     tab: 'dashboard',
     tabTitles: {
       dashboard: 'Painel Geral',
@@ -6090,6 +6271,11 @@ function studioApp() {
         localStorage.setItem('studio_theme', val);
       });
       this.$watch('tab', (val) => {
+        const heavyTabs = ['video', 'studio', 'settings', 'editor'];
+        if (heavyTabs.includes(val)) {
+          this.tabLoading = true;
+          setTimeout(() => { this.tabLoading = false; }, 600);
+        }
         if (val === 'video') { this.loadVideoStatus(); this.loadVeo3Models(); this.loadVideoEngines(); }
         if (val === 'editor') this.loadEditorData();
         if (val === 'publish') { this.loadApprovedPieces(); this.loadPublishStatus(); }
@@ -6104,14 +6290,19 @@ function studioApp() {
       });
 
       // Keyboard shortcuts
+      const quickTabs = { '1':'dashboard', '2':'board', '3':'calendar', '4':'copy', '5':'studio', '6':'video', '7':'review', '8':'publish', '9':'settings' };
       document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         if (e.ctrlKey || e.metaKey) {
           if (e.key === 'k') { e.preventDefault(); this.showCommandPalette = !this.showCommandPalette; }
           if (e.key === 'n') { e.preventDefault(); this.showNewPiece = true; this.tab = 'board'; }
           if (e.key === 'b') { e.preventDefault(); this.tab = 'board'; }
+          if (e.key === 'd') { e.preventDefault(); this.tab = 'dashboard'; }
+          if (e.key === 's') { e.preventDefault(); this.tab = 'studio'; }
+          if (e.key === '/') { e.preventDefault(); this.showShortcuts = !this.showShortcuts; }
         }
         if (e.key === '?') { this.showShortcuts = !this.showShortcuts; }
+        if (quickTabs[e.key]) { this.tab = quickTabs[e.key]; }
       });
     },
 
