@@ -3176,6 +3176,54 @@ body.zen-mode .tab-bar { display: none !important; }
 @media (max-width: 768px) {
   .autosave-indicator { bottom: 72px; right: 8px; }
 }
+
+/* === REPORTS & EXPORT === */
+.report-container {
+  max-width: 900px; margin: 0 auto;
+}
+.report-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+}
+.report-section {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+}
+.report-section h4 {
+  font-size: 0.85rem; font-weight: 700; margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.report-metric-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;
+}
+.report-metric {
+  background: var(--bg-secondary); border-radius: var(--radius-sm);
+  padding: 14px; text-align: center;
+}
+.report-metric-value { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+.report-metric-label { font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; }
+
+.report-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.report-table th { text-align: left; padding: 8px 12px; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+.report-table td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+.export-btn-group {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.export-btn {
+  display: flex; align-items: center; gap: 6px; padding: 8px 16px;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-primary);
+  font-size: 0.78rem; cursor: pointer; transition: var(--transition);
+}
+.export-btn:hover { border-color: var(--accent); background: var(--accent-dim); }
+.export-btn-icon { font-size: 1rem; }
+
+@media (max-width: 768px) {
+  .report-metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .export-btn-group { flex-direction: column; }
+  .report-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -5720,6 +5768,107 @@ body.zen-mode .tab-bar { display: none !important; }
         </template>
       </div>
     </template>
+  </div>
+
+  <!-- Weekly Report -->
+  <div class="report-container" style="margin-top:24px;">
+    <div class="report-header">
+      <div>
+        <h3 style="font-size:1.1rem; font-weight:700;">Relatorio Semanal</h3>
+        <p style="font-size:0.78rem; color:var(--text-muted);" x-text="'Semana ' + (calWeekId || currentWeekId())"></p>
+      </div>
+      <div class="export-btn-group">
+        <button class="export-btn" @click="exportDashboardPDF()">
+          <span class="export-btn-icon">&#x1f4c4;</span> Exportar PDF
+        </button>
+        <button class="export-btn" @click="exportCalendarICS()">
+          <span class="export-btn-icon">&#x1f4c5;</span> Exportar .ics
+        </button>
+        <button class="export-btn" @click="exportPiecesZip()">
+          <span class="export-btn-icon">&#x1f4e6;</span> Exportar Pecas
+        </button>
+        <button class="export-btn" @click="exportReportJSON()">
+          <span class="export-btn-icon">&#x1f4ca;</span> Dados JSON
+        </button>
+      </div>
+    </div>
+
+    <!-- Production Summary -->
+    <div class="report-section">
+      <h4>Producao da Semana</h4>
+      <div class="report-metric-grid">
+        <div class="report-metric">
+          <div class="report-metric-value" x-text="pieces.length"></div>
+          <div class="report-metric-label">Total Pecas</div>
+        </div>
+        <div class="report-metric">
+          <div class="report-metric-value" x-text="pieces.filter(p => p.stage === 'published').length"></div>
+          <div class="report-metric-label">Publicadas</div>
+        </div>
+        <div class="report-metric">
+          <div class="report-metric-value" x-text="pieces.filter(p => p.stage === 'approved').length"></div>
+          <div class="report-metric-label">Aprovadas</div>
+        </div>
+        <div class="report-metric">
+          <div class="report-metric-value" x-text="pieces.filter(p => p.stage === 'review').length"></div>
+          <div class="report-metric-label">Em Revisao</div>
+        </div>
+        <div class="report-metric">
+          <div class="report-metric-value" x-text="reviews.filter(r => r.verdict === 'approved').length + '/' + reviews.length"></div>
+          <div class="report-metric-label">Reviews OK</div>
+        </div>
+        <div class="report-metric">
+          <div class="report-metric-value" x-text="'$' + (budgetData.total_spent_usd || 0).toFixed(2)"></div>
+          <div class="report-metric-label">Gasto Total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pieces by Brand -->
+    <div class="report-section">
+      <h4>Pecas por Marca</h4>
+      <table class="report-table">
+        <thead><tr><th>Marca</th><th>Total</th><th>Publicadas</th><th>Em Progresso</th><th>Score Medio</th></tr></thead>
+        <tbody>
+          <template x-for="brand in ['salk','mendel','manager','dayho']" :key="brand">
+            <tr>
+              <td style="font-weight:600;text-transform:capitalize;" x-text="brand"></td>
+              <td x-text="pieces.filter(p => p.brand === brand).length"></td>
+              <td x-text="pieces.filter(p => p.brand === brand && p.stage === 'published').length"></td>
+              <td x-text="pieces.filter(p => p.brand === brand && !['published','approved'].includes(p.stage)).length"></td>
+              <td x-text="(() => { const bp = pieces.filter(p => p.brand === brand && p.score); return bp.length ? (bp.reduce((a,p) => a + p.score, 0) / bp.length).toFixed(1) : '-'; })()"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pieces by Stage -->
+    <div class="report-section">
+      <h4>Pipeline — Distribuicao por Estagio</h4>
+      <div style="display:flex; gap:4px; align-items:flex-end; height:120px; padding:12px 0;">
+        <template x-for="stage in ['briefing','copy','design','review','approved','published']" :key="stage">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+            <div style="font-size:0.7rem; font-weight:700; color:var(--text-primary);" x-text="pieces.filter(p => p.stage === stage).length"></div>
+            <div style="width:100%; border-radius:4px 4px 0 0; transition:height 0.3s ease;"
+                 :style="'height:' + Math.max(4, (pieces.filter(p => p.stage === stage).length / Math.max(1, pieces.length)) * 100) + 'px; background:var(--accent);'"></div>
+            <div style="font-size:0.6rem; color:var(--text-muted); text-transform:capitalize; white-space:nowrap;" x-text="stage"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="report-section">
+      <h4>Atividade Recente</h4>
+      <template x-for="act in activityLog.slice(0, 10)" :key="act.id">
+        <div style="display:flex; gap:12px; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03);">
+          <div style="font-size:0.72rem; color:var(--text-muted); width:100px; flex-shrink:0;" x-text="relativeTime(act.timestamp)"></div>
+          <div style="font-size:0.78rem;" x-text="act.details"></div>
+        </div>
+      </template>
+      <div x-show="activityLog.length === 0" style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.78rem;">Nenhuma atividade registrada</div>
+    </div>
   </div>
 </div>
 
@@ -9971,6 +10120,153 @@ function studioApp() {
       const headers = ['Dia', 'Horario', 'Plataforma', 'Formato', 'Produto', 'Pilar', 'Status'];
       const rows = this.calSlots.map(s => [s.day, s.time, s.platform, s.format, s.product, s.pillar, s.status]);
       this.exportCSV('calendario_' + this.calWeekId + '.csv', headers, rows);
+    },
+
+    // Export Dashboard as PDF (using print)
+    exportDashboardPDF() {
+      const reportHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>Salk Content Studio — Relatorio Semanal</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; padding: 40px; color: #1a1a1a; }
+          h1 { font-size: 24px; margin-bottom: 4px; }
+          h2 { font-size: 16px; margin-top: 24px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+          .subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
+          .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0; }
+          .metric { border: 1px solid #eee; border-radius: 8px; padding: 16px; text-align: center; }
+          .metric-value { font-size: 28px; font-weight: 800; color: #4f8eff; }
+          .metric-label { font-size: 12px; color: #888; margin-top: 4px; text-transform: uppercase; }
+          table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+          th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+          th { font-weight: 600; color: #666; text-transform: uppercase; font-size: 11px; }
+          .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #eee; font-size: 11px; color: #999; }
+        </style></head><body>
+        <h1>Salk Content Studio</h1>
+        <div class="subtitle">Relatorio Semanal — ${this.calWeekId || this.currentWeekId()} — Gerado em ${new Date().toLocaleDateString('pt-BR')}</div>
+        <h2>Resumo de Producao</h2>
+        <div class="metrics">
+          <div class="metric"><div class="metric-value">${this.pieces.length}</div><div class="metric-label">Total Pecas</div></div>
+          <div class="metric"><div class="metric-value">${this.pieces.filter(p => p.stage === 'published').length}</div><div class="metric-label">Publicadas</div></div>
+          <div class="metric"><div class="metric-value">${this.pieces.filter(p => p.stage === 'approved').length}</div><div class="metric-label">Aprovadas</div></div>
+          <div class="metric"><div class="metric-value">${this.pieces.filter(p => p.stage === 'review').length}</div><div class="metric-label">Em Revisao</div></div>
+          <div class="metric"><div class="metric-value">${this.reviews.filter(r => r.verdict === 'approved').length}/${this.reviews.length}</div><div class="metric-label">Reviews OK</div></div>
+          <div class="metric"><div class="metric-value">$${(this.budgetData.total_spent_usd || 0).toFixed(2)}</div><div class="metric-label">Gasto Total</div></div>
+        </div>
+        <h2>Pecas por Marca</h2>
+        <table>
+          <tr><th>Marca</th><th>Total</th><th>Publicadas</th><th>Em Progresso</th></tr>
+          ${['salk','mendel','manager','dayho'].map(b => '<tr><td style="text-transform:capitalize;">' + b + '</td><td>' + this.pieces.filter(p => p.brand === b).length + '</td><td>' + this.pieces.filter(p => p.brand === b && p.stage === 'published').length + '</td><td>' + this.pieces.filter(p => p.brand === b && !['published','approved'].includes(p.stage)).length + '</td></tr>').join('')}
+        </table>
+        <h2>Pipeline</h2>
+        <table>
+          <tr><th>Estagio</th><th>Quantidade</th></tr>
+          ${['briefing','copy','design','review','approved','published'].map(s => '<tr><td style="text-transform:capitalize;">' + s + '</td><td>' + this.pieces.filter(p => p.stage === s).length + '</td></tr>').join('')}
+        </table>
+        <div class="footer">Gerado automaticamente pelo Salk Content Studio v2.0 — Manager Grupo</div>
+        </body></html>`;
+
+      const win = window.open('', '_blank');
+      win.document.write(reportHTML);
+      win.document.close();
+      setTimeout(() => { win.print(); }, 500);
+      this.notify('Relatorio PDF aberto para impressao');
+    },
+
+    // Export Calendar as .ics
+    exportCalendarICS() {
+      const events = this.pieces.filter(p => p.scheduled_at || p.created_at).map(p => {
+        const dt = new Date(p.scheduled_at || p.created_at);
+        const dtStr = dt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+        const endDt = new Date(dt.getTime() + 3600000);
+        const endStr = endDt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+        return 'BEGIN:VEVENT\r\nDTSTART:' + dtStr + '\r\nDTEND:' + endStr + '\r\nSUMMARY:' + (p.title || 'Peca').replace(/[,;\\]/g, '') + '\r\nDESCRIPTION:Marca: ' + (p.brand || '') + ' | Estagio: ' + (p.stage || '') + '\r\nEND:VEVENT';
+      });
+
+      const ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Salk Content Studio//v2.0//PT\r\nCALSCALE:GREGORIAN\r\n' + events.join('\r\n') + '\r\nEND:VCALENDAR';
+
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'content-studio-calendario-' + (this.calWeekId || this.currentWeekId()) + '.ics';
+      a.click();
+      URL.revokeObjectURL(url);
+      this.notify('Calendario exportado como .ics');
+    },
+
+    // Export pieces as JSON package
+    exportPiecesZip() {
+      const exportData = {
+        exported_at: new Date().toISOString(),
+        week: this.calWeekId || this.currentWeekId(),
+        brand_filter: this.boardBrandFilter || 'all',
+        total_pieces: this.pieces.length,
+        pieces: this.pieces.map(p => ({
+          id: p.id,
+          title: p.title,
+          brand: p.brand,
+          product: p.product,
+          stage: p.stage,
+          content_type: p.content_type,
+          platform: p.platform,
+          copy_text: p.copy_text,
+          headline: p.headline,
+          cta: p.cta,
+          hashtags: p.hashtags,
+          prompt_nb2: p.prompt_nb2,
+          image_url: p.image_url,
+          score: p.score,
+          created_at: p.created_at,
+          scheduled_at: p.scheduled_at,
+          published_at: p.published_at,
+        })),
+        reviews: this.reviews,
+        budget: this.budgetData,
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'content-studio-export-' + new Date().toISOString().substring(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      this.notify('Pecas exportadas como JSON');
+    },
+
+    // Export raw report data
+    exportReportJSON() {
+      const report = {
+        generated_at: new Date().toISOString(),
+        week: this.calWeekId || this.currentWeekId(),
+        summary: {
+          total_pieces: this.pieces.length,
+          published: this.pieces.filter(p => p.stage === 'published').length,
+          approved: this.pieces.filter(p => p.stage === 'approved').length,
+          in_review: this.pieces.filter(p => p.stage === 'review').length,
+          reviews_approved: this.reviews.filter(r => r.verdict === 'approved').length,
+          reviews_total: this.reviews.length,
+          budget_spent: this.budgetData.total_spent_usd || 0,
+        },
+        by_brand: ['salk','mendel','manager','dayho'].map(b => ({
+          brand: b,
+          total: this.pieces.filter(p => p.brand === b).length,
+          published: this.pieces.filter(p => p.brand === b && p.stage === 'published').length,
+        })),
+        by_stage: ['briefing','copy','design','review','approved','published'].map(s => ({
+          stage: s,
+          count: this.pieces.filter(p => p.stage === s).length,
+        })),
+        activity: this.activityLog.slice(0, 50),
+      };
+
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'report-' + (this.calWeekId || this.currentWeekId()) + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      this.notify('Relatorio exportado como JSON');
     },
 
     async clonePiece(piece) {
