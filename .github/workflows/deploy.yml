@@ -1,23 +1,25 @@
 name: Deploy Content Studio
+
 on:
   push:
     branches: [main]
     paths:
       - 'packages/content-pipeline/**'
       - 'packages/content-studio-frontend/**'
+      - 'deploy/**'
       - 'Dockerfile'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Render deploy
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
-        run: |
-          curl -sf -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
-            -H "Authorization: Bearer ${RENDER_API_KEY}" \
-            -H "Content-Type: application/json" \
-            -d '{"clearCache": "do_not_clear"}'
-          echo "Deploy triggered on Render"
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 162.240.13.51
+          port: 22022
+          username: deployer
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: bash /opt/content-studio/repo/deploy/deploy.sh
+          script_stop: true
+          timeout: 300s
