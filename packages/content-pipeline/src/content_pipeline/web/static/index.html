@@ -2957,6 +2957,81 @@ body.zen-mode .tab-bar { display: none !important; }
   .pending-actions { grid-template-columns: repeat(2, 1fr); }
   .batch-toolbar { padding: 10px 12px; bottom: 56px; }
 }
+
+/* === NOTIFICATION CENTER === */
+.notif-center {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 380px;
+  background: var(--bg-card); border-left: 1px solid var(--border);
+  z-index: 1500; transform: translateX(100%); transition: transform 0.3s ease;
+  display: flex; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,0.3);
+}
+.notif-center.open { transform: translateX(0); }
+.notif-center-header {
+  padding: 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.notif-center-header h3 { font-size: 0.95rem; font-weight: 700; }
+.notif-center-body { flex: 1; overflow-y: auto; padding: 8px; }
+.notif-center-tabs {
+  display: flex; gap: 4px; padding: 8px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.notif-center-tab {
+  padding: 6px 12px; font-size: 0.72rem; border-radius: 20px;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  color: var(--text-muted); cursor: pointer; transition: var(--transition);
+}
+.notif-center-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.notif-item {
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  border: 1px solid transparent; margin-bottom: 4px;
+  cursor: pointer; transition: var(--transition);
+}
+.notif-item:hover { background: var(--bg-secondary); border-color: var(--border); }
+.notif-item.unread { border-left: 3px solid var(--accent); background: rgba(79,142,255,0.04); }
+.notif-item-title { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); }
+.notif-item-message { font-size: 0.74rem; color: var(--text-secondary); margin-top: 2px; }
+.notif-item-time { font-size: 0.65rem; color: var(--text-muted); margin-top: 4px; }
+.notif-item-cat {
+  display: inline-block; font-size: 0.6rem; padding: 2px 8px;
+  border-radius: 10px; font-weight: 600; text-transform: uppercase;
+  margin-top: 4px;
+}
+.notif-cat-success { background: var(--green-bg); color: var(--green); }
+.notif-cat-info { background: var(--blue-bg); color: var(--accent); }
+.notif-cat-warning { background: var(--amber-bg); color: var(--amber); }
+.notif-cat-error { background: var(--red-bg); color: var(--red); }
+.notif-cat-review { background: var(--purple-bg); color: var(--purple); }
+.notif-cat-publish { background: var(--cyan-bg); color: var(--cyan); }
+
+/* Activity Log */
+.activity-log { padding: 12px; }
+.activity-item {
+  display: flex; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.activity-dot {
+  width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
+}
+.activity-dot-create { background: var(--green); }
+.activity-dot-update { background: var(--accent); }
+.activity-dot-delete { background: var(--red); }
+.activity-dot-review { background: var(--purple); }
+.activity-dot-publish { background: var(--cyan); }
+.activity-dot-default { background: var(--text-muted); }
+.activity-text { font-size: 0.78rem; color: var(--text-secondary); }
+.activity-text strong { color: var(--text-primary); font-weight: 600; }
+.activity-time { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+.notif-empty {
+  text-align: center; padding: 48px 24px; color: var(--text-muted);
+}
+.notif-empty-icon { font-size: 2.5rem; opacity: 0.3; margin-bottom: 12px; }
+
+@media (max-width: 768px) {
+  .notif-center { width: 100%; }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
@@ -3223,56 +3298,12 @@ body.zen-mode .tab-bar { display: none !important; }
     <button class="btn btn-primary" @click="showNewPiece = true" x-show="tab === 'board'">+ Nova Peca</button>
     <button class="btn btn-primary" @click="showNewVDP = true" x-show="tab === 'vdp'">+ Nova Ficha</button>
     <div style="position: relative;">
-      <button class="btn" @click="showNotifPanel = !showNotifPanel" style="position: relative;">
+      <button class="btn" @click="notifCenterOpen = !notifCenterOpen; if(notifCenterOpen) loadNotifications()" style="position: relative;">
         &#128276;
-        <span x-show="notifications.filter(n => !n.read).length > 0"
+        <span x-show="notifUnreadCount > 0"
               style="position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--red); color: white; font-size: 0.55rem; display: flex; align-items: center; justify-content: center; font-weight: 800;"
-              x-text="Math.min(99, notifications.filter(n => !n.read).length)"></span>
+              x-text="Math.min(99, notifUnreadCount)"></span>
       </button>
-      <!-- Notification Panel -->
-      <div x-show="showNotifPanel" @click.outside="showNotifPanel = false" x-cloak
-           style="position: absolute; right: 0; top: 100%; margin-top: 8px; width: 340px; max-height: 400px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 100; overflow: hidden;">
-        <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 700; font-size: 0.85rem;">Notificacoes</span>
-          <div style="display: flex; gap: 4px;">
-            <button class="btn btn-sm" style="font-size: 0.62rem; padding: 2px 6px; color: var(--red); border-color: var(--red);" @click="notifications = []">Limpar Tudo</button>
-            <button class="btn btn-sm" style="font-size: 0.62rem; padding: 2px 6px;" @click="notifications.forEach(n => n.read = true)">Marcar lidas</button>
-          </div>
-        </div>
-        <!-- Category Tabs -->
-        <div class="notif-tabs">
-          <button class="notif-tab" :class="notifFilter === '' ? 'active' : ''" @click="notifFilter = ''">
-            Todas <span class="notif-tab-badge" x-text="notifications.length" x-show="notifications.length > 0"></span>
-          </button>
-          <button class="notif-tab" :class="notifFilter === 'producao' ? 'active' : ''" @click="notifFilter = 'producao'">
-            Producao <span class="notif-tab-badge" x-text="notifications.filter(n => notifCategory(n) === 'producao').length" x-show="notifications.filter(n => notifCategory(n) === 'producao').length > 0"></span>
-          </button>
-          <button class="notif-tab" :class="notifFilter === 'ia' ? 'active' : ''" @click="notifFilter = 'ia'">
-            IA <span class="notif-tab-badge" x-text="notifications.filter(n => notifCategory(n) === 'ia').length" x-show="notifications.filter(n => notifCategory(n) === 'ia').length > 0"></span>
-          </button>
-          <button class="notif-tab" :class="notifFilter === 'erros' ? 'active' : ''" @click="notifFilter = 'erros'">
-            Erros <span class="notif-tab-badge" x-text="notifications.filter(n => notifCategory(n) === 'erros').length" x-show="notifications.filter(n => notifCategory(n) === 'erros').length > 0"></span>
-          </button>
-        </div>
-        <div style="max-height: 300px; overflow-y: auto;">
-          <template x-if="filteredNotifications().length === 0">
-            <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.82rem;">Nenhuma notificacao</div>
-          </template>
-          <template x-for="(n, idx) in filteredNotifications().slice(0, 30)" :key="idx">
-            <div style="padding: 10px 16px; border-bottom: 1px solid var(--border); transition: all 0.15s; cursor: default;"
-                 :style="!n.read ? 'background: rgba(79,142,255,0.04)' : ''" @click="n.read = true">
-              <div style="display: flex; align-items: start; gap: 8px;">
-                <span style="font-size: 0.85rem; flex-shrink: 0; margin-top: 1px;" :style="n.type === 'error' ? 'color: var(--red)' : 'color: var(--green)'" x-text="n.type === 'error' ? '&#10007;' : '&#10003;'"></span>
-                <div style="flex: 1; min-width: 0;">
-                  <div style="font-size: 0.78rem; color: var(--text-secondary);" x-text="n.message"></div>
-                  <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;" x-text="n.time"></div>
-                </div>
-                <div x-show="!n.read" style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 6px;"></div>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div>
     </div>
     <select class="form-select" style="width: 110px; font-size: 0.72rem; padding: 4px 6px;" x-model="brandTheme" title="Tema da marca">
       <option value="salk">Salk</option>
@@ -7478,6 +7509,62 @@ body.zen-mode .tab-bar { display: none !important; }
   </div>
 </div>
 
+<!-- Notification Center -->
+<div class="notif-center" :class="{ open: notifCenterOpen }" @keydown.escape.window="notifCenterOpen = false">
+  <div class="notif-center-header">
+    <h3>Notificacoes <span x-show="notifUnreadCount > 0" class="badge badge-accent" style="font-size:0.65rem;margin-left:4px;" x-text="notifUnreadCount"></span></h3>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-sm" @click="markAllNotificationsRead()" title="Marcar todas como lidas">&#x2713; Todas</button>
+      <button class="btn btn-sm" @click="notifCenterOpen = false">&times;</button>
+    </div>
+  </div>
+  <div class="notif-center-tabs">
+    <button class="notif-center-tab" :class="{ active: notifCenterTab === 'notifications' }" @click="notifCenterTab = 'notifications'">Notificacoes</button>
+    <button class="notif-center-tab" :class="{ active: notifCenterTab === 'activity' }" @click="notifCenterTab = 'activity'; loadActivityLog()">Atividades</button>
+  </div>
+  <!-- Notifications List -->
+  <div class="notif-center-body" x-show="notifCenterTab === 'notifications'">
+    <div style="padding:8px 12px; display:flex; gap:4px; flex-wrap:wrap;">
+      <button class="notif-center-tab" :class="{ active: notifCatFilter === '' }" @click="notifCatFilter = ''" style="font-size:0.65rem;padding:3px 8px;">Todas</button>
+      <button class="notif-center-tab" :class="{ active: notifCatFilter === 'success' }" @click="notifCatFilter = 'success'" style="font-size:0.65rem;padding:3px 8px;">Sucesso</button>
+      <button class="notif-center-tab" :class="{ active: notifCatFilter === 'review' }" @click="notifCatFilter = 'review'" style="font-size:0.65rem;padding:3px 8px;">Reviews</button>
+      <button class="notif-center-tab" :class="{ active: notifCatFilter === 'publish' }" @click="notifCatFilter = 'publish'" style="font-size:0.65rem;padding:3px 8px;">Publicacao</button>
+    </div>
+    <template x-for="notif in filteredNotifCenter()" :key="notif.id">
+      <div class="notif-item" :class="{ unread: !notif.read }" @click="markNotificationRead(notif.id)">
+        <div class="notif-item-title" x-text="notif.title"></div>
+        <div class="notif-item-message" x-text="notif.message"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          <span class="notif-item-cat" :class="'notif-cat-' + (notif.category || 'info')" x-text="notif.category || 'info'"></span>
+          <span class="notif-item-time" x-text="relativeTime(notif.created_at)"></span>
+        </div>
+      </div>
+    </template>
+    <div class="notif-empty" x-show="filteredNotifCenter().length === 0">
+      <div class="notif-empty-icon">&#x1f514;</div>
+      <div>Nenhuma notificacao</div>
+    </div>
+  </div>
+  <!-- Activity Log -->
+  <div class="notif-center-body" x-show="notifCenterTab === 'activity'">
+    <div class="activity-log">
+      <template x-for="act in activityLog" :key="act.id">
+        <div class="activity-item">
+          <div class="activity-dot" :class="activityDotClass(act.action)"></div>
+          <div>
+            <div class="activity-text"><strong x-text="activityActionLabel(act.action)"></strong> <span x-text="act.details"></span></div>
+            <div class="activity-time" x-text="relativeTime(act.timestamp)"></div>
+          </div>
+        </div>
+      </template>
+      <div class="notif-empty" x-show="activityLog.length === 0">
+        <div class="notif-empty-icon">&#x1f4dc;</div>
+        <div>Nenhuma atividade registrada</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="sidebar-backdrop" x-show="notifCenterOpen" @click="notifCenterOpen = false" x-transition.opacity style="z-index:1499;"></div>
 
 <script>
 function studioApp() {
@@ -7787,10 +7874,19 @@ function studioApp() {
     assetBrandFilter: '',
     directImageGenerating: false,
     directImagePrompt: '',
-    // Notifications
+    // Notifications (legacy local)
     notifications: [],
     showNotifPanel: false,
     notifFilter: '',
+
+    // Notification Center
+    notifCenterOpen: false,
+    notifCenterTab: 'notifications',
+    notifCatFilter: '',
+    notifCenterList: [],
+    notifUnreadCount: 0,
+    activityLog: [],
+    notifPollingInterval: null,
 
     // Approval
     approvalPending: [],
@@ -7932,6 +8028,10 @@ function studioApp() {
         if (val === 'assets') { this.loadUploadsList(); this.loadAssetBrands(); }
         if (val === 'calendar') this.loadCalWeeks();
       });
+
+      // Notification Center init
+      this.loadNotifications();
+      this.startNotifPolling();
 
       // Keyboard shortcuts
       const quickTabs = { '1':'dashboard', '2':'board', '3':'calendar', '4':'copy', '5':'studio', '6':'video', '7':'review', '8':'publish', '9':'settings' };
@@ -8091,6 +8191,81 @@ function studioApp() {
     filteredNotifications() {
       if (!this.notifFilter) return this.notifications;
       return this.notifications.filter(n => this.notifCategory(n) === this.notifFilter);
+    },
+
+    // Notification Center System
+    async loadNotifications() {
+      try {
+        const data = await this.api('/api/notifications?limit=100');
+        this.notifCenterList = data.notifications || [];
+        this.notifUnreadCount = data.unread || 0;
+      } catch(e) { console.warn('Notifications load failed:', e); }
+    },
+
+    filteredNotifCenter() {
+      if (!this.notifCatFilter) return this.notifCenterList;
+      return this.notifCenterList.filter(n => n.category === this.notifCatFilter);
+    },
+
+    async markNotificationRead(notifId) {
+      try {
+        await this.api('/api/notifications/' + notifId + '/read', { method: 'PUT' });
+        const n = this.notifCenterList.find(x => x.id === notifId);
+        if (n) n.read = true;
+        this.notifUnreadCount = this.notifCenterList.filter(x => !x.read).length;
+      } catch(e) {}
+    },
+
+    async markAllNotificationsRead() {
+      try {
+        await this.api('/api/notifications/read-all', { method: 'PUT' });
+        this.notifCenterList.forEach(n => n.read = true);
+        this.notifUnreadCount = 0;
+        this.notify('Todas as notificacoes marcadas como lidas');
+      } catch(e) {}
+    },
+
+    async loadActivityLog() {
+      try {
+        const data = await this.api('/api/activity?limit=100');
+        this.activityLog = data.activities || [];
+      } catch(e) { console.warn('Activity log load failed:', e); }
+    },
+
+    activityDotClass(action) {
+      if (!action) return 'activity-dot-default';
+      if (action.includes('create') || action.includes('generated')) return 'activity-dot-create';
+      if (action.includes('stage') || action.includes('update')) return 'activity-dot-update';
+      if (action.includes('delete')) return 'activity-dot-delete';
+      if (action.includes('review')) return 'activity-dot-review';
+      if (action.includes('publish')) return 'activity-dot-publish';
+      return 'activity-dot-default';
+    },
+
+    activityActionLabel(action) {
+      const labels = {
+        piece_created: 'Peca criada',
+        stage_changed: 'Estagio alterado',
+        review_created: 'Review criada',
+        review_updated: 'Review atualizada',
+        published: 'Publicado',
+        image_generated: 'Imagem gerada',
+      };
+      return labels[action] || action;
+    },
+
+    startNotifPolling() {
+      if (this.notifPollingInterval) return;
+      this.notifPollingInterval = setInterval(() => {
+        this.loadNotifications();
+      }, 30000);
+    },
+
+    stopNotifPolling() {
+      if (this.notifPollingInterval) {
+        clearInterval(this.notifPollingInterval);
+        this.notifPollingInterval = null;
+      }
     },
 
     // KPI Sparklines

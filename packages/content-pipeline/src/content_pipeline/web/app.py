@@ -10,6 +10,7 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -51,6 +52,51 @@ def get_service() -> StudioService:
     if _service is None:
         raise RuntimeError("Service not initialized")
     return _service
+
+
+# Notification & Activity Log store
+notifications_store: list = []
+activity_log_store: list = []
+notification_id_counter: int = 0
+activity_id_counter: int = 0
+
+
+def _create_notification(title: str, message: str, category: str = "info", piece_id: str = None):
+    """Create a notification and store it."""
+    global notification_id_counter
+    notification_id_counter += 1
+    notif = {
+        "id": notification_id_counter,
+        "title": title,
+        "message": message,
+        "category": category,  # info, success, warning, error, review, publish
+        "piece_id": piece_id,
+        "read": False,
+        "created_at": datetime.now().isoformat(),
+    }
+    notifications_store.insert(0, notif)
+    # Keep max 200 notifications
+    if len(notifications_store) > 200:
+        notifications_store[:] = notifications_store[:200]
+    return notif
+
+
+def _log_activity(action: str, details: str, actor: str = "system", piece_id: str = None):
+    """Log an activity."""
+    global activity_id_counter
+    activity_id_counter += 1
+    entry = {
+        "id": activity_id_counter,
+        "action": action,
+        "details": details,
+        "actor": actor,
+        "piece_id": piece_id,
+        "timestamp": datetime.now().isoformat(),
+    }
+    activity_log_store.insert(0, entry)
+    if len(activity_log_store) > 500:
+        activity_log_store[:] = activity_log_store[:500]
+    return entry
 
 
 @asynccontextmanager
@@ -632,7 +678,10 @@ async def list_pieces(stage: str = "", brand: str = ""):
 async def create_piece(request: Request):
     try:
         data = await request.json()
-        return get_service().create_piece(data)
+        result = get_service().create_piece(data)
+        _create_notification("Peca criada", f"Nova peca: {data.get('title', 'Sem titulo')}", "success", piece_id=str(result.get("id", "") if isinstance(result, dict) else ""))
+        _log_activity("piece_created", f"Peca criada: {data.get('title', '')}", piece_id=str(result.get("id", "") if isinstance(result, dict) else ""))
+        return result
     except Exception as e:
         logger.error("Erro ao criar peca: %s", e, exc_info=True)
         raise HTTPException(500, f"Erro ao criar peca: {str(e)}")
@@ -644,6 +693,8 @@ async def update_piece_stage(piece_id: str, req: PieceStageUpdate):
     result = svc.update_piece_stage(piece_id, req.stage, req.notes)
     if result is None:
         raise HTTPException(404, f"Peça não encontrada: {piece_id}")
+    _create_notification("Estagio atualizado", f"Peca movida para: {req.stage}", "info", piece_id=piece_id)
+    _log_activity("stage_changed", f"Peca {piece_id} movida para {req.stage}", piece_id=piece_id)
     return result
 
 
@@ -767,7 +818,10 @@ async def list_reviews(verdict: str = ""):
 
 @app.post("/api/reviews")
 async def create_review(req: ReviewItem):
-    return get_service().create_review(req.model_dump())
+    result = get_service().create_review(req.model_dump())
+    _create_notification("Review criada", "Nova review pendente", "review")
+    _log_activity("review_created", "Review criada para avaliacao")
+    return result
 
 
 @app.put("/api/reviews/{review_id}")
@@ -777,6 +831,8 @@ async def update_review(review_id: str, req: ReviewUpdate):
     if result is None:
         raise HTTPException(404, f"Review não encontrado: {review_id}")
     # Stage update already handled inside svc.update_review()
+    _create_notification("Review atualizada", f"Veredito: {req.verdict or 'N/A'}", "review")
+    _log_activity("review_updated", f"Review {review_id} atualizada: {req.verdict or ''}")
     return result
 
 
@@ -1856,6 +1912,8 @@ async def generate_image(request: Request, user: dict = Depends(require_auth)):
         model=data.get("model", "flux-dev"),
         format_preset=data.get("format_preset", ""),
     )
+    _create_notification("Imagem gerada", "Nova imagem NB2 gerada com sucesso", "success")
+    _log_activity("image_generated", "Imagem gerada via NB2/fal.ai")
     return result.to_dict()
 
 
@@ -2137,6 +2195,8 @@ async def publish_content(platform: str, req: Request, user: dict = Depends(requ
         schedule_time=data.get("schedule_time"),
         **{k: v for k, v in data.items() if k not in ("content", "media_paths", "media_urls", "schedule_time")},
     )
+    _create_notification("Publicacao realizada", f"Conteudo publicado em {platform}", "publish")
+    _log_activity("published", f"Conteudo publicado em {platform}", piece_id=data.get("piece_id", ""))
     return result.to_dict()
 
 
@@ -2285,6 +2345,61 @@ if frontend_dir and frontend_dir.exists():
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 else:
     logger.info("No frontend directory found — API-only mode")
+
+
+# =========================================================================
+# NOTIFICATIONS & ACTIVITY LOG
+# =========================================================================
+
+
+@app.get("/api/notifications")
+async def get_notifications(unread_only: bool = False, category: str = None, limit: int = 50):
+    items = notifications_store
+    if unread_only:
+        items = [n for n in items if not n["read"]]
+    if category:
+        items = [n for n in items if n["category"] == category]
+    return {
+        "notifications": items[:limit],
+        "total": len(notifications_store),
+        "unread": sum(1 for n in notifications_store if not n["read"]),
+    }
+
+
+@app.put("/api/notifications/{notif_id}/read")
+async def mark_notification_read(notif_id: int):
+    for n in notifications_store:
+        if n["id"] == notif_id:
+            n["read"] = True
+            return {"status": "ok"}
+    return {"status": "not_found"}
+
+
+@app.put("/api/notifications/read-all")
+async def mark_all_notifications_read():
+    for n in notifications_store:
+        n["read"] = True
+    return {"status": "ok", "count": len(notifications_store)}
+
+
+@app.delete("/api/notifications/{notif_id}")
+async def delete_notification(notif_id: int):
+    global notifications_store
+    notifications_store = [n for n in notifications_store if n["id"] != notif_id]
+    return {"status": "deleted"}
+
+
+@app.get("/api/activity")
+async def get_activity_log(limit: int = 100, piece_id: str = None, action: str = None):
+    items = activity_log_store
+    if piece_id:
+        items = [a for a in items if a["piece_id"] == piece_id]
+    if action:
+        items = [a for a in items if a["action"] == action]
+    return {
+        "activities": items[:limit],
+        "total": len(activity_log_store),
+    }
 
 
 # =========================================================================
