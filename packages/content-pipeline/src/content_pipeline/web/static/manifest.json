@@ -1,0 +1,21 @@
+{
+  "name": "Salk Content Studio",
+  "short_name": "Content Studio",
+  "description": "Producao criativa de conteudo para redes sociais — Manager Grupo",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#080a0f",
+  "background_color": "#080a0f",
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

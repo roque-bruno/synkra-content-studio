@@ -2362,7 +2362,7 @@ async def feedback_analysis(brand: str = "", user: dict = Depends(require_auth))
 
 
 @app.get("/api/feedback/recommendations")
-async def feedback_recommendations(brand: str = "salk", user: dict = Depends(require_auth)):
+async def feedback_recommendations(brand: str = "", user: dict = Depends(require_auth)):
     """Recomendacoes para proximos briefings baseado em dados."""
     svc = get_service()
     return svc.feedback_loop.get_briefing_recommendations(brand=brand)
