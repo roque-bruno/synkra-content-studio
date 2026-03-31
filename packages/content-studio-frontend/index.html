@@ -3126,9 +3126,76 @@ body.zen-mode .tab-bar { display: none !important; }
   .social-preview-container { flex-direction: column; align-items: center; }
   .ig-story-preview { width: 200px; height: 355px; }
 }
+
+/* === ENHANCED SKELETON LOADING === */
+.skeleton-title { height: 20px; width: 50%; margin-bottom: 12px; border-radius: 4px; }
+.skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.skeleton-image { width: 100%; aspect-ratio: 16/9; border-radius: var(--radius-sm); }
+.skeleton-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+@keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* Progress Bar for long operations */
+.progress-overlay {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 3000;
+  height: 3px; background: var(--bg-secondary);
+}
+.progress-bar {
+  height: 100%; background: var(--accent-gradient);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.progress-indeterminate {
+  width: 30%; animation: progressIndeterminate 1.5s ease infinite;
+}
+@keyframes progressIndeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* Auto-save indicator */
+.autosave-indicator {
+  position: fixed; bottom: 16px; right: 16px; z-index: 500;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px; font-size: 0.7rem;
+  color: var(--text-muted); display: flex; align-items: center; gap: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease;
+}
+.autosave-dot { width: 6px; height: 6px; border-radius: 50%; }
+.autosave-dot.saving { background: var(--amber); animation: pipelinePulse 1s ease infinite; }
+.autosave-dot.saved { background: var(--green); }
+
+/* Retry banner */
+.retry-banner {
+  background: var(--amber-bg); border: 1px solid rgba(245,158,11,0.3);
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; font-size: 0.78rem; color: var(--amber);
+}
+
+@media (max-width: 768px) {
+  .autosave-indicator { bottom: 72px; right: 8px; }
+}
 </style>
 </head>
 <body x-data="studioApp()" x-init="init()">
+
+<!-- Global Progress Bar -->
+<div class="progress-overlay" x-show="globalLoading" x-transition style="display:none;">
+  <div class="progress-bar" :class="{ 'progress-indeterminate': globalProgress < 0 }" :style="globalProgress >= 0 ? 'width:' + globalProgress + '%' : ''"></div>
+</div>
+
+<!-- Auto-save Indicator -->
+<div class="autosave-indicator" x-show="autoSaveStatus !== 'idle'" x-transition style="display:none;">
+  <div class="autosave-dot" :class="{ saving: autoSaveStatus === 'saving', saved: autoSaveStatus === 'saved' }"></div>
+  <span x-text="autoSaveStatus === 'saving' ? 'Salvando...' : 'Salvo'"></span>
+</div>
+
+<!-- Retry Banner -->
+<div class="retry-banner" x-show="apiRetryCount > 0" x-transition style="display:none; position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:3000;">
+  <span>Reconectando ao servidor... (tentativa <span x-text="apiRetryCount"></span>)</span>
+  <button class="btn btn-sm" @click="apiRetryCount = 0">Cancelar</button>
+</div>
 
 <!-- Skip to Content (a11y) -->
 <a href="#main-content" class="skip-link">Pular para o conteudo</a>
@@ -3434,7 +3501,7 @@ body.zen-mode .tab-bar { display: none !important; }
 </div>
 
 <!-- Tab Loading Pulse (heavy tabs) -->
-<div x-show="tabLoading && !dataLoading" x-cloak class="tab-loading-pulse" style="text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 0.82rem;">
+<div x-show="Object.values(tabLoading).some(v => v) && !dataLoading" x-cloak class="tab-loading-pulse" style="text-align: center; padding: 48px 0; color: var(--text-muted); font-size: 0.82rem;">
   <div style="width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px;"></div>
   Carregando...
 </div>
@@ -3442,6 +3509,17 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: DASHBOARD -->
 <!-- ===================================================== -->
+<!-- Dashboard Skeleton -->
+<div x-show="tab === 'dashboard' && tabLoading.dashboard" style="padding:16px;">
+  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:16px;">
+    <div class="skeleton skeleton-card" style="height:80px;"></div>
+    <div class="skeleton skeleton-card" style="height:80px;"></div>
+    <div class="skeleton skeleton-card" style="height:80px;"></div>
+    <div class="skeleton skeleton-card" style="height:80px;"></div>
+  </div>
+  <div class="skeleton skeleton-card" style="height:200px;margin-bottom:12px;"></div>
+  <div class="skeleton skeleton-card" style="height:160px;"></div>
+</div>
 <div x-show="tab === 'dashboard' && !dataLoading">
 
   <!-- Onboarding -->
@@ -4039,6 +4117,12 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: CALENDAR -->
 <!-- ===================================================== -->
+<!-- Calendar Skeleton -->
+<div x-show="tab === 'calendar' && tabLoading.calendar" style="padding:16px;">
+  <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:8px;">
+    <template x-for="i in 21"><div class="skeleton skeleton-card" style="height:60px;"></div></template>
+  </div>
+</div>
 <div x-show="tab === 'calendar'">
   <div style="display: flex; gap: 10px; margin-bottom: 16px; align-items: center;">
     <input class="form-input" style="width: 160px;" x-model="calWeekId" placeholder="2026-W14">
@@ -4163,6 +4247,13 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: COPY EDITOR (Helix) -->
 <!-- ===================================================== -->
+<!-- Copy Skeleton -->
+<div x-show="tab === 'copy' && tabLoading.copy" style="padding:16px;">
+  <div style="display:flex;gap:16px;">
+    <div style="flex:1;"><div class="skeleton skeleton-card" style="height:40px;margin-bottom:8px;"></div><div class="skeleton skeleton-card" style="height:200px;"></div></div>
+    <div style="width:300px;"><div class="skeleton skeleton-card" style="height:300px;"></div></div>
+  </div>
+</div>
 <div x-show="tab === 'copy'">
   <div class="form-row" style="grid-template-columns: 1fr 360px;">
     <div>
@@ -4486,6 +4577,13 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: NB2 STUDIO -->
 <!-- ===================================================== -->
+<!-- Studio Skeleton -->
+<div x-show="tab === 'studio' && tabLoading.studio" style="padding:16px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div><div class="skeleton skeleton-card" style="height:300px;"></div></div>
+    <div><div class="skeleton skeleton-card" style="height:60px;margin-bottom:8px;"></div><div class="skeleton skeleton-card" style="height:200px;"></div></div>
+  </div>
+</div>
 <div x-show="tab === 'studio'">
   <div class="form-row">
     <div>
@@ -4883,6 +4981,10 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- ===================================================== -->
 <!-- TAB: REVIEW QUEUE (Lens) -->
 <!-- ===================================================== -->
+<!-- Review Skeleton -->
+<div x-show="tab === 'review' && tabLoading.review" style="padding:16px;">
+  <template x-for="i in 3"><div class="skeleton skeleton-card" style="height:100px;margin-bottom:8px;"></div></template>
+</div>
 <div x-show="tab === 'review'">
   <div class="tabs">
     <button class="tab-btn" :class="{ active: reviewFilter === '' }" @click="reviewFilter = ''">Todos <span class="badge badge-muted" style="font-size:0.6rem; margin-left:2px;" x-text="reviews.length"></span></button>
@@ -7835,7 +7937,17 @@ function studioApp() {
     toastVisible: false,
 
     brandTheme: 'salk',
-    tabLoading: false,
+    tabLoading: { dashboard: false, board: false, calendar: false, copy: false, review: false, studio: false, video: false, assets: false },
+
+    // Performance & Caching
+    globalLoading: false,
+    globalProgress: -1,
+    autoSaveStatus: 'idle',
+    autoSaveInterval: null,
+    apiRetryCount: 0,
+    dataCache: {},
+    cacheTTL: 60000,
+    filterState: JSON.parse(localStorage.getItem('studio_filters') || '{}'),
     tab: 'dashboard',
     tabTitles: {
       dashboard: 'Painel Geral',
@@ -8263,10 +8375,10 @@ function studioApp() {
         localStorage.setItem('studio_theme', val);
       });
       this.$watch('tab', (val) => {
-        const heavyTabs = ['video', 'studio', 'settings', 'editor'];
-        if (heavyTabs.includes(val)) {
-          this.tabLoading = true;
-          setTimeout(() => { this.tabLoading = false; }, 600);
+        const heavyTabs = ['video', 'studio', 'settings', 'editor', 'dashboard', 'calendar', 'copy', 'review', 'assets'];
+        if (heavyTabs.includes(val) && this.tabLoading[val] !== undefined) {
+          this.tabLoading[val] = true;
+          setTimeout(() => { this.tabLoading[val] = false; }, 600);
         }
         if (val === 'video') { this.loadVideoStatus(); this.loadVeo3Models(); this.loadVideoEngines(); }
         if (val === 'editor') this.loadEditorData();
@@ -8279,7 +8391,19 @@ function studioApp() {
         if (val === 'copy') this.loadCopywriters();
         if (val === 'assets') { this.loadUploadsList(); this.loadAssetBrands(); }
         if (val === 'calendar') this.loadCalWeeks();
+        // Invalidate cache on tab switch for fresh data
+        if (val === 'dashboard') this.invalidateCache('/api/dashboard');
       });
+
+      // Performance: restore filters, copy draft, auto-save
+      this.restoreFilterState();
+      this.restoreCopyDraft();
+      this.startAutoSave();
+
+      // Filter persistence watchers
+      this.$watch('boardBrandFilter', () => this.saveFilterState());
+      this.$watch('reviewFilter', () => this.saveFilterState());
+      this.$watch('assetBrandFilter', () => this.saveFilterState());
 
       // Notification Center init
       this.loadNotifications();
@@ -8374,24 +8498,69 @@ function studioApp() {
     },
 
     async api(url, opts = {}) {
+      const method = (opts.method || 'GET').toUpperCase();
+      const cacheKey = method === 'GET' ? url : null;
+
+      // Check cache for GET requests
+      if (cacheKey && this.dataCache[cacheKey]) {
+        const cached = this.dataCache[cacheKey];
+        if (Date.now() - cached.timestamp < this.cacheTTL) {
+          return cached.data;
+        }
+      }
+
       const base = (window.STUDIO_CONFIG && (window.STUDIO_CONFIG.API_URL || window.STUDIO_CONFIG.API_BASE_URL)) || '';
       const fullUrl = url.startsWith('http') ? url : base + url;
-      const token = localStorage.getItem('studio_token');
-      const headers = { 'Content-Type': 'application/json', ...opts.headers };
-      if (token) headers['Authorization'] = 'Bearer ' + token;
-      try {
-        const res = await fetch(fullUrl, { headers, ...opts });
-        this.connectionOk = true;
-        if (res.status === 401) {
-          localStorage.removeItem('studio_token');
-          this.authenticated = false;
-          throw new Error('401');
+      const maxRetries = method === 'GET' ? 3 : 1;
+      let lastError = null;
+
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          if (attempt > 0) {
+            this.apiRetryCount = attempt;
+            await new Promise(r => setTimeout(r, Math.min(1000 * Math.pow(2, attempt), 5000)));
+          }
+
+          const token = localStorage.getItem('studio_token');
+          const headers = { 'Content-Type': 'application/json', ...opts.headers };
+          if (token) headers['Authorization'] = 'Bearer ' + token;
+
+          const res = await fetch(fullUrl, { headers, ...opts });
+          this.connectionOk = true;
+          this.apiRetryCount = 0;
+
+          if (res.status === 401) {
+            localStorage.removeItem('studio_token');
+            this.authenticated = false;
+            throw new Error('401');
+          }
+          if (!res.ok && res.status !== 503) throw new Error(`${res.status}`);
+
+          const data = await res.json();
+
+          // Cache GET responses
+          if (cacheKey) {
+            this.dataCache[cacheKey] = { data, timestamp: Date.now() };
+          }
+
+          return data;
+        } catch(e) {
+          lastError = e;
+          if (e.message === '401') { this.apiRetryCount = 0; throw e; }
+          if (method !== 'GET') break;
         }
-        if (!res.ok && res.status !== 503) throw new Error(`${res.status}`);
-        return res.json();
-      } catch(e) {
-        if (e.message !== '401') this.connectionOk = false;
-        throw e;
+      }
+
+      this.apiRetryCount = 0;
+      if (lastError && lastError.message !== '401') this.connectionOk = false;
+      throw lastError;
+    },
+
+    // Cache invalidation
+    invalidateCache(pattern) {
+      if (!pattern) { this.dataCache = {}; return; }
+      for (const key of Object.keys(this.dataCache)) {
+        if (key.includes(pattern)) delete this.dataCache[key];
       }
     },
 
@@ -10500,6 +10669,66 @@ function studioApp() {
       if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
       if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
       return n.toString();
+    },
+
+    // Auto-save for copy editor
+    startAutoSave() {
+      if (this.autoSaveInterval) return;
+      this.autoSaveInterval = setInterval(() => {
+        if (this.tab === 'copy' && this.copyText && this.copyText.trim()) {
+          this.autoSaveDraft();
+        }
+      }, 30000);
+    },
+
+    async autoSaveDraft() {
+      this.autoSaveStatus = 'saving';
+      try {
+        const draft = {
+          headline: this.copyHeadline,
+          copyText: this.copyText,
+          cta: this.copyCTA,
+          briefing: this.copyBriefing,
+          brand: this.copyBrand,
+          savedAt: new Date().toISOString(),
+        };
+        localStorage.setItem('studio_copy_draft', JSON.stringify(draft));
+        this.autoSaveStatus = 'saved';
+        setTimeout(() => { if (this.autoSaveStatus === 'saved') this.autoSaveStatus = 'idle'; }, 2000);
+      } catch(e) { this.autoSaveStatus = 'idle'; }
+    },
+
+    restoreCopyDraft() {
+      try {
+        const draft = JSON.parse(localStorage.getItem('studio_copy_draft') || 'null');
+        if (draft && draft.copyText) {
+          this.copyHeadline = draft.headline || '';
+          this.copyText = draft.copyText || '';
+          this.copyCTA = draft.cta || '';
+          this.copyBriefing = draft.briefing || '';
+          this.copyCharCount = this.copyText.length;
+          this.notify('Rascunho restaurado (salvo em ' + new Date(draft.savedAt).toLocaleTimeString('pt-BR') + ')');
+        }
+      } catch(e) {}
+    },
+
+    // Filter persistence
+    saveFilterState() {
+      const state = {
+        boardBrandFilter: this.boardBrandFilter || '',
+        reviewFilter: this.reviewFilter || '',
+        assetBrandFilter: this.assetBrandFilter || '',
+      };
+      localStorage.setItem('studio_filters', JSON.stringify(state));
+    },
+
+    restoreFilterState() {
+      try {
+        const state = JSON.parse(localStorage.getItem('studio_filters') || '{}');
+        if (state.boardBrandFilter) this.boardBrandFilter = state.boardBrandFilter;
+        if (state.reviewFilter) this.reviewFilter = state.reviewFilter;
+        if (state.assetBrandFilter) this.assetBrandFilter = state.assetBrandFilter;
+      } catch(e) {}
     },
   };
 }
