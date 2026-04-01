@@ -456,6 +456,190 @@ async def test_connections(user: dict = Depends(require_auth)):
     }
 
 
+@app.get("/api/settings/test/{platform}")
+async def test_platform_connection(platform: str, user: dict = Depends(require_auth)):
+    """Teste real de conexao com uma plataforma especifica (Story 6.4)."""
+    import httpx
+
+    svc = get_service()
+    start = time.time()
+    timeout = 10.0
+
+    platform_tests = {
+        "google_ai": {
+            "key_name": "GOOGLE_API_KEY",
+            "url": "https://generativelanguage.googleapis.com/v1beta/models",
+            "params_fn": lambda key: {"key": key},
+            "headers_fn": lambda key: {},
+        },
+        "instagram": {
+            "key_name": "INSTAGRAM_ACCESS_TOKEN",
+            "url": "https://graph.instagram.com/me",
+            "params_fn": lambda key: {"access_token": key},
+            "headers_fn": lambda key: {},
+        },
+        "facebook": {
+            "key_name": "FACEBOOK_ACCESS_TOKEN",
+            "url": "https://graph.facebook.com/me",
+            "params_fn": lambda key: {"access_token": key},
+            "headers_fn": lambda key: {},
+        },
+        "linkedin": {
+            "key_name": "LINKEDIN_ACCESS_TOKEN",
+            "url": "https://api.linkedin.com/v2/me",
+            "params_fn": lambda key: {},
+            "headers_fn": lambda key: {"Authorization": f"Bearer {key}"},
+        },
+        "youtube": {
+            "key_name": "YOUTUBE_API_KEY",
+            "url": "https://www.googleapis.com/youtube/v3/channels",
+            "params_fn": lambda key: {"mine": "true", "part": "id", "key": key},
+            "headers_fn": lambda key: {},
+        },
+    }
+
+    test_config = platform_tests.get(platform)
+    if not test_config:
+        raise HTTPException(404, f"Plataforma desconhecida: {platform}")
+
+    api_key = svc.settings.get(test_config["key_name"]) or os.environ.get(test_config["key_name"], "")
+    if not api_key:
+        return {
+            "ok": False,
+            "error": f"Chave {test_config['key_name']} nao configurada",
+            "latency_ms": 0,
+            "platform": platform,
+        }
+
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            resp = await client.get(
+                test_config["url"],
+                params=test_config["params_fn"](api_key),
+                headers=test_config["headers_fn"](api_key),
+            )
+        latency = int((time.time() - start) * 1000)
+        if resp.status_code < 400:
+            return {"ok": True, "error": None, "latency_ms": latency, "platform": platform}
+        else:
+            return {
+                "ok": False,
+                "error": f"HTTP {resp.status_code}: {resp.text[:200]}",
+                "latency_ms": latency,
+                "platform": platform,
+            }
+    except Exception as e:
+        latency = int((time.time() - start) * 1000)
+        return {"ok": False, "error": str(e)[:200], "latency_ms": latency, "platform": platform}
+
+
+# =========================================================================
+# INTEGRATIONS CRUD (Story 7.2) — API keys configuráveis via UI
+# =========================================================================
+
+INTEGRATION_PLATFORMS = {
+    "google_ai": "GOOGLE_API_KEY",
+    "instagram": "INSTAGRAM_ACCESS_TOKEN",
+    "facebook": "FACEBOOK_ACCESS_TOKEN",
+    "linkedin": "LINKEDIN_ACCESS_TOKEN",
+    "youtube": "YOUTUBE_ACCESS_TOKEN",
+}
+
+PLATFORM_LABELS = {
+    "google_ai": "Google AI (Gemini)",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "linkedin": "LinkedIn",
+    "youtube": "YouTube",
+}
+
+PLATFORM_EXTRA_FIELDS = {
+    "instagram": ["page_id"],
+    "facebook": ["page_id"],
+    "linkedin": ["org_id"],
+    "youtube": ["channel_id"],
+}
+
+
+def _mask_key(key: str | None) -> str | None:
+    """Mask API key: ****last4."""
+    if not key:
+        return None
+    return "****" + key[-4:] if len(key) > 4 else "****"
+
+
+@app.get("/api/settings/integrations")
+async def get_integrations(user: dict = Depends(require_auth)):
+    """Lista todas as integracoes com keys mascaradas (Story 7.2)."""
+    svc = get_service()
+    integrations = {}
+    for plat, env_key in INTEGRATION_PLATFORMS.items():
+        raw_key = svc.settings.get(env_key)
+        integrations[plat] = {
+            "label": PLATFORM_LABELS[plat],
+            "configured": bool(raw_key),
+            "key_masked": _mask_key(raw_key) if raw_key else None,
+            "status": "configured" if raw_key else "not_configured",
+            "extra_fields": PLATFORM_EXTRA_FIELDS.get(plat, []),
+        }
+        for field in PLATFORM_EXTRA_FIELDS.get(plat, []):
+            integrations[plat][field] = svc.settings.get(f"{plat.upper()}_{field.upper()}", "")
+    return {"integrations": integrations}
+
+
+@app.put("/api/settings/integrations/{platform}")
+async def save_integration(platform: str, req: Request, user: dict = Depends(require_auth)):
+    """Salva/atualiza credenciais de uma plataforma (Story 7.2)."""
+    if platform not in INTEGRATION_PLATFORMS:
+        raise HTTPException(404, f"Plataforma desconhecida: {platform}")
+
+    svc = get_service()
+    data = await req.json()
+    api_key = data.get("api_key", "").strip()
+    extra = data.get("extra", {})
+
+    if not api_key:
+        raise HTTPException(422, "API key nao pode ser vazia")
+
+    # Save main key
+    settings_to_save = {INTEGRATION_PLATFORMS[platform]: api_key}
+
+    # Save extra fields
+    for field in PLATFORM_EXTRA_FIELDS.get(platform, []):
+        if field in extra and extra[field]:
+            settings_to_save[f"{platform.upper()}_{field.upper()}"] = str(extra[field]).strip()
+
+    svc.settings.set_many(settings_to_save)
+    svc.reload_settings()
+
+    return {
+        "ok": True,
+        "platform": platform,
+        "status": "saved",
+        "key_masked": _mask_key(api_key),
+    }
+
+
+@app.delete("/api/settings/integrations/{platform}")
+async def delete_integration(platform: str, user: dict = Depends(require_auth)):
+    """Remove credenciais de uma plataforma (Story 7.2)."""
+    if platform not in INTEGRATION_PLATFORMS:
+        raise HTTPException(404, f"Plataforma desconhecida: {platform}")
+
+    svc = get_service()
+    env_key = INTEGRATION_PLATFORMS[platform]
+
+    # Remove from store
+    svc.settings.set(env_key, "")
+    for field in PLATFORM_EXTRA_FIELDS.get(platform, []):
+        svc.settings.set(f"{platform.upper()}_{field.upper()}", "")
+
+    svc.settings._save()
+    svc.reload_settings()
+
+    return {"ok": True, "platform": platform, "status": "removed"}
+
+
 # =========================================================================
 # AUTH
 # =========================================================================
@@ -2265,18 +2449,33 @@ async def publish_content(platform: str, req: Request, user: dict = Depends(requ
         schedule_time=data.get("schedule_time"),
         **{k: v for k, v in data.items() if k not in ("content", "media_paths", "media_urls", "schedule_time")},
     )
-    _create_notification("Publicacao realizada", f"Conteudo publicado em {platform}", "publish")
-    _log_activity("published", f"Conteudo publicado em {platform}", piece_id=data.get("piece_id", ""))
-    return result.to_dict()
+    result_dict = result.to_dict()
+    result_dict["preview"] = publisher.preview_mode
+    if publisher.preview_mode:
+        _create_notification("Simulacao de publicacao", f"Preview: conteudo simulado em {platform}", "publish")
+        _log_activity("publish_preview", f"Preview simulado em {platform}", piece_id=data.get("piece_id", ""))
+    else:
+        _create_notification("Publicacao realizada", f"Conteudo publicado em {platform}", "publish")
+        _log_activity("published", f"Conteudo publicado em {platform}", piece_id=data.get("piece_id", ""))
+    return result_dict
 
 
 @app.get("/api/publish/status")
 async def publishers_status(user: dict = Depends(require_auth)):
-    """Status de todos os publishers."""
+    """Status de todos os publishers — granular per-platform."""
     svc = get_service()
+    platforms = {}
+    for name, pub in svc.publishers.items():
+        platforms[name] = {
+            "configured": pub.configured,
+            "connected": pub.configured and not pub.preview_mode,
+            "preview_mode": pub.preview_mode,
+            "status": "connected" if (pub.configured and not pub.preview_mode) else ("preview" if pub.configured else "not_configured"),
+        }
     return {
-        name: {"configured": pub.configured, "preview_mode": pub.preview_mode}
-        for name, pub in svc.publishers.items()
+        "platforms": platforms,
+        "preview_mode": svc.preview_mode,
+        "any_connected": any(p["connected"] for p in platforms.values()),
     }
 
 

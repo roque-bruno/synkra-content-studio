@@ -3656,6 +3656,16 @@ body.zen-mode .tab-bar { display: none !important; }
 
 <div class="main-content" id="main-content">
 
+<!-- Preview Mode Banner (Story 6.1) -->
+<template x-if="stats.preview_mode">
+  <div style="background: linear-gradient(90deg, rgba(245,158,11,0.15), rgba(245,158,11,0.08)); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <span style="font-size: 1.1rem;">&#9888;</span>
+    <span style="font-size: 0.82rem; font-weight: 600; color: var(--amber);">Modo Preview</span>
+    <span style="font-size: 0.78rem; color: var(--text-secondary);">Geracao de conteudo IA desabilitada. Publicacao em redes sociais indisponivel.</span>
+    <button class="btn btn-sm" style="margin-left: auto; font-size: 0.72rem; border-color: var(--amber); color: var(--amber);" @click="tab = 'settings'">Configurar API Keys</button>
+  </div>
+</template>
+
 <!-- Loading Indicator -->
 <div x-show="dataLoading" x-cloak style="padding: 0;">
   <div class="kpi-grid" style="margin-bottom: 20px;">
@@ -6325,26 +6335,28 @@ body.zen-mode .tab-bar { display: none !important; }
 <!-- TAB: PUBLICAR -->
 <!-- ===================================================== -->
 <div x-show="tab === 'publish'" class="tab-content">
-  <!-- Publisher Status -->
+  <!-- Publisher Status (Story 6.2 — status real) -->
   <div class="card" style="margin-bottom: 16px;">
-    <div class="card-title">Status das Plataformas</div>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+      <div class="card-title" style="margin: 0;">Status das Plataformas</div>
+      <template x-if="!publishStatus.any_connected">
+        <span style="font-size: 0.72rem; color: var(--amber); display: flex; align-items: center; gap: 4px;">
+          &#9888; Nenhuma plataforma configurada
+        </span>
+      </template>
+    </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
-      <div class="stat-card">
-        <div class="label">Instagram</div>
-        <div class="value" :style="publishStatus.instagram ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.instagram ? 'Conectado' : 'Nao conectado'"></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Facebook</div>
-        <div class="value" :style="publishStatus.facebook ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.facebook ? 'Conectado' : 'Nao conectado'"></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">LinkedIn</div>
-        <div class="value" :style="publishStatus.linkedin ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.linkedin ? 'Conectado' : 'Nao conectado'"></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">YouTube</div>
-        <div class="value" :style="publishStatus.youtube ? 'color: var(--green)' : 'color: var(--red)'" x-text="publishStatus.youtube ? 'Conectado' : 'Nao conectado'"></div>
-      </div>
+      <template x-for="plat in ['instagram', 'facebook', 'linkedin', 'youtube']" :key="plat">
+        <div class="stat-card">
+          <div class="label" style="text-transform: capitalize;" x-text="plat"></div>
+          <div class="value" :style="(publishStatus.platforms && publishStatus.platforms[plat] && publishStatus.platforms[plat].connected) ? 'color: var(--green)' : (publishStatus.platforms && publishStatus.platforms[plat] && publishStatus.platforms[plat].configured) ? 'color: var(--amber)' : 'color: var(--text-muted)'"
+               x-text="(publishStatus.platforms && publishStatus.platforms[plat] && publishStatus.platforms[plat].connected) ? 'Conectado' : (publishStatus.platforms && publishStatus.platforms[plat] && publishStatus.platforms[plat].configured) ? 'Preview' : 'Nao configurado'"></div>
+          <div style="margin-top: 4px;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; display: inline-block;"
+                  :style="(publishStatus.platforms && publishStatus.platforms[plat] && publishStatus.platforms[plat].connected) ? 'background: var(--green)' : (publishStatus.platforms && publishStatus.platforms[plat] && publishStatus.platforms[plat].configured) ? 'background: var(--amber)' : 'background: var(--text-muted)'"></span>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 
@@ -6391,17 +6403,22 @@ body.zen-mode .tab-bar { display: none !important; }
               </div>
               <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                 <div style="display: flex; gap: 4px;">
-                  <template x-for="plat in ['instagram', 'facebook', 'linkedin', 'youtube']">
+                  <template x-for="plat in ['instagram', 'facebook', 'linkedin', 'youtube'].filter(pl => publishStatus.platforms && publishStatus.platforms[pl] && publishStatus.platforms[pl].connected)">
                     <label style="display: flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 6px; font-size: 0.68rem; cursor: pointer; border: 1px solid var(--border); transition: all 0.15s;"
                            :style="(p.publishPlatforms || []).includes(plat) ? 'background: var(--accent-dim); border-color: var(--accent); color: var(--accent)' : ''">
                       <input type="checkbox" :value="plat" x-model="p.publishPlatforms" style="display: none;">
                       <span style="text-transform: capitalize;" x-text="plat"></span>
                     </label>
                   </template>
+                  <template x-if="!publishStatus.any_connected">
+                    <span style="font-size: 0.68rem; color: var(--text-muted); padding: 3px 0;">Nenhuma plataforma configurada — <a href="#" @click.prevent="tab = 'settings'" style="color: var(--accent);">configurar</a></span>
+                  </template>
                 </div>
                 <input type="datetime-local" class="form-input" style="width: 180px; font-size: 0.72rem; padding: 4px 8px;" x-model="p.scheduled_at" title="Agendar">
-                <button class="btn btn-sm btn-primary" @click="publishMultiPlatform(p)" :disabled="publishingPiece === p.id || !(p.publishPlatforms || []).length" style="font-size: 0.75rem;">
-                  <span x-show="publishingPiece !== p.id" x-text="'Publicar em ' + ((p.publishPlatforms || []).length || 0)"></span>
+                <button class="btn btn-sm btn-primary" @click="publishMultiPlatform(p)" :disabled="publishingPiece === p.id || !(p.publishPlatforms || []).length || !publishStatus.any_connected" style="font-size: 0.75rem;"
+                        :title="!publishStatus.any_connected ? 'Configure as plataformas em Settings para publicar' : ''">
+                  <span x-show="publishingPiece !== p.id && publishStatus.any_connected" x-text="'Publicar em ' + ((p.publishPlatforms || []).length || 0)"></span>
+                  <span x-show="publishingPiece !== p.id && !publishStatus.any_connected">Publicacao indisponivel</span>
                   <span x-show="publishingPiece === p.id">Enviando...</span>
                 </button>
               </div>
@@ -7114,6 +7131,87 @@ body.zen-mode .tab-bar { display: none !important; }
           </div>
         </template>
       </div>
+    </template>
+  </div>
+
+  <!-- ===== Integracoes de Plataforma (Story 7.3-7.5) ===== -->
+  <div class="card" style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+      <div>
+        <div style="font-weight: 700; font-size: 0.95rem;">Integracoes de Plataforma</div>
+        <div style="font-size: 0.75rem; color: var(--text-secondary);">Configure API keys para publicacao e geracao de conteudo IA</div>
+      </div>
+      <span style="font-size: 0.75rem; padding: 3px 10px; border-radius: 12px;" :style="integrationsConfiguredCount > 0 ? 'background: var(--green-bg); color: var(--green)' : 'background: rgba(100,100,120,0.1); color: var(--text-muted)'"
+            x-text="integrationsConfiguredCount + ' de ' + Object.keys(integrations).length + ' ativas'"></span>
+    </div>
+
+    <div style="display: grid; gap: 12px;">
+      <template x-for="[plat, info] in Object.entries(integrations)" :key="plat">
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; transition: border-color 0.2s;"
+             :style="info.configured ? 'border-left: 3px solid var(--green)' : 'border-left: 3px solid var(--text-muted)'">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 10px; height: 10px; border-radius: 50%; display: inline-block;"
+                    :style="info.configured ? 'background: var(--green)' : 'background: var(--text-muted)'"></span>
+              <span style="font-weight: 600; font-size: 0.88rem;" x-text="info.label || plat"></span>
+              <span style="font-size: 0.7rem; padding: 2px 8px; border-radius: 10px;"
+                    :style="info.configured ? 'background: var(--green-bg); color: var(--green)' : 'background: rgba(100,100,120,0.1); color: var(--text-muted)'"
+                    x-text="info.configured ? 'Configurado' : 'Nao configurado'"></span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-sm" @click="testIntegration(plat)" :disabled="integrationTesting[plat] || !info.configured" style="font-size: 0.7rem;"
+                      :style="!info.configured ? 'opacity: 0.3; cursor: default' : ''">
+                <span x-show="!integrationTesting[plat]">Testar</span>
+                <span x-show="integrationTesting[plat]">Testando...</span>
+              </button>
+              <button class="btn btn-sm" @click="deleteIntegration(plat)" x-show="info.configured" style="font-size: 0.7rem; color: var(--red); border-color: rgba(239,68,68,0.3);">Remover</button>
+            </div>
+          </div>
+
+          <!-- Current key (masked) -->
+          <div x-show="info.configured" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;">
+            Key: <span style="font-family: var(--mono);" x-text="info.key_masked || '****'"></span>
+          </div>
+
+          <!-- Test result inline (Story 7.4) -->
+          <template x-if="integrationTestResults[plat]">
+            <div style="margin-bottom: 8px; padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; display: flex; align-items: center; gap: 6px;"
+                 :style="integrationTestResults[plat].ok ? 'background: var(--green-bg); color: var(--green)' : 'background: var(--red-bg); color: var(--red)'">
+              <span x-text="integrationTestResults[plat].ok ? '&#10003; Conexao OK' : '&#10007; Falha'"></span>
+              <span x-show="integrationTestResults[plat].latency_ms" style="opacity: 0.7;" x-text="'(' + integrationTestResults[plat].latency_ms + 'ms)'"></span>
+              <span x-show="integrationTestResults[plat].error" style="opacity: 0.7; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="integrationTestResults[plat].error"></span>
+            </div>
+          </template>
+
+          <!-- Input for new/update key -->
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <input class="form-input" style="flex: 1; min-width: 200px; font-size: 0.8rem;" type="password"
+                   :placeholder="info.configured ? 'Nova key para substituir...' : 'Cole a API key aqui...'"
+                   x-model="integrationInputs[plat] ? integrationInputs[plat].api_key : ''"
+                   @input="if (!integrationInputs[plat]) integrationInputs[plat] = { api_key: '', extra: {} }; integrationInputs[plat].api_key = $event.target.value">
+
+            <!-- Extra fields -->
+            <template x-for="field in (info.extra_fields || [])" :key="plat + '-' + field">
+              <input class="form-input" style="width: 140px; font-size: 0.8rem;"
+                     :placeholder="field.replace('_', ' ')"
+                     x-model="integrationInputs[plat] ? integrationInputs[plat].extra[field] : ''"
+                     @input="if (!integrationInputs[plat]) integrationInputs[plat] = { api_key: '', extra: {} }; if (!integrationInputs[plat].extra) integrationInputs[plat].extra = {}; integrationInputs[plat].extra[field] = $event.target.value">
+            </template>
+
+            <button class="btn btn-sm btn-primary" @click="saveIntegration(plat)"
+                    :disabled="integrationSaving[plat] || !(integrationInputs[plat] && integrationInputs[plat].api_key)"
+                    :style="!(integrationInputs[plat] && integrationInputs[plat].api_key) ? 'opacity: 0.4; cursor: default' : ''"
+                    style="font-size: 0.78rem;">
+              <span x-show="!integrationSaving[plat]">Salvar</span>
+              <span x-show="integrationSaving[plat]">Salvando...</span>
+            </button>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <template x-if="Object.keys(integrations).length === 0">
+      <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.8rem;">Carregando integracoes...</div>
     </template>
   </div>
 
@@ -8730,6 +8828,12 @@ function studioApp() {
     connectionTestResult: null,
     settingsUser: '',
     settingsPass: '',
+    // Integrations (Story 7.3-7.5)
+    integrations: {},
+    integrationInputs: {},
+    integrationTesting: {},
+    integrationTestResults: {},
+    integrationSaving: {},
 
     // Video Editor
     editorVideos: [],
@@ -8783,7 +8887,7 @@ function studioApp() {
         if (val === 'video') { this.loadVideoStatus(); this.loadVeo3Models(); this.loadVideoEngines(); }
         if (val === 'editor') this.loadEditorData();
         if (val === 'publish') { this.loadApprovedPieces(); this.loadPublishStatus(); }
-        if (val === 'settings') { this.loadSettings(); this.loadLLMUsage(); }
+        if (val === 'settings') { this.loadSettings(); this.loadLLMUsage(); this.loadIntegrations(); }
         if (val === 'budget') this.loadBudgetData();
         if (val === 'approval') this.loadApprovalData();
         if (val === 'performance') { this.loadJourneyAnalytics(); this.loadCollectorStatus(); }
@@ -9584,7 +9688,9 @@ function studioApp() {
 
     // Publishing
     async loadPublishStatus() {
-      this.publishStatus = await this.api('/api/publish/status') || {};
+      const data = await this.api('/api/publish/status') || {};
+      // New format: { platforms: {}, preview_mode: bool, any_connected: bool }
+      this.publishStatus = data.platforms ? data : { platforms: data, preview_mode: false, any_connected: false };
     },
 
     async loadBudgetData() {
@@ -9673,7 +9779,7 @@ function studioApp() {
         if (piece.hashtags && piece.hashtags.length > 0) {
           content += '\n\n' + piece.hashtags.join(' ');
         }
-        await this.api('/api/publish/' + platform, {
+        const resData = await this.api('/api/publish/' + platform, {
           method: 'POST',
           body: JSON.stringify({
             piece_id: piece.id,
@@ -9681,12 +9787,16 @@ function studioApp() {
             schedule_time: piece.scheduled_at || null,
           }),
         });
-        // Mover para published
-        await this.api(`/api/production/pieces/${piece.id}/stage`, {
-          method: 'PUT',
-          body: JSON.stringify({ stage: 'published' }),
-        });
-        this.notify('Peca publicada com sucesso!');
+        if (resData && resData.preview) {
+          this.notify('Simulacao (Preview) — nenhum conteudo publicado de verdade.', 'warning');
+        } else {
+          // Mover para published only on real publish
+          await this.api(`/api/production/pieces/${piece.id}/stage`, {
+            method: 'PUT',
+            body: JSON.stringify({ stage: 'published' }),
+          });
+          this.notify('Peca publicada com sucesso!');
+        }
         this.publishResults[piece.id] = { success: true, time: new Date().toLocaleTimeString() };
         await this.loadApprovedPieces();
         await this.loadPieces();
@@ -9861,6 +9971,94 @@ function studioApp() {
       try {
         this.connectionTestResult = await this.api('/api/settings/test') || {};
       } catch(e) { this.notify('Erro ao testar conexoes: ' + e.message, 'error'); }
+    },
+
+    // Integrations CRUD (Story 7.3-7.5)
+    async loadIntegrations() {
+      try {
+        const data = await this.api('/api/settings/integrations') || {};
+        this.integrations = data.integrations || {};
+        // Initialize input fields for unconfigured platforms
+        for (const [plat, info] of Object.entries(this.integrations)) {
+          if (!this.integrationInputs[plat]) {
+            this.integrationInputs[plat] = { api_key: '', extra: {} };
+          }
+        }
+      } catch(e) { console.error('Erro ao carregar integracoes:', e); }
+    },
+
+    async saveIntegration(platform) {
+      const input = this.integrationInputs[platform];
+      if (!input || !input.api_key) { this.notify('Insira a API key', 'error'); return; }
+
+      // Test first before saving
+      this.integrationSaving[platform] = true;
+      try {
+        const testResult = await this.api(`/api/settings/test/${platform}`);
+        if (testResult && !testResult.ok) {
+          // Still save but warn — key might work for different endpoints
+          this.integrationTestResults[platform] = testResult;
+        }
+
+        const res = await this.api(`/api/settings/integrations/${platform}`, {
+          method: 'PUT',
+          body: JSON.stringify({ api_key: input.api_key, extra: input.extra || {} }),
+        });
+        if (res && res.ok) {
+          this.notify(`${platform} configurado com sucesso`);
+          this.integrationInputs[platform] = { api_key: '', extra: {} };
+          await this.loadIntegrations();
+          await this.loadPublishStatus();
+          await this.loadSettings();
+        }
+      } catch(e) { this.notify('Erro ao salvar: ' + e.message, 'error'); }
+      this.integrationSaving[platform] = false;
+    },
+
+    async deleteIntegration(platform) {
+      if (!confirm(`Remover credenciais de ${platform}? Esta acao nao pode ser desfeita.`)) return;
+      try {
+        await this.api(`/api/settings/integrations/${platform}`, { method: 'DELETE' });
+        this.notify(`${platform} removido`);
+        await this.loadIntegrations();
+        await this.loadPublishStatus();
+        await this.loadSettings();
+      } catch(e) { this.notify('Erro ao remover: ' + e.message, 'error'); }
+    },
+
+    async testIntegration(platform) {
+      this.integrationTesting[platform] = true;
+      this.integrationTestResults[platform] = null;
+      try {
+        const result = await this.api(`/api/settings/test/${platform}`);
+        this.integrationTestResults[platform] = result;
+        if (result && result.ok) {
+          this.notify(`${platform}: Conexao OK (${result.latency_ms}ms)`);
+        } else {
+          this.notify(`${platform}: Falha — ${result?.error || 'Erro desconhecido'}`, 'error');
+        }
+      } catch(e) {
+        this.integrationTestResults[platform] = { ok: false, error: e.message };
+        this.notify(`Erro ao testar ${platform}: ` + e.message, 'error');
+      }
+      this.integrationTesting[platform] = false;
+    },
+
+    integrationStatusColor(plat) {
+      const info = this.integrations[plat];
+      if (!info) return 'var(--text-muted)';
+      if (info.configured) return 'var(--green)';
+      return 'var(--text-muted)';
+    },
+
+    integrationStatusText(plat) {
+      const info = this.integrations[plat];
+      if (!info || !info.configured) return 'Nao configurado';
+      return 'Configurado';
+    },
+
+    get integrationsConfiguredCount() {
+      return Object.values(this.integrations).filter(i => i.configured).length;
     },
 
     async updateAuth() {
@@ -10851,7 +11049,12 @@ function studioApp() {
       }
       this.publishResults[piece.id] = results;
       const ok = Object.values(results).filter(r => r.success).length;
-      this.notify(ok + ' de ' + platforms.length + ' plataformas publicadas');
+      const anyPreview = Object.values(results).some(r => r.data && r.data.preview);
+      if (anyPreview) {
+        this.notify(ok + ' de ' + platforms.length + ' — Simulacao (Preview). Nenhum conteudo foi publicado de verdade.', 'warning');
+      } else {
+        this.notify(ok + ' de ' + platforms.length + ' plataformas publicadas');
+      }
       this.publishingPiece = null;
     },
 
