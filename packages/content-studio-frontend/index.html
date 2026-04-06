@@ -9710,15 +9710,21 @@ function studioApp() {
         this.showQuickProduce = false;
         await this.loadPieces();
         const steps = result.total_steps || 0;
-        const errors = (result.errors || []).length;
-        this.notify(`Peca produzida! ${steps} etapas OK${errors ? `, ${errors} erros` : ''}`);
-        if (errors) console.warn('Erros na producao:', result.errors);
+        const errors = (result.errors || []);
+        if (errors.length > 0 && steps <= 1) {
+          this.notify('Erro na producao: ' + errors.join(' | '), 'error');
+        } else if (errors.length > 0) {
+          this.notify(`Peca criada com ${errors.length} erro(s): ${errors.join(' | ')}`, 'error');
+        } else {
+          this.notify(`Peca produzida com sucesso! ${steps} etapas concluidas`);
+        }
+        if (errors.length) console.warn('Erros na producao:', errors);
         // Auto-abrir o drawer da peca recem-criada
         if (result.piece_id) {
           const newPiece = this.pieces.find(p => p.id === result.piece_id);
           if (newPiece) {
             this.selectedPiece = newPiece;
-            this.drawerTab = 'resumo';
+            this.drawerTab = newPiece.copy_text ? 'texto' : 'resumo';
             this.showPieceDetail = true;
             this.tab = 'board';
           }

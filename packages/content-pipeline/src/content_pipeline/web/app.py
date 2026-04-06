@@ -2187,6 +2187,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
         result["briefing"] = briefing_text
         result["steps"].append({"step": "briefing", "status": "ok"})
     except Exception as e:
+        logger.error("produce_single_piece briefing error: %s", e, exc_info=True)
         result["errors"].append(f"Briefing: {e}")
         briefing_text = data.get("briefing", f"Post {pillar} sobre {product} para {platform}. {objective}")
 
@@ -2202,6 +2203,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
         result["steps"].append({"step": "copy", "status": "ok"})
         svc.update_piece(piece_id, {"copy_text": copy_text, "stage": "copy"})
     except Exception as e:
+        logger.error("produce_single_piece copy error: %s", e, exc_info=True)
         result["errors"].append(f"Copy: {e}")
         copy_text = ""
 
@@ -2221,6 +2223,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
         notes_data = {"briefing": briefing_text, "nb2_prompt": nb2_prompt, "nb2_negative": nb2_negative, "objective": objective}
         svc.update_piece(piece_id, {"notes": _json.dumps(notes_data), "stage": "visual"})
     except Exception as e:
+        logger.error("produce_single_piece nb2_prompt error: %s", e, exc_info=True)
         result["errors"].append(f"NB2 Prompt: {e}")
 
     result["total_steps"] = len(result["steps"])
