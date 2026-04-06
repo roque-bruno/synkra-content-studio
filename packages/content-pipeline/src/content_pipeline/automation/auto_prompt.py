@@ -238,11 +238,14 @@ class AutoPromptNB2:
         brand: str = "salk",
         concept: str = "",
         format_type: str = "square_social",
+        briefing: str = "",
+        objective: str = "",
     ) -> dict:
         """
         Usa LLM para gerar prompt criativo dentro das restricoes.
 
         Combina criatividade do LLM com regras inegociaveis hardcoded.
+        O briefing e objetivo sao usados para gerar um cenario RELEVANTE ao conteudo.
         """
         if not self.llm:
             return await self.generate_prompt(
@@ -252,31 +255,51 @@ class AutoPromptNB2:
         product_key = product.lower()
         product_rules = PRODUCT_RULES.get(product_key, {})
 
-        system = f"""Voce e Apex, o especialista em prompts de imagem do Manager Grupo.
-Sua funcao e criar prompts para geracao de imagem NB2 (upload de produto + cenario IA).
+        system = f"""Voce e Apex, o especialista em prompts de imagem NB2 do Manager Grupo.
+Sua funcao e criar prompts CRIATIVOS e RELEVANTES para geracao de imagem NB2.
+
+COMO FUNCIONA O NB2:
+- O produto REAL e inserido via upload de foto separado
+- Seu prompt descreve APENAS o cenario/ambiente onde o produto sera renderizado
+- A IA integra o produto no cenario que voce descreve
 
 REGRAS INEGOCIAVEIS:
 1. NUNCA descreva o produto — ele sera inserido via upload separado
-2. Descreva APENAS o cenario, iluminacao, atmosfera
-3. NUNCA mencione equipamentos medicos especificos (= concorrente no material)
-4. NUNCA use glow/dispersao para LEV (luz CONCENTRADA no campo)
-5. Negative prompt e OBRIGATORIO
-6. Formato: prompt positivo + prompt negativo separados
+2. Descreva APENAS o cenario, iluminacao, atmosfera, contexto
+3. NUNCA mencione equipamentos medicos especificos no cenario (= concorrente no material)
+4. NUNCA use glow/dispersao para LEV (luz CONCENTRADA no campo cirurgico)
+5. NUNCA cenario vazio sem contexto (anti-pattern: studio neutro sem historia)
+6. O cenario DEVE ser relevante ao tema/objetivo do conteudo
+7. Negative prompt e OBRIGATORIO
+8. Prompt em INGLES para melhor resultado no modelo
+9. Seja ESPECIFICO e CINEMATOGRAFICO — descreva iluminacao, materiais, reflexos, atmosfera
 
 Produto: {product} ({brand})
-{f'Deve incluir: {product_rules.get("must_include", "")}' if product_rules.get("must_include") else ''}
+{f'DEVE ter no cenario: {product_rules.get("must_include", "")}' if product_rules.get("must_include") else ''}
 {f'NUNCA incluir: {product_rules.get("never_include", "")}' if product_rules.get("never_include") else ''}
+Tecnicas preferidas: {', '.join(product_rules.get('preferred_techniques', ['dramatic_studio']))}
 """
 
+        # Contexto rico do briefing e objetivo
+        context_block = ""
+        if briefing:
+            context_block += f"\nBRIEFING DO CONTEUDO:\n{briefing[:500]}\n"
+        if objective:
+            context_block += f"\nOBJETIVO/TEMA: {objective}\n"
+
         user_prompt = f"""Crie um prompt NB2 para {product} da {brand}.
-Conceito: {concept or 'hero shot premium'}
+{context_block}
+Conceito visual: {concept or 'hero shot premium contextualizado ao tema'}
 Formato: {format_type}
 
+O cenario da imagem DEVE conectar visualmente com o tema "{objective or concept or 'produto premium'}".
+Pense como um diretor de fotografia de advertising: qual cenario conta a historia deste conteudo?
+
 Responda EXATAMENTE neste formato:
-POSITIVE: (prompt positivo descrevendo APENAS cenario)
-NEGATIVE: (prompt negativo)
+POSITIVE: (prompt positivo em ingles descrevendo APENAS cenario/ambiente — cinematografico, detalhado, com iluminacao e atmosfera)
+NEGATIVE: (prompt negativo em ingles)
 TECNICA: (nome da tecnica)
-CONCEITO: (resumo do conceito em 1 linha)"""
+CONCEITO: (resumo do conceito visual em 1 linha)"""
 
         llm_result = await self.llm.complete(
             task="copy",
@@ -284,16 +307,29 @@ CONCEITO: (resumo do conceito em 1 linha)"""
             system_prompt=system,
         )
 
+        # Extrair prompt positivo e negativo da resposta do LLM
+        llm_text = llm_result.get("text", "")
+        positive = ""
+        negative = ""
+        for line in llm_text.split("\n"):
+            line_stripped = line.strip()
+            if line_stripped.upper().startswith("POSITIVE:"):
+                positive = line_stripped[9:].strip()
+            elif line_stripped.upper().startswith("NEGATIVE:"):
+                negative = line_stripped[9:].strip()
+
         # Garantir negatives obrigatorios mesmo que LLM esqueca
-        negatives = (
+        mandatory_neg = (
             MANDATORY_NEGATIVES["universal"]
             + MANDATORY_NEGATIVES["medical"]
             + product_rules.get("extra_negatives", [])
         )
+        all_negatives = negative + ", " + ", ".join(mandatory_neg) if negative else ", ".join(mandatory_neg)
 
         return {
-            "llm_generated": llm_result.get("text", ""),
-            "mandatory_negatives": ", ".join(negatives),
+            "positive_prompt": positive or llm_text,
+            "negative_prompt": all_negatives,
+            "llm_generated": llm_text,
             "product": product,
             "brand": brand,
             "format": format_type,

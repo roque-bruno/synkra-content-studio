@@ -1249,11 +1249,21 @@ async def generate_prompt_for_piece(piece_id: str, request: Request, user: dict 
     if not piece:
         raise HTTPException(404, f"Peça não encontrada: {piece_id}")
     data = await request.json()
-    result = await svc.auto_prompt.generate_prompt(
+    # Extrair contexto do briefing e objetivo dos notes da peca
+    import json as _json_parse
+    _existing = piece.get("notes", "")
+    try:
+        _notes = _json_parse.loads(_existing) if _existing else {}
+    except (ValueError, TypeError):
+        _notes = {}
+    _briefing = _notes.get("briefing", "")
+    _objective = _notes.get("objective", piece.get("title", ""))
+    result = await svc.auto_prompt.generate_with_llm(
         product=piece.get("product", "lev"),
         brand=piece.get("brand", "salk"),
-        concept=data.get("concept", "dramatic_studio"),
-        platform=piece.get("platform", "instagram"),
+        concept=data.get("concept", ""),
+        briefing=_briefing,
+        objective=_objective,
     )
     # Salvar prompt em notes (JSON)
     import json as _json
@@ -2195,11 +2205,13 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
         result["errors"].append(f"Copy: {e}")
         copy_text = ""
 
-    # Step 4: NB2 Prompt
+    # Step 4: NB2 Prompt (com contexto do briefing e objetivo)
     try:
-        prompt_result = await svc.auto_prompt.generate_prompt(
+        prompt_result = await svc.auto_prompt.generate_with_llm(
             product=product or "lev", brand=brand,
-            concept=data.get("concept", "dramatic_studio"),
+            concept=data.get("concept", ""),
+            briefing=briefing_text,
+            objective=objective,
         )
         nb2_prompt = prompt_result.get("positive_prompt", prompt_result.get("prompt", prompt_result.get("nb2_prompt", "")))
         nb2_negative = prompt_result.get("negative_prompt", "")

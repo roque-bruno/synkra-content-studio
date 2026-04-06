@@ -195,6 +195,7 @@ class StudioService:
         self.auto_briefing = AutoBriefing(
             llm_client=self.llm_client,
             brandbooks_loader=self.load_brandbook,
+            claims_loader=self.load_claims_bank,
         )
         self.auto_prompt = AutoPromptNB2(
             llm_client=self.llm_client,
