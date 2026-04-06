@@ -331,20 +331,23 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    """Serve o frontend embutido (fallback para dev local)."""
-    # Tenta frontend embutido (modo dev / compatibilidade)
-    html_path = Path(__file__).parent / "static" / "index.html"
-    if html_path.exists():
-        return HTMLResponse(
-            html_path.read_text(encoding="utf-8"),
-            headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache"},
-        )
+    """Serve o frontend (volume mount prioritario, embedded fallback)."""
+    # Prioridade: volume mount > embedded
+    candidates = [
+        Path("/app/frontend") / "index.html",
+        Path(__file__).parent / "static" / "index.html",
+    ]
+    for html_path in candidates:
+        if html_path.exists():
+            return HTMLResponse(
+                html_path.read_text(encoding="utf-8"),
+                headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache"},
+            )
     return JSONResponse({
         "service": "Salk Content Studio API",
         "version": "2.0.0",
         "docs": "/docs",
         "health": "/api/health",
-        "frontend": "https://studio.salk.com",
     })
 
 
