@@ -8485,8 +8485,8 @@ body.zen-mode .tab-bar { display: none !important; }
   </div>
 </div>
 
-<!-- Image Modal -->
-<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" @keydown.escape.window="showImageModal = false" @keydown.left.window="navigateAsset(-1)" @keydown.right.window="navigateAsset(1)" x-cloak role="dialog" aria-modal="true" aria-label="Visualizar imagem">
+<!-- Image Modal (z-index 200 to appear ABOVE drawer which is z-index 101) -->
+<div class="modal-overlay" x-show="showImageModal" @click.self="showImageModal = false" @keydown.escape.window="showImageModal = false" @keydown.left.window="navigateAsset(-1)" @keydown.right.window="navigateAsset(1)" x-cloak role="dialog" aria-modal="true" aria-label="Visualizar imagem" style="z-index: 200;">
   <div class="modal" style="max-width: 700px; position: relative;">
     <div class="modal-header">
       <h3 x-text="selectedImage?.name || ''"></h3>
