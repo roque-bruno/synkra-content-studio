@@ -9677,19 +9677,24 @@ function studioApp() {
           method: 'POST',
           body: JSON.stringify(pieceData),
         });
-        await this.loadPieces();
         this.showNewPiece = false;
+        this.tab = 'board';
         this.newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'imagem', persona_target: '', objective: '', notes: '' };
         this.notify('Peca criada! Clique em "Gerar Texto" no painel.');
+        await this.loadPieces();
         // Auto-abrir drawer da peca recem-criada
         const newId = res?.id || res?.piece_id;
         if (newId) {
-          const newPiece = this.pieces.find(p => p.id === newId);
+          let newPiece = this.pieces.find(p => p.id === newId);
+          if (!newPiece) {
+            await new Promise(r => setTimeout(r, 500));
+            await this.loadPieces();
+            newPiece = this.pieces.find(p => p.id === newId);
+          }
           if (newPiece) {
             this.selectedPiece = newPiece;
             this.drawerTab = 'resumo';
             this.showPieceDetail = true;
-            this.tab = 'board';
           }
         }
       } catch (e) {
@@ -9714,8 +9719,15 @@ function studioApp() {
           method: 'PUT',
           body: JSON.stringify({ stage }),
         });
+        // Atualizar localmente para feedback instantaneo
+        const p = this.pieces.find(x => x.id === id);
+        if (p) p.stage = stage;
+        if (this.selectedPiece?.id === id) this.selectedPiece.stage = stage;
+        // Recarregar para garantir dados completos
         await this.loadPieces();
-        if (this.selectedPiece) this.selectedPiece.stage = stage;
+        if (this.selectedPiece?.id === id) {
+          this.selectedPiece = this.pieces.find(x => x.id === id) || this.selectedPiece;
+        }
       } catch(e) { this.notify('Erro ao mover peca: ' + e.message, 'error'); }
     },
 
@@ -9746,7 +9758,7 @@ function studioApp() {
           body: JSON.stringify(this.quickProduce),
         });
         this.showQuickProduce = false;
-        await this.loadPieces();
+        this.tab = 'board';
         const steps = result.total_steps || 0;
         const errors = (result.errors || []);
         if (errors.length > 0 && steps <= 1) {
@@ -9754,21 +9766,27 @@ function studioApp() {
         } else if (errors.length > 0) {
           this.notify(`Peca criada com ${errors.length} erro(s): ${errors.join(' | ')}`, 'error');
         } else {
-          this.notify(`Peca produzida com sucesso! ${steps} etapas concluidas`);
+          this.notify(`Peca produzida! ${steps} etapas concluidas`);
         }
         if (errors.length) console.warn('Erros na producao:', errors);
-        // Auto-abrir o drawer da peca recem-criada
+        // Recarregar pecas e abrir drawer da peca recem-criada
+        await this.loadPieces();
         if (result.piece_id) {
-          const newPiece = this.pieces.find(p => p.id === result.piece_id);
+          // Retry: se loadPieces nao trouxe a peca, tentar mais uma vez
+          let newPiece = this.pieces.find(p => p.id === result.piece_id);
+          if (!newPiece) {
+            await new Promise(r => setTimeout(r, 500));
+            await this.loadPieces();
+            newPiece = this.pieces.find(p => p.id === result.piece_id);
+          }
           if (newPiece) {
             this.selectedPiece = newPiece;
             this.drawerTab = newPiece.copy_text ? 'texto' : 'resumo';
             this.showPieceDetail = true;
-            this.tab = 'board';
           }
         }
       } catch(e) {
-        this.notify('Erro na producao express: ' + e.message, 'error');
+        this.notify('Erro na producao: ' + e.message, 'error');
       }
       this.quickProducing = false;
     },
