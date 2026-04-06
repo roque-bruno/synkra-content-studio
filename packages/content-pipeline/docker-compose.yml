@@ -12,6 +12,7 @@ services:
       - ./data:/app/data
       - studio-uploads:/app/uploads
       - studio-settings:/app/settings
+      - studio-output:/app/output/studio
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
@@ -23,3 +24,4 @@ services:
 volumes:
   studio-uploads:
   studio-settings:
+  studio-output:
