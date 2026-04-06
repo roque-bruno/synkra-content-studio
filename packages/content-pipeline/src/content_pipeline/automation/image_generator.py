@@ -90,10 +90,12 @@ class ImageResult:
 def resolve_product_image(product: str, product_images_dir: Path) -> Optional[Path]:
     """Resolve nome do produto → caminho do PNG TOP PICK."""
     key = product.strip().lower()
+    logger.debug("resolve_product_image: key=%r dir=%s exists=%s", key, product_images_dir, product_images_dir.exists())
     # Tenta match direto
     rel = PRODUCT_TOP_PICKS.get(key)
     if rel:
         full = product_images_dir / rel
+        logger.debug("resolve_product_image: direct match %s exists=%s", full, full.exists())
         if full.exists():
             return full
     # Tenta match parcial (ex: "LEV 4LEV" contém "lev")
@@ -103,9 +105,11 @@ def resolve_product_image(product: str, product_images_dir: Path) -> Optional[Pa
             if full.exists():
                 return full
     # Busca recursiva por nome
-    for img in product_images_dir.rglob("*.png"):
-        if key in img.stem.lower():
-            return img
+    if product_images_dir.exists():
+        for img in product_images_dir.rglob("*.png"):
+            if key in img.stem.lower():
+                return img
+    logger.warning("resolve_product_image: NO match for '%s' in %s", key, product_images_dir)
     return None
 
 
@@ -135,6 +139,7 @@ class FalImageGenerator:
         self.product_images_dir = product_images_dir or Path("docs_user/imagem_produtos")
         self.base_url = base_url  # ex: "https://studio.salkmedical.com"
         self.budget_tracker = budget_tracker
+        self._fal_cdn_cache: dict[str, str] = {}  # file_path → fal CDN URL
 
     @property
     def configured(self) -> bool:
@@ -145,12 +150,49 @@ class FalImageGenerator:
             return DIMENSION_PRESETS[format_preset]
         return (width or 1080, height or 1350)
 
-    def _get_product_image_url(self, product: str) -> Optional[str]:
-        """Resolve produto → URL pública da imagem PNG."""
+    async def _upload_to_fal_cdn(self, file_path: Path) -> Optional[str]:
+        """Upload local file to fal.ai CDN storage, return public URL. Cached."""
+        cache_key = str(file_path)
+        if cache_key in self._fal_cdn_cache:
+            return self._fal_cdn_cache[cache_key]
+        try:
+            file_bytes = file_path.read_bytes()
+            async with httpx.AsyncClient(timeout=60) as client:
+                # fal.ai storage upload: initiate → PUT bytes
+                init_resp = await client.post(
+                    "https://rest.alpha.fal.ai/storage/upload/initiate",
+                    headers={"Authorization": f"Key {self.api_key}"},
+                    json={"content_type": "image/png", "file_name": file_path.name},
+                )
+                init_resp.raise_for_status()
+                init_data = init_resp.json()
+                upload_url = init_data["upload_url"]
+                file_url = init_data["file_url"]
+                # Upload raw bytes
+                put_resp = await client.put(
+                    upload_url,
+                    content=file_bytes,
+                    headers={"Content-Type": "image/png"},
+                )
+                put_resp.raise_for_status()
+            self._fal_cdn_cache[cache_key] = file_url
+            logger.info("Uploaded product PNG to fal CDN: %s → %s", file_path.name, file_url)
+            return file_url
+        except Exception as e:
+            logger.warning("fal CDN upload failed (%s), falling back to self-referencing URL: %s", file_path.name, e)
+            return None
+
+    async def _get_product_image_url(self, product: str) -> Optional[str]:
+        """Resolve produto → URL acessível para fal.ai (CDN upload preferred)."""
         img_path = resolve_product_image(product, self.product_images_dir)
         if not img_path:
+            logger.warning("Product '%s': no local PNG found in %s", product, self.product_images_dir)
             return None
-        # Gera URL relativa: /assets/produtos/{category}/{filename}
+        # Preferir upload direto para fal CDN (mais confiável que URL do nosso server)
+        fal_url = await self._upload_to_fal_cdn(img_path)
+        if fal_url:
+            return fal_url
+        # Fallback: URL do nosso servidor (requer que fal.ai consiga acessar)
         rel = img_path.relative_to(self.product_images_dir)
         parts = list(rel.parts)
         url_path = "/assets/produtos/" + "/".join(urllib.parse.quote(p) for p in parts)
@@ -173,7 +215,7 @@ class FalImageGenerator:
             return ImageResult(success=False, error="FAL_API_KEY não configurada")
 
         # Resolver URL da imagem do produto
-        img_url = product_image_url or self._get_product_image_url(product)
+        img_url = product_image_url or await self._get_product_image_url(product)
         if not img_url:
             logger.warning("Product '%s' has no image URL — using FLUX text-to-image fallback instead of NB2", product)
             return await self.generate_image(
