@@ -99,34 +99,71 @@ MANDATORY_NEGATIVES = {
 # Regras por produto
 PRODUCT_RULES = {
     "lev": {
-        "must_include": "concentrated focused beam of light on surgical field",
-        "never_include": "scattered light, diffused glow, lateral rays",
+        "description": "Foco cirurgico de teto LED — luz concentrada no campo",
+        "must_include": "visible ceiling area for ceiling-mounted equipment, surgical field below",
+        "never_include": "scattered light, diffused glow, lateral rays, other ceiling lights",
         "preferred_techniques": ["dramatic_studio", "hero_shot"],
         "preferred_lighting": ["dramatic_rim", "high_contrast"],
         "extra_negatives": MANDATORY_NEGATIVES["lev_specific"],
     },
     "kratus": {
-        "must_include": "robust surgical table, adjustable positions visible",
-        "never_include": "generic examination table, flimsy structure",
+        "description": "Mesa cirurgica robusta com posicoes ajustaveis",
+        "must_include": "clean floor area in center for surgical table, wide room",
+        "never_include": "other surgical tables, examination couch, gurney, stretcher",
         "preferred_techniques": ["hero_shot", "environmental"],
         "preferred_lighting": ["clinical_bright", "soft_diffused"],
         "extra_negatives": [],
     },
     "ostus": {
-        "must_include": "pendant surgical light system, articulating arm",
-        "never_include": "standalone floor lamp, desk light",
-        "preferred_techniques": ["dramatic_studio", "angular_dramatico"],
-        "preferred_lighting": ["dramatic_rim", "high_contrast"],
+        "description": "Serra cirurgica eletrica para ortopedia",
+        "must_include": "sterile instrument area, draped surgical surface, precision context",
+        "never_include": "other power tools, hand saw, competing surgical instruments",
+        "preferred_techniques": ["detail_macro", "hero_shot"],
+        "preferred_lighting": ["clinical_bright", "high_contrast"],
         "extra_negatives": [],
     },
     "kronus": {
-        "must_include": "medical monitor/display, clear screen, mounting system",
-        "never_include": "consumer TV, laptop screen",
-        "preferred_techniques": ["hero_shot", "detail_macro"],
+        "description": "Suporte pendente de teto biarticulado para equipamentos",
+        "must_include": "visible ceiling with mounting rails, upper wall area, gas panels",
+        "never_include": "floor-standing rack, wall TV bracket, consumer monitor arm",
+        "preferred_techniques": ["hero_shot", "environmental"],
         "preferred_lighting": ["soft_diffused", "clinical_bright"],
         "extra_negatives": [],
     },
 }
+
+# Perspectiva da camera por tipo de produto
+PRODUCT_SCENE_HINTS = {
+    "lev": {
+        "perspective": "camera at bed level looking UPWARD toward ceiling, showing ceiling and upper walls",
+        "spatial": "tall room, high ceiling prominent, vertical emphasis, space for ceiling-mounted light",
+    },
+    "kratus": {
+        "perspective": "camera at waist height, slightly elevated, looking toward center of room",
+        "spatial": "wide room, clean floor prominent, horizontal emphasis, space for table in center",
+    },
+    "ostus": {
+        "perspective": "camera at table height, close-up perspective, sterile instrument context",
+        "spatial": "tight clinical framing, draped surfaces, precision instrument environment",
+    },
+    "kronus": {
+        "perspective": "camera at standing height looking slightly upward toward ceiling area",
+        "spatial": "vertical space, ceiling and upper walls visible, mounting infrastructure context",
+    },
+}
+
+# Inferencia de produto por keywords
+PRODUCT_INFERENCE_MAP = {
+    "iluminacao": "lev", "iluminação": "lev", "foco": "lev", "luz": "lev",
+    "led": "lev", "surgical light": "lev", "visibilidade": "lev", "lev": "lev",
+    "mesa": "kratus", "table": "kratus", "posicionamento": "kratus",
+    "paciente": "kratus", "ergonomia": "kratus", "kratus": "kratus",
+    "serra": "ostus", "saw": "ostus", "corte": "ostus", "ortopedia": "ostus",
+    "osso": "ostus", "osteotomia": "ostus", "ostus": "ostus",
+    "suporte": "kronus", "pendente": "kronus", "monitor": "kronus",
+    "braço": "kronus", "articulado": "kronus", "kronus": "kronus",
+}
+HERO_PRODUCT = "lev"  # Produto principal da marca
 
 
 class AutoPromptNB2:
@@ -135,6 +172,19 @@ class AutoPromptNB2:
     def __init__(self, llm_client=None, brandbook_loader=None):
         self.llm = llm_client
         self._load_brandbook = brandbook_loader
+
+    @staticmethod
+    def infer_product(objective: str = "", pillar: str = "", title: str = "", context: str = "") -> str:
+        """Sugere produto com base no contexto. Retorna key ou '' se institucional."""
+        text = f"{objective} {pillar} {title} {context}".lower()
+        for keyword, product in PRODUCT_INFERENCE_MAP.items():
+            if keyword in text:
+                return product
+        # Pilares que tipicamente envolvem produto
+        if pillar in ("produto",):
+            return HERO_PRODUCT
+        # Institucional, educacional sem keyword de produto = sem produto (FLUX)
+        return ""
 
     async def generate_prompt(
         self,
@@ -303,6 +353,22 @@ Produto sendo fotografado: {product or 'equipamento cirurgico Salk Medical'} ({b
 {f'NUNCA incluir: {product_rules.get("never_include", "")}' if product_rules.get("never_include") else ''}
 
 LEMBRE: o prompt descreve o AMBIENTE. O produto NAO aparece no prompt. O centro fica VAZIO.
+"""
+        # Scene hints por produto (perspectiva, espacialidade)
+        scene_hints = PRODUCT_SCENE_HINTS.get(product_key, {})
+        if scene_hints:
+            system += f"""
+=== PERSPECTIVA ESPECIFICA PARA {product.upper()} ===
+- Camera: {scene_hints['perspective']}
+- Espacialidade: {scene_hints['spatial']}
+"""
+        elif not product:
+            system += """
+=== CONTEUDO INSTITUCIONAL (sem produto especifico) ===
+- Cenario hospitalar generico premium — corredor, recepcao, fachada
+- Nao precisa de espaco vazio no centro (nenhum produto sera inserido)
+- Pode mostrar o AMBIENTE completo, perspectiva livre
+- Foco em transmitir profissionalismo, tecnologia, confianca
 """
 
         # Contexto rico do briefing e objetivo

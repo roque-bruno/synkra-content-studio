@@ -2157,11 +2157,22 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     pillar = data.get("pillar", "produto")
     format_type = data.get("format", "post")
     objective = data.get("objective", "")
+
+    # Inferir produto se nao especificado (sugestao, nao obrigatorio)
+    inferred_product = ""
+    if not product:
+        inferred_product = svc.auto_prompt.infer_product(
+            objective=objective, pillar=pillar, title=data.get("title", ""),
+        )
+        if inferred_product:
+            product = inferred_product
+            logger.info("Product inferred from context: %s", product)
+
     logger.info(
-        "produce_single_piece: brand=%s, product=%s, pillar=%s, platform=%s, objective=%s",
-        brand, product, pillar, platform, objective,
+        "produce_single_piece: brand=%s, product=%s (inferred=%s), pillar=%s, platform=%s, objective=%s",
+        brand, product, inferred_product or "no", pillar, platform, objective,
     )
-    result = {"steps": [], "errors": []}
+    result = {"steps": [], "errors": [], "product_inferred": inferred_product or None}
 
     # Contexto para briefing e copy
     title = data.get("title", f"{pillar.title()} — {product.upper() or brand.upper()} ({platform})")
@@ -2555,6 +2566,17 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
     if not prompt:
         raise HTTPException(400, "Nenhum prompt NB2 disponível. Gere o prompt primeiro.")
 
+    # Inferir produto se peça não tem (para ativar NB2)
+    product = piece.get("product", "")
+    if not product:
+        product = svc.auto_prompt.infer_product(
+            objective=notes_data.get("objective", ""),
+            title=piece.get("title", ""),
+            pillar=piece.get("pillar", ""),
+        )
+        if product:
+            logger.info("Image gen: product inferred as '%s' for piece %s", product, piece_id)
+
     # Determinar dimensões baseado na plataforma
     platform = piece.get("platform", "instagram")
     fmt = piece.get("format", "post")
@@ -2568,7 +2590,7 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
         prompt=prompt,
         format_preset=format_preset,
         negative_prompt=negative,
-        product=piece.get("product", ""),
+        product=product,  # usa inferido se peça não tinha
         model=data.get("model", "flux-dev"),
     )
 

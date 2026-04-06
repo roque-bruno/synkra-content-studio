@@ -8198,8 +8198,23 @@ body.zen-mode .tab-bar { display: none !important; }
           </select>
         </div>
         <div class="form-group">
-          <label>Produto</label>
-          <input class="form-input" x-model="quickProduce.product" placeholder="ex: LEV 4LEV">
+          <label>Produto <span style="font-size:0.65rem; color:var(--text-muted); font-weight:400;">(vazio = institucional)</span></label>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+            <template x-for="p in [{key:'lev', name:'LEV', emoji:'💡'}, {key:'kratus', name:'KRATUS', emoji:'🛏️'}, {key:'ostus', name:'OSTUS', emoji:'⚙️'}, {key:'kronus', name:'KRONUS', emoji:'📺'}]">
+              <div style="padding: 8px 4px; border-radius: 8px; text-align: center; cursor: pointer; border: 2px solid var(--border); transition: all 0.15s; font-size: 0.75rem; font-weight: 600;"
+                   :style="quickProduce.product === p.key ? 'border-color: var(--accent); background: var(--accent-dim); color: var(--accent)' : 'background: var(--bg-darker)'"
+                   @click="quickProduce.product = (quickProduce.product === p.key ? '' : p.key)">
+                <span x-text="p.emoji" style="font-size: 1.1rem; display: block; margin-bottom: 2px;"></span>
+                <span x-text="p.name"></span>
+              </div>
+            </template>
+          </div>
+          <div x-show="quickProduce.product" style="font-size: 0.68rem; color: var(--accent); margin-top: 4px;">
+            Imagem usara NB2: produto real renderizado no cenario
+          </div>
+          <div x-show="!quickProduce.product" style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">
+            Sem produto = imagem institucional (cenario sem produto)
+          </div>
         </div>
       </div>
       <div class="form-row">
@@ -8239,7 +8254,7 @@ body.zen-mode .tab-bar { display: none !important; }
       <button class="btn" @click="showQuickProduce = false; quickProduce = { brand: 'salk', product: '', platform: 'instagram', pillar: 'produto', format: 'post', objective: '' }">Cancelar</button>
       <button class="btn btn-primary" @click="runQuickProduce()" :disabled="quickProducing">
         <span x-show="!quickProducing">Produzir Tudo</span>
-        <span x-show="quickProducing">Processando (3 etapas)...</span>
+        <span x-show="quickProducing" x-text="quickProduce.product ? 'Gerando com NB2: ' + quickProduce.product.toUpperCase() + '...' : 'Gerando conteudo institucional...'"></span>
       </button>
     </div>
   </div>
