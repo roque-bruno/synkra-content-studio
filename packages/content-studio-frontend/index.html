@@ -7957,7 +7957,7 @@ body.zen-mode .tab-bar { display: none !important; }
         <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
           <div class="card" style="margin-bottom: 0;">
             <div class="card-title" style="font-size: 0.75rem;">Imagem</div>
-            <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain; cursor: pointer;" @click="selectedImage = { url: parsePieceNotes(selectedPiece?.notes).image_url, name: selectedPiece?.title || 'Imagem Gerada' }; assetModalList = [selectedImage]; assetModalIndex = 0; showImageModal = true" title="Clique para ver em alta resolucao">
+            <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain; cursor: pointer;" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url, selectedPiece?.title)" title="Clique para ver em alta resolucao">
           </div>
         </template>
         <template x-if="parsePieceNotes(selectedPiece?.notes).video_url">
@@ -8031,7 +8031,7 @@ body.zen-mode .tab-bar { display: none !important; }
       <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
         <div class="card" style="margin-bottom: 12px;">
           <div class="card-title" style="font-size: 0.75rem;">Imagem Gerada</div>
-          <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain; cursor: pointer;" @click="selectedImage = { url: parsePieceNotes(selectedPiece?.notes).image_url, name: selectedPiece?.title || 'Imagem Gerada' }; assetModalList = [selectedImage]; assetModalIndex = 0; showImageModal = true" title="Clique para ver em alta resolucao">
+          <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain; cursor: pointer;" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url, selectedPiece?.title)" title="Clique para ver em alta resolucao">
         </div>
       </template>
 
@@ -9461,6 +9461,15 @@ function studioApp() {
       try { const r = JSON.parse(notes); return (r && typeof r === 'object') ? r : {}; } catch(e) { return {}; }
     },
 
+    openGeneratedImageModal(url, name) {
+      if (!url) return;
+      const img = { url, name: name || 'Imagem Gerada' };
+      this.selectedImage = img;
+      this.assetModalList = [img];
+      this.assetModalIndex = 0;
+      this.showImageModal = true;
+    },
+
     async generateCopyForPiece(pieceId) {
       if (!pieceId) return;
       this.pieceActionLoading = true;
@@ -9504,6 +9513,8 @@ function studioApp() {
           await this.loadPieces();
           this.selectedPiece = this.pieces.find(p => p.id === pieceId) || this.selectedPiece;
           this.drawerTab = 'visual';
+          this.showPieceDetail = true;
+          this.tab = 'board';
         } else {
           this.notify('Erro: ' + (result.error || 'falha na geracao'), 'error');
         }

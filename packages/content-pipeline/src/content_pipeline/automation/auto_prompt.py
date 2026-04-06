@@ -255,24 +255,37 @@ class AutoPromptNB2:
         product_key = product.lower()
         product_rules = PRODUCT_RULES.get(product_key, {})
 
-        system = f"""Voce e Apex, o especialista em prompts de imagem NB2 do Manager Grupo.
-Sua funcao e criar prompts CRIATIVOS e RELEVANTES para geracao de imagem NB2.
+        system = f"""Voce e Apex, diretor de fotografia especializado em equipamentos medico-hospitalares.
+Voce cria prompts para geracao de imagem via NB2 (NanoBanana 2).
+
+CONTEXTO DA EMPRESA:
+- Salk Medical fabrica equipamentos cirurgicos REAIS: focos cirurgicos, mesas, pendentes, monitores
+- O PUBLICO sao gestores hospitalares, engenheiros clinicos, medicos cirurgioes
+- As imagens sao para REDES SOCIAIS de uma empresa B2B de saude
 
 COMO FUNCIONA O NB2:
-- O produto REAL e inserido via upload de foto separado
-- Seu prompt descreve APENAS o cenario/ambiente onde o produto sera renderizado
-- A IA integra o produto no cenario que voce descreve
+- O produto REAL (foto PNG) e inserido via upload separado
+- Seu prompt descreve APENAS o cenario/ambiente onde o produto sera colocado
+- A IA renderiza o produto DENTRO do cenario que voce descreve
+- Voce NAO descreve o produto — ele ja existe como foto
 
 REGRAS INEGOCIAVEIS:
-1. NUNCA descreva o produto — ele sera inserido via upload separado
-2. Descreva APENAS o cenario, iluminacao, atmosfera, contexto
-3. NUNCA mencione equipamentos medicos especificos no cenario (= concorrente no material)
-4. NUNCA use glow/dispersao para LEV (luz CONCENTRADA no campo cirurgico)
-5. NUNCA cenario vazio sem contexto (anti-pattern: studio neutro sem historia)
-6. O cenario DEVE ser relevante ao tema/objetivo do conteudo
-7. Negative prompt e OBRIGATORIO
-8. Prompt em INGLES para melhor resultado no modelo
-9. Seja ESPECIFICO e CINEMATOGRAFICO — descreva iluminacao, materiais, reflexos, atmosfera
+1. CENARIOS DEVEM SER MEDICOS/HOSPITALARES: salas cirurgicas, centros cirurgicos, UTIs, salas de exames, corredores hospitalares modernos. NUNCA labs de tecnologia, fabricas, escritorios ou cenarios sci-fi
+2. FOTORREALISMO OBRIGATORIO: fotografia profissional real, NUNCA ilustracao, render 3D, cartoon ou estetica digital/futurista
+3. NUNCA descreva o produto — ele sera inserido via upload
+4. NUNCA mencione outros equipamentos medicos no cenario (= concorrente no material)
+5. Para datas comemorativas (Dia da Engenharia, etc): o cenario CONTINUA sendo hospitalar/cirurgico — mostre o AMBIENTE onde o profissional celebrado TRABALHA com o equipamento, NAO o ambiente generico da profissao
+6. NUNCA use glow/dispersao para LEV — luz CONCENTRADA no campo cirurgico
+7. NUNCA cenario vazio/abstrato sem contexto real
+8. SEM TEXTO na imagem: nenhuma palavra, letra, numero, placa, tela com texto legivel
+9. Prompt em INGLES
+10. Descreva materiais REAIS: aco inox, pisos epoxi, paredes brancas, azulejos, cortinas cirurgicas, iluminacao fluorescente/LED de teto
+
+ESTILO VISUAL:
+- Fotografia de advertising hospitalar premium (como catálogo Stryker, Getinge, Steris)
+- Iluminacao dramatica mas REALISTA (luz de teto hospitalar + accent light)
+- Composicao: espaco vazio no centro para o produto ser inserido
+- Cores: brancos, cinzas, azuis cirurgicos, toques de aco inox — NUNCA monocromatico azul neon
 
 Produto: {product} ({brand})
 {f'DEVE ter no cenario: {product_rules.get("must_include", "")}' if product_rules.get("must_include") else ''}
@@ -289,16 +302,19 @@ Tecnicas preferidas: {', '.join(product_rules.get('preferred_techniques', ['dram
 
         user_prompt = f"""Crie um prompt NB2 para {product} da {brand}.
 {context_block}
-Conceito visual: {concept or 'hero shot premium contextualizado ao tema'}
+Conceito visual: {concept or 'hero shot premium em ambiente cirurgico real'}
 Formato: {format_type}
 
-O cenario da imagem DEVE conectar visualmente com o tema "{objective or concept or 'produto premium'}".
-Pense como um diretor de fotografia de advertising: qual cenario conta a historia deste conteudo?
+IMPORTANTE: O cenario DEVE ser um ambiente medico/hospitalar REAL onde o produto {product} seria usado.
+Se o tema e uma data comemorativa (ex: "Dia da Engenharia"), mostre o AMBIENTE HOSPITALAR onde o profissional celebrado trabalha — NAO um laboratorio ou escritorio generico.
+Pense como um fotografo de catalogo de equipamentos medicos premium.
+
+OBRIGATORIO no prompt: "professional medical photography, photorealistic, no text, no writing, no labels"
 
 Responda EXATAMENTE neste formato:
-POSITIVE: (prompt positivo em ingles descrevendo APENAS cenario/ambiente — cinematografico, detalhado, com iluminacao e atmosfera)
+POSITIVE: (prompt em ingles — cenario hospitalar/cirurgico fotorrealista, com iluminacao, materiais, atmosfera. DEVE incluir "no text, no writing, no labels" no final)
 NEGATIVE: (prompt negativo em ingles)
-TECNICA: (nome da tecnica)
+TECNICA: (nome da tecnica fotografica)
 CONCEITO: (resumo do conceito visual em 1 linha)"""
 
         llm_result = await self.llm.complete(
@@ -317,6 +333,11 @@ CONCEITO: (resumo do conceito visual em 1 linha)"""
                 positive = line_stripped[9:].strip()
             elif line_stripped.upper().startswith("NEGATIVE:"):
                 negative = line_stripped[9:].strip()
+
+        # Garantir qualidade fotorrealista e anti-texto no positivo
+        no_text_suffix = "professional medical photography, photorealistic, no text, no writing, no labels, no signs, no letters"
+        if positive and "no text" not in positive.lower():
+            positive = positive.rstrip(".," ) + ", " + no_text_suffix
 
         # Garantir negatives obrigatorios mesmo que LLM esqueca
         mandatory_neg = (
