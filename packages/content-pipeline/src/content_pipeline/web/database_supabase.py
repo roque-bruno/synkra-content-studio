@@ -117,6 +117,18 @@ class SupabaseDatabase:
                        "master_id", "calendar_slot_id", "notes", "pillar", "platform", "format"):
             if row.get(field) is None:
                 row[field] = ""
+        # Extract image_url from notes JSON to top-level for kanban cards
+        notes_str = row.get("notes", "")
+        if notes_str and isinstance(notes_str, str):
+            try:
+                notes_obj = json.loads(notes_str)
+                if isinstance(notes_obj, dict):
+                    if notes_obj.get("image_url"):
+                        row["image_url"] = notes_obj["image_url"]
+                    if notes_obj.get("video_url"):
+                        row["video_url"] = notes_obj["video_url"]
+            except (json.JSONDecodeError, TypeError):
+                pass
         return row
 
     # ------------------------------------------------------------------

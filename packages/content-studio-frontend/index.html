@@ -700,6 +700,18 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 .kc-quick-btn { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-darker); color: var(--text-muted); cursor: pointer; transition: var(--transition); }
 .kc-quick-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
 
+/* === IMAGE CLICK-TO-ZOOM WRAPPER === */
+.img-click-wrap {
+  position: relative; cursor: pointer; display: inline-block; border-radius: 8px; overflow: hidden;
+}
+.img-click-wrap:hover img { filter: brightness(0.7); transition: filter 0.2s; }
+.img-click-overlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 0.85rem; font-weight: 600; opacity: 0; transition: opacity 0.2s;
+  background: rgba(0,0,0,0.3); border-radius: 8px;
+}
+.img-click-wrap:hover .img-click-overlay { opacity: 1; }
+
 /* === MODAL === */
 .modal-overlay {
   position: fixed;
@@ -7955,10 +7967,13 @@ body.zen-mode .tab-bar { display: none !important; }
 
       <!-- Preview: Image + Video side by side -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
+        <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
           <div class="card" style="margin-bottom: 0;">
             <div class="card-title" style="font-size: 0.75rem;">Imagem</div>
-            <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain; cursor: pointer;" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url, selectedPiece?.title)" title="Clique para ver em alta resolucao">
+            <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
+              <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
+              <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
+            </div>
           </div>
         </template>
         <template x-if="parsePieceNotes(selectedPiece?.notes).video_url">
@@ -8029,10 +8044,13 @@ body.zen-mode .tab-bar { display: none !important; }
       </template>
 
       <!-- Image -->
-      <template x-if="parsePieceNotes(selectedPiece?.notes).image_url">
+      <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
         <div class="card" style="margin-bottom: 12px;">
           <div class="card-title" style="font-size: 0.75rem;">Imagem Gerada</div>
-          <img :src="parsePieceNotes(selectedPiece?.notes).image_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain; cursor: pointer;" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url, selectedPiece?.title)" title="Clique para ver em alta resolucao">
+          <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
+            <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+            <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
+          </div>
         </div>
       </template>
 
