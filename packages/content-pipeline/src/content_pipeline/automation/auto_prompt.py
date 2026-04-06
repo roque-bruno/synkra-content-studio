@@ -80,9 +80,14 @@ MANDATORY_NEGATIVES = {
         "cartoon", "illustration", "painting", "sketch",
     ],
     "medical": [
+        "surgical light", "operating light", "ceiling mounted light", "surgical lamp",
+        "operating table", "surgical table", "examination table",
+        "medical monitor", "patient monitor", "display screen",
+        "pendant", "ceiling mount arm", "articulating arm",
+        "medical equipment", "hospital equipment", "medical device",
         "competing medical equipment", "other brand equipment",
-        "generic hospital equipment in focus", "full room with multiple devices",
         "people faces", "identifiable patients", "blood", "graphic medical content",
+        "blue monochrome", "cyan tint", "teal color", "neon blue", "blue cast",
     ],
     "lev_specific": [
         "light rays spreading sideways", "diffused glow", "scattered light",
@@ -255,42 +260,49 @@ class AutoPromptNB2:
         product_key = product.lower()
         product_rules = PRODUCT_RULES.get(product_key, {})
 
-        system = f"""Voce e Apex, diretor de fotografia especializado em equipamentos medico-hospitalares.
-Voce cria prompts para geracao de imagem via NB2 (NanoBanana 2).
+        system = f"""Voce e Apex, diretor de fotografia especializado em ambientes hospitalares.
+Voce cria prompts para geracao de imagem. O produto sera inserido DEPOIS via upload separado.
+Seu prompt descreve SOMENTE o cenario/ambiente VAZIO — SEM nenhum equipamento medico.
 
-CONTEXTO DA EMPRESA:
-- Salk Medical fabrica equipamentos cirurgicos REAIS: focos cirurgicos, mesas, pendentes, monitores
-- O PUBLICO sao gestores hospitalares, engenheiros clinicos, medicos cirurgioes
-- As imagens sao para REDES SOCIAIS de uma empresa B2B de saude
+=== REGRA #1 (MAIS IMPORTANTE DE TODAS) ===
+ZERO EQUIPAMENTOS MEDICOS no prompt. Isso inclui:
+- NENHUM foco cirurgico, luminaria cirurgica, surgical light
+- NENHUMA mesa cirurgica, operating table, surgical table
+- NENHUM monitor, display, tela
+- NENHUM pendente, braço articulado, ceiling mount
+- NENHUM equipamento de qualquer tipo no centro da cena
+O CENTRO DA IMAGEM deve estar VAZIO — e onde o produto real sera inserido depois.
 
-COMO FUNCIONA O NB2:
-- O produto REAL (foto PNG) e inserido via upload separado
-- Seu prompt descreve APENAS o cenario/ambiente onde o produto sera colocado
-- A IA renderiza o produto DENTRO do cenario que voce descreve
-- Voce NAO descreve o produto — ele ja existe como foto
+=== REGRA #2: FOTORREALISMO ===
+- Fotografia REAL com camera DSLR, ISO, abertura — como foto de catalogo Stryker/Getinge
+- NUNCA render 3D, ilustracao, cartoon, estetica digital
+- Materiais REAIS: aco inox escovado, piso epoxi claro, paredes brancas, azulejos, cortinas cirurgicas
 
-REGRAS INEGOCIAVEIS:
-1. CENARIOS DEVEM SER MEDICOS/HOSPITALARES: salas cirurgicas, centros cirurgicos, UTIs, salas de exames, corredores hospitalares modernos. NUNCA labs de tecnologia, fabricas, escritorios ou cenarios sci-fi
-2. FOTORREALISMO OBRIGATORIO: fotografia profissional real, NUNCA ilustracao, render 3D, cartoon ou estetica digital/futurista
-3. NUNCA descreva o produto — ele sera inserido via upload
-4. NUNCA mencione outros equipamentos medicos no cenario (= concorrente no material)
-5. Para datas comemorativas (Dia da Engenharia, etc): o cenario CONTINUA sendo hospitalar/cirurgico — mostre o AMBIENTE onde o profissional celebrado TRABALHA com o equipamento, NAO o ambiente generico da profissao
-6. NUNCA use glow/dispersao para LEV — luz CONCENTRADA no campo cirurgico
-7. NUNCA cenario vazio/abstrato sem contexto real
-8. SEM TEXTO na imagem: nenhuma palavra, letra, numero, placa, tela com texto legivel
-9. Prompt em INGLES
-10. Descreva materiais REAIS: aco inox, pisos epoxi, paredes brancas, azulejos, cortinas cirurgicas, iluminacao fluorescente/LED de teto
+=== REGRA #3: CORES REALISTAS ===
+- Paleta QUENTE e NEUTRA: brancos, cinzas claros, tons de creme, aco inox prateado
+- Toques SUTIS de azul cirurgico (campos, aventais) — nunca dominante
+- PROIBIDO: monocromatico azul, azul neon, ciano dominante, teal, tons frios saturados
+- A imagem deve parecer uma foto REAL de hospital, nao um cenario de filme sci-fi
 
-ESTILO VISUAL:
-- Fotografia de advertising hospitalar premium (como catálogo Stryker, Getinge, Steris)
-- Iluminacao dramatica mas REALISTA (luz de teto hospitalar + accent light)
-- Composicao: espaco vazio no centro para o produto ser inserido
-- Cores: brancos, cinzas, azuis cirurgicos, toques de aco inox — NUNCA monocromatico azul neon
+=== REGRA #4: COMPOSICAO ===
+- CENTRO VAZIO: o ponto focal da imagem deve ser um espaco limpo onde o produto sera colocado
+- Angulo levemente baixo (3/4) para dar imponencia ao espaco vazio central
+- Profundidade de campo: fundo levemente desfocado, centro nitido
 
-Produto: {product} ({brand})
-{f'DEVE ter no cenario: {product_rules.get("must_include", "")}' if product_rules.get("must_include") else ''}
+=== REGRA #5: CENARIO ===
+- SEMPRE ambiente hospitalar/cirurgico REAL: centro cirurgico, sala de exames, UTI
+- Para datas comemorativas: o AMBIENTE HOSPITALAR onde o profissional trabalha
+- NUNCA: laboratorio de tecnologia, escritorio, fabrica, cenario sci-fi, corredor vazio
+- Detalhes de contexto: portas de aco, paineis de gases medicinais, piso epoxi, teto com luminárias fluorescentes comuns
+
+=== REGRA #6: SEM TEXTO ===
+Nenhuma palavra, letra, numero, placa, tela legivel, label na imagem.
+
+Produto sendo fotografado: {product or 'equipamento cirurgico Salk Medical'} ({brand})
+{f'Contexto do produto: {product_rules.get("must_include", "")}' if product_rules.get("must_include") else ''}
 {f'NUNCA incluir: {product_rules.get("never_include", "")}' if product_rules.get("never_include") else ''}
-Tecnicas preferidas: {', '.join(product_rules.get('preferred_techniques', ['dramatic_studio']))}
+
+LEMBRE: o prompt descreve o AMBIENTE. O produto NAO aparece no prompt. O centro fica VAZIO.
 """
 
         # Contexto rico do briefing e objetivo
@@ -300,22 +312,24 @@ Tecnicas preferidas: {', '.join(product_rules.get('preferred_techniques', ['dram
         if objective:
             context_block += f"\nOBJETIVO/TEMA: {objective}\n"
 
-        user_prompt = f"""Crie um prompt NB2 para {product} da {brand}.
+        user_prompt = f"""Crie um prompt de cenario hospitalar para inserir o produto {product or 'Salk Medical'}.
 {context_block}
-Conceito visual: {concept or 'hero shot premium em ambiente cirurgico real'}
+Conceito: {concept or 'centro cirurgico premium, vazio no centro, pronto para inserir produto'}
 Formato: {format_type}
 
-IMPORTANTE: O cenario DEVE ser um ambiente medico/hospitalar REAL onde o produto {product} seria usado.
-Se o tema e uma data comemorativa (ex: "Dia da Engenharia"), mostre o AMBIENTE HOSPITALAR onde o profissional celebrado trabalha — NAO um laboratorio ou escritorio generico.
-Pense como um fotografo de catalogo de equipamentos medicos premium.
+CRITICO — O prompt descreve SOMENTE o ambiente/cenario:
+- Descreva a SALA (paredes, piso, teto, portas, iluminacao do teto)
+- Descreva a ATMOSFERA (luz, sombras, reflexos no aco inox)
+- Descreva MATERIAIS (aco escovado, epoxi, azulejo, vidro)
+- NAO descreva NENHUM equipamento medico (nem foco, nem mesa, nem monitor, nem pendente)
+- O CENTRO da imagem deve ser um espaco VAZIO e LIMPO
+- Cores QUENTES e NEUTRAS (branco, cinza, creme, prata) — NUNCA azul dominante
 
-OBRIGATORIO no prompt: "professional medical photography, photorealistic, no text, no writing, no labels"
+TERMINAR o prompt com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2.8, photorealistic, warm neutral tones, no text, no writing, no labels, no medical equipment, empty center"
 
 Responda EXATAMENTE neste formato:
-POSITIVE: (prompt em ingles — cenario hospitalar/cirurgico fotorrealista, com iluminacao, materiais, atmosfera. DEVE incluir "no text, no writing, no labels" no final)
-NEGATIVE: (prompt negativo em ingles)
-TECNICA: (nome da tecnica fotografica)
-CONCEITO: (resumo do conceito visual em 1 linha)"""
+POSITIVE: (prompt em ingles)
+NEGATIVE: (prompt negativo em ingles)"""
 
         llm_result = await self.llm.complete(
             task="copy",
@@ -334,10 +348,15 @@ CONCEITO: (resumo do conceito visual em 1 linha)"""
             elif line_stripped.upper().startswith("NEGATIVE:"):
                 negative = line_stripped[9:].strip()
 
-        # Garantir qualidade fotorrealista e anti-texto no positivo
-        no_text_suffix = "professional medical photography, photorealistic, no text, no writing, no labels, no signs, no letters"
+        # Garantir qualidade fotorrealista, cores neutras e anti-texto no positivo
+        quality_suffix = "professional DSLR photography, photorealistic, warm neutral tones, no text, no writing, no labels, no medical equipment, empty center composition"
         if positive and "no text" not in positive.lower():
-            positive = positive.rstrip(".," ) + ", " + no_text_suffix
+            positive = positive.rstrip(".," ) + ", " + quality_suffix
+        # Remover termos proibidos que o LLM pode ter incluido
+        for banned in ["surgical light", "operating light", "surgical lamp", "operating table",
+                       "surgical table", "medical monitor", "patient monitor", "pendant light",
+                       "ceiling mounted light", "overhead surgical"]:
+            positive = positive.replace(banned, "").replace("  ", " ")
 
         # Garantir negatives obrigatorios mesmo que LLM esqueca
         mandatory_neg = (
