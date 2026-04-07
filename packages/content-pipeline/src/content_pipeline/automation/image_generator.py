@@ -228,7 +228,7 @@ class FalImageGenerator:
         model_id = self.MODELS["nb2"]
 
         payload = {
-            "image_url": img_url,
+            "image_urls": [img_url],
             "prompt": prompt,
             "image_size": {"width": w, "height": h},
         }
