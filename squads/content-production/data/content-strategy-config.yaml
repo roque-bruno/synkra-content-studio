@@ -7,13 +7,13 @@ pillar_weights:
   salk:
     # Pilares redesenhados para mapear 7 fases da jornada de compra hospitalar
     # Fonte: AUDITORIA_CONTENT_STUDIO_vs_IC.md — ISSUE #3 + ISSUE #4
-    awareness_produto: 20       # Fase 1 (Identificação) — Hero shots, specs visuais
-    educacional_specs: 25       # Fases 2-3 (Planejamento/Especificação) — Datasheets, demos, comparativos
-    cases_social_proof: 20      # Fase 5 (Avaliação) — Instalações, depoimentos, referências
-    tco_roi_licitacao: 20       # Fases 4,6 (Cotação/Decisão) — TCO, ROI, docs licitação, comparativo financeiro
-    pos_venda_suporte: 10       # Fase 7 (Pós-compra) — Tutoriais, manuais, FAQ, contato AT
-    datas_comemorativas: 3      # Transversal — Datas sazonais, homenagens, efemérides do setor saúde
-    institucional: 2            # Transversal — Grupo, fabricação nacional, employer branding
+    awareness_produto: 18       # Fase 1 (Identificação) — Hero shots, specs visuais
+    educacional_specs: 22       # Fases 2-3 (Planejamento/Especificação) — Datasheets, demos, comparativos
+    cases_social_proof: 18      # Fase 5 (Avaliação) — Instalações, depoimentos, referências
+    tco_roi_licitacao: 18       # Fases 4,6 (Cotação/Decisão) — TCO, ROI, docs licitação, comparativo financeiro
+    pos_venda_suporte: 9        # Fase 7 (Pós-compra) — Tutoriais, manuais, FAQ, contato AT
+    datas_comemorativas: 10     # Transversal — Datas sazonais, homenagens, efemérides do setor saúde (13+ datas/ano)
+    institucional: 5            # Transversal — Grupo, fabricação nacional, employer branding
     # COMMAND reduzido de 15%→0% como pilar — absorvido por awareness_produto quando relevante
   mendel:
     produto_tecnico: 35

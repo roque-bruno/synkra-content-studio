@@ -214,7 +214,7 @@ weekly_targets_regime:
 # ═══════════════════════════════════════════════════════════════
 
 pilar_rotation_salk:
-  note: "Awareness 20%, Educacional 25%, Cases 20%, TCO/ROI 20%, Pós-venda 10%, Datas 3%, Institucional 2%"
+  note: "Awareness 18%, Educacional 22%, Cases 18%, TCO/ROI 18%, Pós-venda 9%, Datas Comemorativas 10%, Institucional 5%"
   journey_phase_map:
     awareness_produto: "Fase 1 — Identificação de necessidade"
     educacional_specs: "Fases 2-3 — Planejamento + Especificação técnica"
