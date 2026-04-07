@@ -201,9 +201,12 @@ class AutoPromptNB2:
             if keyword in text:
                 return product
         # Pilares que tipicamente envolvem produto
-        if pillar in ("produto",):
+        if pillar in ("produto", "awareness_produto"):
             return get_hero_product()
-        # Institucional, educacional sem keyword de produto = sem produto (FLUX)
+        # Datas comemorativas, institucional = sem produto (FLUX)
+        if pillar in ("datas_comemorativas", "institucional"):
+            return ""
+        # Educacional sem keyword de produto = sem produto (FLUX)
         return ""
 
     async def generate_prompt(

@@ -4234,10 +4234,13 @@ body.zen-mode .tab-bar { display: none !important; }
     </select>
     <select class="form-select" style="width: 120px;" x-model="boardPillarFilter">
       <option value="">Pilares</option>
-      <option value="produto">Produto</option>
+      <option value="awareness_produto">Produto</option>
+      <option value="educacional_specs">Educacional</option>
+      <option value="cases_social_proof">Cases</option>
+      <option value="tco_roi_licitacao">TCO/ROI</option>
+      <option value="pos_venda_suporte">Pos-venda</option>
+      <option value="datas_comemorativas">Datas Comemorativas</option>
       <option value="institucional">Institucional</option>
-      <option value="educativo">Educativo</option>
-      <option value="social_proof">Social Proof</option>
     </select>
     <button class="btn btn-sm" @click="boardSelectMode = !boardSelectMode; if(!boardSelectMode) boardSelected = []"
             :style="boardSelectMode ? 'background: var(--accent); color: white;' : ''"
@@ -8443,13 +8446,13 @@ body.zen-mode .tab-bar { display: none !important; }
         <div class="form-group">
           <label>Pilar</label>
           <select class="form-select" x-model="newPiece.pillar">
-            <option value="produto">Produto (30%)</option>
-            <option value="educacional">Educacional (25%)</option>
-            <option value="cases">Cases (20%)</option>
-            <option value="command">COMMAND (15%)</option>
-            <option value="licitacoes">Licitacoes (10%)</option>
-            <option value="institucional">Institucional</option>
-            <option value="employer_branding">Employer Branding</option>
+            <option value="awareness_produto">Awareness Produto (20%)</option>
+            <option value="educacional_specs">Educacional / Specs (25%)</option>
+            <option value="cases_social_proof">Cases / Social Proof (20%)</option>
+            <option value="tco_roi_licitacao">TCO / ROI / Licitacao (20%)</option>
+            <option value="pos_venda_suporte">Pos-venda / Suporte (10%)</option>
+            <option value="datas_comemorativas">Datas Comemorativas (3%)</option>
+            <option value="institucional">Institucional (2%)</option>
           </select>
         </div>
         <div class="form-group">
@@ -8911,10 +8914,13 @@ body.zen-mode .tab-bar { display: none !important; }
         <div class="form-group">
           <label>Pilar</label>
           <select class="form-select" x-model="quickProduce.pillar">
-            <option value="produto">Produto</option>
-            <option value="educacional">Educacional</option>
+            <option value="awareness_produto">Awareness Produto</option>
+            <option value="educacional_specs">Educacional / Specs</option>
+            <option value="cases_social_proof">Cases / Social Proof</option>
+            <option value="tco_roi_licitacao">TCO / ROI / Licitacao</option>
+            <option value="pos_venda_suporte">Pos-venda / Suporte</option>
+            <option value="datas_comemorativas">Datas Comemorativas</option>
             <option value="institucional">Institucional</option>
-            <option value="social_proof">Social Proof</option>
           </select>
         </div>
       </div>
@@ -8974,10 +8980,13 @@ body.zen-mode .tab-bar { display: none !important; }
         <div class="form-group">
           <label>Pilar</label>
           <select class="form-select" x-model="abTestConfig.pillar">
-            <option value="produto">Produto</option>
-            <option value="educacional">Educacional</option>
+            <option value="awareness_produto">Awareness Produto</option>
+            <option value="educacional_specs">Educacional / Specs</option>
+            <option value="cases_social_proof">Cases / Social Proof</option>
+            <option value="tco_roi_licitacao">TCO / ROI / Licitacao</option>
+            <option value="pos_venda_suporte">Pos-venda / Suporte</option>
+            <option value="datas_comemorativas">Datas Comemorativas</option>
             <option value="institucional">Institucional</option>
-            <option value="social_proof">Social Proof</option>
           </select>
         </div>
       </div>
@@ -9170,11 +9179,13 @@ body.zen-mode .tab-bar { display: none !important; }
         <div class="form-group">
           <label>Pilar</label>
           <select class="form-select" x-model="selectedCalSlot.pillar">
-            <option value="produto">Produto</option>
-            <option value="educacional">Educacional</option>
-            <option value="cases">Cases</option>
-            <option value="command">COMMAND</option>
-            <option value="licitacoes">Licitacoes</option>
+            <option value="awareness_produto">Awareness Produto</option>
+            <option value="educacional_specs">Educacional / Specs</option>
+            <option value="cases_social_proof">Cases / Social Proof</option>
+            <option value="tco_roi_licitacao">TCO / ROI / Licitacao</option>
+            <option value="pos_venda_suporte">Pos-venda / Suporte</option>
+            <option value="datas_comemorativas">Datas Comemorativas</option>
+            <option value="institucional">Institucional</option>
           </select>
         </div>
       </div>

@@ -12,7 +12,8 @@ pillar_weights:
     cases_social_proof: 20      # Fase 5 (Avaliação) — Instalações, depoimentos, referências
     tco_roi_licitacao: 20       # Fases 4,6 (Cotação/Decisão) — TCO, ROI, docs licitação, comparativo financeiro
     pos_venda_suporte: 10       # Fase 7 (Pós-compra) — Tutoriais, manuais, FAQ, contato AT
-    institucional: 5            # Transversal — Grupo, fabricação nacional, employer branding
+    datas_comemorativas: 3      # Transversal — Datas sazonais, homenagens, efemérides do setor saúde
+    institucional: 2            # Transversal — Grupo, fabricação nacional, employer branding
     # COMMAND reduzido de 15%→0% como pilar — absorvido por awareness_produto quando relevante
   mendel:
     produto_tecnico: 35
@@ -65,6 +66,11 @@ pillar_personas:
     primary: eng_clinica
     secondary:
       - equipe_medica
+  datas_comemorativas:           # Transversal — datas sazonais do setor
+    primary: eng_clinica
+    secondary:
+      - equipe_medica
+      - admin_hospitalar
   institucional:               # Transversal
     primary: admin_hospitalar
     secondary:

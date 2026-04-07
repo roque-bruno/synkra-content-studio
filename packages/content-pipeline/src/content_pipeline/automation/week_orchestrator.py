@@ -145,11 +145,12 @@ class WeekOrchestrator:
 
             # Produto: pilares de produto usam produto real, outros podem ser vazio
             product = ""
-            if pillar in ("produto", "produto_tecnico", "command") and products:
+            if pillar in ("produto", "produto_tecnico", "awareness_produto", "command") and products:
                 product = product_cycle[i % len(product_cycle)]
-            elif pillar in ("educacional", "cases", "licitacoes") and products:
-                # Educacional/cases pode referenciar produto como contexto
+            elif pillar in ("educacional", "educacional_specs", "cases", "cases_social_proof", "licitacoes", "tco_roi_licitacao", "pos_venda_suporte") and products:
+                # Educacional/cases/TCO pode referenciar produto como contexto
                 product = product_cycle[i % len(product_cycle)]
+            # datas_comemorativas e institucional: product fica vazio (conteúdo sem produto)
 
             # Persona-alvo
             personas = get_pillar_personas().get(pillar, ["eng_clinica"])

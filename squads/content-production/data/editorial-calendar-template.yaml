@@ -214,13 +214,14 @@ weekly_targets_regime:
 # ═══════════════════════════════════════════════════════════════
 
 pilar_rotation_salk:
-  note: "Awareness 20%, Educacional 25%, Cases 20%, TCO/ROI 20%, Pós-venda 10%, Institucional 5% — Story 14.2"
+  note: "Awareness 20%, Educacional 25%, Cases 20%, TCO/ROI 20%, Pós-venda 10%, Datas 3%, Institucional 2%"
   journey_phase_map:
     awareness_produto: "Fase 1 — Identificação de necessidade"
     educacional_specs: "Fases 2-3 — Planejamento + Especificação técnica"
     cases_social_proof: "Fase 5 — Avaliação por comitê"
     tco_roi_licitacao: "Fases 4,6 — Cotação/Consulta + Decisão"
     pos_venda_suporte: "Fase 7 — Pós-compra (tutoriais, manuais, suporte)"
+    datas_comemorativas: "Transversal — Datas sazonais, homenagens, efemérides do setor saúde"
     institucional: "Transversal — Grupo, fabricação, employer branding"
   weekly_suggestion:
     awareness_produto: 2
@@ -228,6 +229,7 @@ pilar_rotation_salk:
     cases_social_proof: 2
     tco_roi_licitacao: 2
     pos_venda_suporte: 1
+    datas_comemorativas: "Conforme calendário sazonal"
     institucional: "Quinzenal"
 
 # ═══════════════════════════════════════════════════════════════
