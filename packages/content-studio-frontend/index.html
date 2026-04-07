@@ -9734,8 +9734,14 @@ function studioApp() {
       }
     },
 
+    invalidatePiecesCache() {
+      const prefix = '/api/production/pieces';
+      Object.keys(this.dataCache).forEach(k => { if (k.startsWith(prefix)) delete this.dataCache[k]; });
+    },
+
     async loadPieces() {
       try {
+        this.invalidatePiecesCache();
         const url = '/api/production/pieces' + (this.boardBrandFilter ? '?brand=' + this.boardBrandFilter : '');
         this.pieces = await this.api(url);
       } catch(e) {
