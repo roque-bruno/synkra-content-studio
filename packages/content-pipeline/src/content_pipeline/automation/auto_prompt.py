@@ -401,17 +401,20 @@ TERMINAR o prompt com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2
 Conceito: {concept or 'conteudo institucional premium'}
 Formato: {format_type}
 
+CONTEXTO DA MARCA: Salk Medical fabrica equipamentos cirurgicos (focos, mesas, serras, suportes).
+O publico-alvo sao ENGENHEIROS CLINICOS — profissionais que gerenciam, instalam e mantem equipamentos em hospitais.
+
 O prompt DEVE refletir o TEMA/OBJETIVO acima. Exemplos:
-- "Dia da Engenharia" → engenheiros biomedicos trabalhando em equipamentos hospitalares, plantas tecnicas, ferramentas de precisao
+- "Dia da Engenharia" → engenheiro clinico inspecionando sala cirurgica, checklist tecnico, manutencao preventiva de equipamentos, ferramentas de precisao sobre mesa de aco inox
 - "Dia do Medico" → ambiente cirurgico premium, equipe medica desfocada, atmosfera de excelencia
-- "Inovacao" → corredor hospitalar futurista, tecnologia avancada, design clean
+- "Inovacao" → sala cirurgica moderna, tecnologia de ponta, design clean e futurista
 
 REGRAS:
 - A imagem deve contar uma HISTORIA relacionada ao tema, nao ser uma sala vazia
 - Pode incluir PESSOAS desfocadas ou silhuetas se fizer sentido para o tema
 - Cores QUENTES e NEUTRAS — NUNCA azul monocromatico dominante
-- Nao descreva equipamentos medicos especificos (nao citar marca, modelo)
-- Contexto sempre HOSPITALAR/SAUDE, mas o foco e o TEMA
+- Nao descreva equipamentos medicos especificos de concorrentes
+- Contexto sempre HOSPITALAR/CIRURGICO, focado no universo da engenharia clinica
 
 TERMINAR com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2.8, photorealistic, warm neutral tones, no text, no writing, no labels"
 """
