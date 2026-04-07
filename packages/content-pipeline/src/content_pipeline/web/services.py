@@ -200,6 +200,7 @@ class StudioService:
         self.auto_prompt = AutoPromptNB2(
             llm_client=self.llm_client,
             brandbook_loader=self.load_brandbook,
+            data_dir=self._data_dir(),
         )
         self.disaster_check = DisasterCheck(
             llm_client=self.llm_client,

@@ -22,7 +22,10 @@ Regras inegociaveis:
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -169,9 +172,101 @@ HERO_PRODUCT = "lev"  # Produto principal da marca
 class AutoPromptNB2:
     """Gerador de prompts NB2 com arquitetura de 8 dimensoes."""
 
-    def __init__(self, llm_client=None, brandbook_loader=None):
+    def __init__(self, llm_client=None, brandbook_loader=None, data_dir: Optional[Path] = None):
         self.llm = llm_client
         self._load_brandbook = brandbook_loader
+        self._data_dir = data_dir
+        self._brand_context_cache: dict[str, str] = {}
+
+    # ------------------------------------------------------------------
+    # Brand Intelligence — carrega ICP + identidade de marca dos YAMLs
+    # ------------------------------------------------------------------
+
+    def _load_buyer_personas(self) -> dict:
+        """Carrega buyer-personas.yaml do data dir."""
+        if not self._data_dir:
+            return {}
+        path = self._data_dir / "buyer-personas.yaml"
+        if not path.exists():
+            return {}
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+            return data.get("personas", data) if isinstance(data, dict) else {}
+        except Exception as e:
+            logger.warning("Falha ao carregar buyer-personas: %s", e)
+            return {}
+
+    def _build_brand_context(self, brand: str) -> str:
+        """Constroi bloco de contexto de marca + ICP a partir dos YAMLs.
+
+        Retorna string formatada para injecao no system prompt.
+        Resultado cacheado por brand para evitar re-leitura.
+        """
+        if brand in self._brand_context_cache:
+            return self._brand_context_cache[brand]
+
+        sections = []
+
+        # 1. Brandbook — identidade, tom, pilares, publico
+        bb = self._load_brandbook(brand) if self._load_brandbook else None
+        if bb:
+            sections.append(f"MARCA: {bb.get('full_name', brand)}")
+            sections.append(f"TAGLINE: {bb.get('tagline', '')}")
+            tone = bb.get("tone_of_voice", {})
+            if tone:
+                sections.append(f"TOM DE VOZ: {tone.get('primary', '')}")
+                prohibited = tone.get("prohibited", [])
+                if prohibited:
+                    sections.append(f"TOM PROIBIDO: {', '.join(prohibited)}")
+
+            pillars = bb.get("content_pillars", [])
+            if pillars:
+                pillar_lines = [f"  - {p['name']} ({p.get('percentage', '')}%): {p.get('description', '')}" for p in pillars]
+                sections.append("PILARES DE CONTEUDO:\n" + "\n".join(pillar_lines))
+
+            personas_bb = bb.get("target_personas", [])
+            if personas_bb:
+                persona_lines = [f"  - {p['name']} ({p.get('role', '')}): preocupacoes = {', '.join(p.get('concerns', []))}" for p in personas_bb]
+                sections.append("PUBLICO-ALVO DA MARCA:\n" + "\n".join(persona_lines))
+
+            products = bb.get("products", [])
+            active = [p for p in products if p.get("status") == "ATIVO"]
+            if active:
+                prod_lines = [f"  - {p['name']}: {p.get('type', '')}" for p in active]
+                sections.append("PRODUTOS ATIVOS:\n" + "\n".join(prod_lines))
+
+        # 2. Buyer Personas — ICP detalhado
+        personas = self._load_buyer_personas()
+        if personas:
+            icp_lines = []
+            for key, persona in personas.items():
+                title = persona.get("title", key)
+                role = persona.get("decision_role", "")
+                tone_p = persona.get("tone", "")
+                pains = persona.get("pain_points", [])
+                keywords = persona.get("keywords", [])
+                icp_lines.append(f"  {title} ({role}):")
+                if tone_p:
+                    icp_lines.append(f"    Tom: {tone_p}")
+                if keywords:
+                    icp_lines.append(f"    Palavras-chave: {', '.join(keywords[:8])}")
+                if pains:
+                    icp_lines.append(f"    Dores: {'; '.join(pains[:3])}")
+            sections.append("ICP DETALHADO (Ideal Customer Profile):\n" + "\n".join(icp_lines))
+
+            # Destaque do ICP primario
+            eng_clinica = personas.get("engenharia_clinica")
+            if eng_clinica:
+                sections.append(
+                    f"ICP PRIMARIO: {eng_clinica.get('title', 'Engenheiro Clinico')} — "
+                    f"{eng_clinica.get('decision_role', '')}. "
+                    f"Foco em: {', '.join(eng_clinica.get('keywords', [])[:6])}. "
+                    f"Dores: {'; '.join(eng_clinica.get('pain_points', [])[:3])}"
+                )
+
+        context = "\n".join(sections)
+        self._brand_context_cache[brand] = context
+        return context
 
     @staticmethod
     def infer_product(objective: str = "", pillar: str = "", title: str = "", context: str = "") -> str:
@@ -310,6 +405,9 @@ class AutoPromptNB2:
         product_key = product.lower()
         product_rules = PRODUCT_RULES.get(product_key, {})
 
+        # ── Brand Intelligence: contexto dinamico dos YAMLs ──
+        brand_ctx = self._build_brand_context(brand)
+
         system = f"""Voce e Apex, diretor de fotografia especializado em ambientes hospitalares.
 Voce cria prompts para geracao de imagem. O produto sera inserido DEPOIS via upload separado.
 Seu prompt descreve SOMENTE o cenario/ambiente VAZIO — SEM nenhum equipamento medico.
@@ -353,6 +451,12 @@ Produto sendo fotografado: {product or 'equipamento cirurgico Salk Medical'} ({b
 {f'NUNCA incluir: {product_rules.get("never_include", "")}' if product_rules.get("never_include") else ''}
 
 LEMBRE: o prompt descreve o AMBIENTE. O produto NAO aparece no prompt. O centro fica VAZIO.
+
+=== INTELIGENCIA DE MARCA (carregado automaticamente) ===
+{brand_ctx}
+REGRA: Toda imagem deve ser contextualizada para o UNIVERSO do ICP primario (engenharia clinica).
+O cenario, a atmosfera e os detalhes visuais devem ressoar com profissionais que GERENCIAM,
+INSTALAM e fazem MANUTENCAO de equipamentos em hospitais. Pense como o ICP ve o ambiente.
 """
         # Scene hints por produto (perspectiva, espacialidade)
         scene_hints = PRODUCT_SCENE_HINTS.get(product_key, {})
@@ -401,8 +505,8 @@ TERMINAR o prompt com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2
 Conceito: {concept or 'conteudo institucional premium'}
 Formato: {format_type}
 
-CONTEXTO DA MARCA: Salk Medical fabrica equipamentos cirurgicos (focos, mesas, serras, suportes).
-O publico-alvo sao ENGENHEIROS CLINICOS — profissionais que gerenciam, instalam e mantem equipamentos em hospitais.
+Use a INTELIGENCIA DE MARCA do system prompt para entender quem e o publico,
+qual o tom da marca, e como gerar imagens que RESSOEM com o ICP.
 
 O prompt DEVE refletir o TEMA/OBJETIVO acima. Exemplos:
 - "Dia da Engenharia" → engenheiro clinico inspecionando sala cirurgica, checklist tecnico, manutencao preventiva de equipamentos, ferramentas de precisao sobre mesa de aco inox
@@ -414,7 +518,7 @@ REGRAS:
 - Pode incluir PESSOAS desfocadas ou silhuetas se fizer sentido para o tema
 - Cores QUENTES e NEUTRAS — NUNCA azul monocromatico dominante
 - Nao descreva equipamentos medicos especificos de concorrentes
-- Contexto sempre HOSPITALAR/CIRURGICO, focado no universo da engenharia clinica
+- Contexto sempre HOSPITALAR/CIRURGICO, focado no universo do ICP primario
 
 TERMINAR com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2.8, photorealistic, warm neutral tones, no text, no writing, no labels"
 """
