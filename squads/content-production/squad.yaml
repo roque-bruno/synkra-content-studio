@@ -7,8 +7,8 @@ squad:
   title: "Squad de Produção de Conteúdo"
   description: |
     Squad elite de produção em massa de conteúdo para redes sociais do Manager Grupo.
-    Opera em 4 marcas (Salk Medical, Mendel Medical, Manager Grupo, Dayho) e 4 plataformas
-    (Instagram, LinkedIn, YouTube, Facebook), totalizando 16 canais ativos.
+    Opera em 4 marcas (Salk Medical, Mendel Medical, Manager Grupo, Dayho) e 5 plataformas
+    (LinkedIn, YouTube, WhatsApp, Instagram, Email), totalizando canais priorizados por IC.
     Setor: B2B healthcare — dispositivos médicos com registro ANVISA.
   version: "2.1.0"
   created: "2026-03-16"
@@ -60,8 +60,8 @@ squad:
     mvp_masters_week: 5
     mvp_derivatives_per_master: "5-8"
     mvp_total_week: "30-45"
-    channels: 16
-    platforms: ["Instagram", "LinkedIn", "YouTube", "Facebook"]
+    channels: 14
+    platforms: ["LinkedIn", "YouTube", "WhatsApp", "Instagram", "Email"]
     atomization_ratio: "1:5-8"  # Revisado: 1:17-20 era irreal. Carousel/PDF = conteudo original
     batch_cycle: "weekly"
     principle: "Qualidade > Volume. 30 pecas a 9.0 > 60 pecas a 6.0"

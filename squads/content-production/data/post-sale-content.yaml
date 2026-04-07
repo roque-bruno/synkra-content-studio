@@ -1,0 +1,230 @@
+# Conteudo Pos-Venda - Fase 7 da Jornada
+# Story 15.7 - Epic 15
+# Data: 2026-04-07
+
+version: "1.0"
+last_updated: "2026-04-07"
+
+post_sale_sequence:
+  name: "Onboarding Pos-Venda"
+  trigger: "crm_deal_won"
+  channel: "whatsapp"
+  duration_days: 30
+  steps:
+    - step: 1
+      day: 0
+      type: "boas_vindas"
+      subject: "Parabens + checklist instalacao"
+      format: "text + PDF"
+      template_id: "UTL-004"
+    - step: 2
+      day: 1
+      type: "tutorial"
+      subject: "Video tutorial operacao"
+      format: "text + video_link"
+    - step: 3
+      day: 3
+      type: "faq"
+      subject: "FAQ pos-instalacao"
+      format: "text + link"
+    - step: 4
+      day: 7
+      type: "manutencao"
+      subject: "Guia manutencao preventiva"
+      format: "text + PDF"
+    - step: 5
+      day: 14
+      type: "contato_at"
+      subject: "Contato direto AT"
+      format: "text"
+    - step: 6
+      day: 30
+      type: "nps"
+      subject: "Pesquisa de satisfacao"
+      format: "text + quick_reply"
+
+content_templates:
+  LEV:
+    tutorial_operacao:
+      titulo: "Como operar o Foco Cirurgico LEV"
+      duracao: "2-3 min"
+      formato: "Video"
+      canal_primario: "YouTube"
+      canal_secundario: "WhatsApp"
+      topicos:
+        - "Ligando e ajustando intensidade"
+        - "Movimentando as 5 articulacoes"
+        - "Ajustando foco (spot) e diametro"
+        - "Controle capacitivo (touch)"
+        - "Modo COMMAND (se integrado)"
+    guia_manutencao:
+      titulo: "Manutencao Preventiva LEV"
+      formato: "PDF"
+      limpeza: "Apos cada uso - pano macio com desinfetante neutro"
+      calibracao: "Semestral - luximetro, contatar AT se < 90%"
+      verificacoes: "Mensal - articulacoes, bateria, cabos"
+      bateria: "Recarga quando < 20%, leva 2-4,5h"
+    faq_pos_instalacao:
+      - q: "Quanto dura a bateria?"
+        a: "3LEV ~5h, 4LEV ~8h continuo. Recarga 2-4,5h."
+      - q: "Posso usar durante recarga?"
+        a: "Nao recomendado."
+      - q: "Temperatura de cor?"
+        a: "4.500K fixo, Ra=99."
+      - q: "Compativel com COMMAND?"
+        a: "Sim, modelos M1LEC."
+      - q: "Vida util LEDs?"
+        a: "226.000 horas (~10 anos)."
+      - q: "Como limpar?"
+        a: "Pano macio + desinfetante neutro. Nunca abrasivos."
+    checklist_instalacao:
+      pre:
+        - "Fixacao teto (carga min. 50kg)"
+        - "Altura teto min 2,80m"
+        - "Ponto energia (bivolt)"
+        - "Modelo e acessorios conforme NF"
+      pos:
+        - "Testar 5 articulacoes"
+        - "Medir intensidade luminosa"
+        - "Ciclo bateria completo"
+        - "Integracao COMMAND (se aplicavel)"
+        - "Treinar equipe"
+        - "Registrar n serie + data"
+
+  KRATUS:
+    tutorial_operacao:
+      titulo: "Posicionamento da Mesa KRATUS"
+      duracao: "3-5 min"
+      formato: "Video"
+      canal_primario: "YouTube"
+      canal_secundario: "WhatsApp"
+      topicos:
+        - "Joystick e painel de controle"
+        - "Posicoes programadas"
+        - "Ajuste de secoes"
+        - "Troca de acessorios"
+        - "Emergencia (bateria backup)"
+    guia_manutencao:
+      titulo: "Manutencao Preventiva KRATUS"
+      formato: "PDF"
+      limpeza: "Apos cada uso - PU antiestatico + desinfetante"
+      calibracao: "Anual - precisao posicionamento, sensores"
+      verificacoes: "Mensal - rodizios, 3 baterias, acessorios"
+      bateria: "3 baterias 36V redundantes, opera com apenas 1"
+    faq_pos_instalacao:
+      - q: "Peso maximo?"
+        a: "460kg nominal. Teste: 1.012kg."
+      - q: "Quantas baterias?"
+        a: "3 x 36V redundantes. Opera com 1."
+      - q: "Compativel arco-C?"
+        a: "Sim. 2.293mm area livre."
+      - q: "Quantos acessorios?"
+        a: "30+ compativeis."
+      - q: "Rodizios?"
+        a: "Auto-travantes com trava centralizada."
+    checklist_instalacao:
+      pre:
+        - "Piso nivelado (2mm/m)"
+        - "Largura porta min 80cm"
+        - "Ponto energia (bivolt)"
+        - "Modelo e acessorios conforme NF"
+      pos:
+        - "Testar todas posicoes"
+        - "Carga/descarga 3 baterias"
+        - "Rodizios e trava"
+        - "Nivelamento eletronico"
+        - "Cada acessorio"
+        - "Treinar equipe"
+        - "Registrar n serie + data"
+
+  OSTUS:
+    tutorial_operacao:
+      titulo: "Montagem e Operacao OSTUS"
+      duracao: "3-4 min"
+      formato: "Video"
+      canal_primario: "YouTube"
+      canal_secundario: "WhatsApp"
+      topicos:
+        - "Montagem ponteiras (sagital, reciprocante, oscilante)"
+        - "Ajuste RPM e torque"
+        - "Pedal IPX8"
+        - "Troca bateria em campo"
+        - "Limpeza e esterilizacao"
+    guia_manutencao:
+      titulo: "Manutencao OSTUS"
+      formato: "PDF"
+      limpeza: "Autoclave (ciclo padrao), ponteiras ultrassonica"
+      verificacoes: "Mensal - RPM, bateria, ponteiras"
+      bateria: "Removivel, manter reserva carregada"
+    faq_pos_instalacao:
+      - q: "Especialidades?"
+        a: "3: Ortopedia, Neuro, Toracica."
+      - q: "Potencia?"
+        a: "750 VA constantes."
+      - q: "RPM?"
+        a: "28.000 RPM."
+      - q: "Pedal a prova d agua?"
+        a: "IPX8 - submersivel."
+      - q: "Troca bateria na cirurgia?"
+        a: "Sim, removivel com troca rapida."
+
+  KRONUS:
+    tutorial_operacao:
+      titulo: "Instalacao Suporte KRONUS"
+      duracao: "2-3 min"
+      formato: "Video"
+      canal_primario: "YouTube"
+      canal_secundario: "WhatsApp"
+      topicos:
+        - "Montagem torre movel (exclusivo)"
+        - "Instalacao parede"
+        - "Instalacao teto"
+        - "Regulagem altura"
+        - "Capacidade 300kg"
+    faq_pos_instalacao:
+      - q: "Quantos modelos?"
+        a: "8 modelos para qualquer CC."
+      - q: "Versao movel?"
+        a: "Sim - torre movel exclusiva Salk."
+      - q: "Capacidade?"
+        a: "300kg."
+
+video_briefings:
+  LEV:
+    - title: "Foco LEV - 5 articulacoes"
+      duration: "2-3 min"
+      cta: "Demonstracao presencial? Responda SIM."
+    - title: "Recarga Bateria LEV"
+      duration: "1-2 min"
+      cta: "Duvidas bateria? Fale com AT."
+  KRATUS:
+    - title: "Posicionamento KRATUS"
+      duration: "3-5 min"
+      cta: "Treinamento equipe? Agende."
+    - title: "Troca Acessorios KRATUS"
+      duration: "2-3 min"
+      cta: "Precisa acessorios? Consulte catalogo."
+  OSTUS:
+    - title: "Montagem e Desmontagem OSTUS"
+      duration: "3-4 min"
+      cta: "Duvidas ponteiras? Fale com AT."
+  KRONUS:
+    - title: "Instalacao KRONUS - Torre e Parede"
+      duration: "3-4 min"
+      cta: "Instalacao profissional? Agende."
+
+nps_survey:
+  pergunta: "De 0 a 10, qual a probabilidade de recomendar a Salk Medical?"
+  classificacao:
+    promotores: "9-10 - Solicitar depoimento/case"
+    neutros: "7-8 - Registrar feedback"
+    detratores: "0-6 - Escalar AT em 24h"
+  canal: "WhatsApp (quick_reply)"
+  registro: "Bitrix24 - campo NPS no deal"
+
+metrics:
+  taxa_abertura_sequencia: ">70%"
+  taxa_conclusao_tutorial: ">50%"
+  nps_score: ">50"
+  tempo_primeiro_chamado_at: ">30 dias"
+  taxa_recompra_indicacao_12m: ">20%"

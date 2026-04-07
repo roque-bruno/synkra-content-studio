@@ -1,0 +1,463 @@
+# Banco de Keywords SEO — Manager Grupo / Salk Medical
+# Fonte: IC Score 90/100 (Google/SEO = canal #2)
+# Fonte: claims-bank.yaml (dados tecnicos)
+# Story: 15.3
+# REGRA: Keywords devem refletir termos reais pesquisados por engenheiros clinicos.
+
+version: "1.0"
+last_updated: "2026-04-07"
+owner: "Atlas (content-strategist)"
+review_cycle: "mensal"
+
+# ═══════════════════════════════════════════════════════════════
+# CLUSTER: PRODUTO/MARCA
+# Intent: Commercial/Transactional — usuario busca produto especifico
+# ═══════════════════════════════════════════════════════════════
+
+cluster_produto:
+  - term: "foco cirurgico LED"
+    cluster: produto
+    volume_estimate: alto
+    intent: commercial
+    target_product: LEV
+    priority: 1
+
+  - term: "foco cirurgico LED teto"
+    cluster: produto
+    volume_estimate: medio
+    intent: commercial
+    target_product: LEV
+    priority: 2
+
+  - term: "foco cirurgico LED parede"
+    cluster: produto
+    volume_estimate: baixo
+    intent: commercial
+    target_product: LEV
+    priority: 3
+
+  - term: "LEV foco cirurgico"
+    cluster: produto
+    volume_estimate: baixo
+    intent: transactional
+    target_product: LEV
+    priority: 2
+
+  - term: "mesa cirurgica eletrica"
+    cluster: produto
+    volume_estimate: alto
+    intent: commercial
+    target_product: KRATUS
+    priority: 1
+
+  - term: "mesa cirurgica hospitalar"
+    cluster: produto
+    volume_estimate: alto
+    intent: commercial
+    target_product: KRATUS
+    priority: 1
+
+  - term: "KRATUS mesa cirurgica"
+    cluster: produto
+    volume_estimate: baixo
+    intent: transactional
+    target_product: KRATUS
+    priority: 2
+
+  - term: "mesa cirurgica eletrica nacional"
+    cluster: produto
+    volume_estimate: medio
+    intent: commercial
+    target_product: KRATUS
+    priority: 2
+
+  - term: "serra cirurgica ortopedica"
+    cluster: produto
+    volume_estimate: medio
+    intent: commercial
+    target_product: OSTUS
+    priority: 1
+
+  - term: "serra cirurgica eletrica"
+    cluster: produto
+    volume_estimate: medio
+    intent: commercial
+    target_product: OSTUS
+    priority: 2
+
+  - term: "OSTUS serra cirurgica"
+    cluster: produto
+    volume_estimate: baixo
+    intent: transactional
+    target_product: OSTUS
+    priority: 2
+
+  - term: "suporte cirurgico"
+    cluster: produto
+    volume_estimate: medio
+    intent: commercial
+    target_product: KRONUS
+    priority: 1
+
+  - term: "KRONUS suporte"
+    cluster: produto
+    volume_estimate: baixo
+    intent: transactional
+    target_product: KRONUS
+    priority: 3
+
+  - term: "equipamento centro cirurgico"
+    cluster: produto
+    volume_estimate: alto
+    intent: commercial
+    target_product: null
+    priority: 1
+
+# ═══════════════════════════════════════════════════════════════
+# CLUSTER: PROBLEMA
+# Intent: Informational — usuario pesquisa dor/necessidade
+# ═══════════════════════════════════════════════════════════════
+
+cluster_problema:
+  - term: "iluminacao centro cirurgico"
+    cluster: problema
+    volume_estimate: alto
+    intent: informational
+    target_product: LEV
+    priority: 1
+
+  - term: "iluminacao inadequada sala cirurgica"
+    cluster: problema
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 2
+
+  - term: "ergonomia sala cirurgica"
+    cluster: problema
+    volume_estimate: medio
+    intent: informational
+    target_product: KRATUS
+    priority: 2
+
+  - term: "ergonomia cirurgica posicionamento paciente"
+    cluster: problema
+    volume_estimate: baixo
+    intent: informational
+    target_product: KRATUS
+    priority: 3
+
+  - term: "rotatividade centro cirurgico"
+    cluster: problema
+    volume_estimate: medio
+    intent: informational
+    target_product: null
+    priority: 2
+
+  - term: "custo equipamento hospitalar"
+    cluster: problema
+    volume_estimate: alto
+    intent: informational
+    target_product: null
+    priority: 1
+
+  - term: "manutencao equipamento medico hospitalar"
+    cluster: problema
+    volume_estimate: medio
+    intent: informational
+    target_product: null
+    priority: 2
+
+  - term: "vida util lampada cirurgica"
+    cluster: problema
+    volume_estimate: medio
+    intent: informational
+    target_product: LEV
+    priority: 1
+
+  - term: "consumo energetico centro cirurgico"
+    cluster: problema
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 3
+
+  - term: "seguranca paciente centro cirurgico"
+    cluster: problema
+    volume_estimate: alto
+    intent: informational
+    target_product: null
+    priority: 2
+
+  - term: "identificacao tecidos cirurgia"
+    cluster: problema
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 2
+
+# ═══════════════════════════════════════════════════════════════
+# CLUSTER: COMPARATIVO
+# Intent: Commercial — usuario comparando opcoes
+# ═══════════════════════════════════════════════════════════════
+
+cluster_comparativo:
+  - term: "melhor foco cirurgico"
+    cluster: comparativo
+    volume_estimate: medio
+    intent: commercial
+    target_product: LEV
+    priority: 1
+
+  - term: "foco LED vs halogeno"
+    cluster: comparativo
+    volume_estimate: medio
+    intent: commercial
+    target_product: LEV
+    priority: 1
+
+  - term: "foco cirurgico LED vs halogeno vantagens"
+    cluster: comparativo
+    volume_estimate: baixo
+    intent: commercial
+    target_product: LEV
+    priority: 2
+
+  - term: "mesa cirurgica nacional vs importada"
+    cluster: comparativo
+    volume_estimate: medio
+    intent: commercial
+    target_product: KRATUS
+    priority: 1
+
+  - term: "TCO equipamento medico"
+    cluster: comparativo
+    volume_estimate: baixo
+    intent: commercial
+    target_product: null
+    priority: 2
+
+  - term: "custo total propriedade foco cirurgico"
+    cluster: comparativo
+    volume_estimate: baixo
+    intent: commercial
+    target_product: LEV
+    priority: 2
+
+  - term: "comparativo mesa cirurgica eletrica"
+    cluster: comparativo
+    volume_estimate: medio
+    intent: commercial
+    target_product: KRATUS
+    priority: 1
+
+  - term: "melhor mesa cirurgica hospitalar"
+    cluster: comparativo
+    volume_estimate: medio
+    intent: commercial
+    target_product: KRATUS
+    priority: 1
+
+  - term: "serra cirurgica nacional vs importada"
+    cluster: comparativo
+    volume_estimate: baixo
+    intent: commercial
+    target_product: OSTUS
+    priority: 2
+
+# ═══════════════════════════════════════════════════════════════
+# CLUSTER: TECNICO
+# Intent: Informational — engenheiro clinico pesquisando specs
+# ═══════════════════════════════════════════════════════════════
+
+cluster_tecnico:
+  - term: "Ra CRI iluminacao cirurgica"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 1
+
+  - term: "indice reproducao cor foco cirurgico"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 1
+
+  - term: "temperatura cor iluminacao cirurgica"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 2
+
+  - term: "iluminancia lux centro cirurgico"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 2
+
+  - term: "carga VA mesa cirurgica"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: KRATUS
+    priority: 2
+
+  - term: "radiotransparencia mesa cirurgica"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: KRATUS
+    priority: 1
+
+  - term: "IEC 60601 equipamento medico"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: null
+    priority: 3
+
+  - term: "norma tecnica foco cirurgico"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 2
+
+  - term: "especificacao tecnica mesa cirurgica"
+    cluster: tecnico
+    volume_estimate: medio
+    intent: informational
+    target_product: KRATUS
+    priority: 1
+
+  - term: "R9 indice vermelho iluminacao"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 2
+
+  - term: "campo cirurgico diametro iluminacao"
+    cluster: tecnico
+    volume_estimate: baixo
+    intent: informational
+    target_product: LEV
+    priority: 3
+
+# ═══════════════════════════════════════════════════════════════
+# CLUSTER: REGULATORIO
+# Intent: Informational — decisor pesquisando processo de compra
+# ═══════════════════════════════════════════════════════════════
+
+cluster_regulatorio:
+  - term: "ANVISA equipamento medico registro"
+    cluster: regulatorio
+    volume_estimate: alto
+    intent: informational
+    target_product: null
+    priority: 1
+
+  - term: "licitacao equipamento hospitalar"
+    cluster: regulatorio
+    volume_estimate: alto
+    intent: informational
+    target_product: null
+    priority: 1
+
+  - term: "pregao eletronico saude"
+    cluster: regulatorio
+    volume_estimate: alto
+    intent: informational
+    target_product: null
+    priority: 1
+
+  - term: "margem preferencia fabricante nacional equipamento medico"
+    cluster: regulatorio
+    volume_estimate: medio
+    intent: informational
+    target_product: null
+    priority: 1
+
+  - term: "como especificar equipamento medico licitacao"
+    cluster: regulatorio
+    volume_estimate: medio
+    intent: informational
+    target_product: null
+    priority: 1
+
+  - term: "registro ANVISA classe risco"
+    cluster: regulatorio
+    volume_estimate: medio
+    intent: informational
+    target_product: null
+    priority: 2
+
+  - term: "termo referencia equipamento medico"
+    cluster: regulatorio
+    volume_estimate: medio
+    intent: informational
+    target_product: null
+    priority: 1
+
+  - term: "compras publicas equipamento hospitalar"
+    cluster: regulatorio
+    volume_estimate: medio
+    intent: informational
+    target_product: null
+    priority: 2
+
+  - term: "lei 14133 licitacao saude"
+    cluster: regulatorio
+    volume_estimate: baixo
+    intent: informational
+    target_product: null
+    priority: 3
+
+  - term: "ata registro preco equipamento medico"
+    cluster: regulatorio
+    volume_estimate: medio
+    intent: informational
+    target_product: null
+    priority: 2
+
+  - term: "INMETRO equipamento medico certificacao"
+    cluster: regulatorio
+    volume_estimate: baixo
+    intent: informational
+    target_product: null
+    priority: 3
+
+# ═══════════════════════════════════════════════════════════════
+# RESUMO
+# ═══════════════════════════════════════════════════════════════
+
+summary:
+  total_keywords: 56
+  by_cluster:
+    produto: 14
+    problema: 11
+    comparativo: 9
+    tecnico: 11
+    regulatorio: 11
+  by_priority:
+    p1: 23
+    p2: 24
+    p3: 9
+  by_volume:
+    alto: 11
+    medio: 22
+    baixo: 23
+  by_intent:
+    informational: 33
+    commercial: 18
+    transactional: 5
+  target_products:
+    LEV: 18
+    KRATUS: 10
+    OSTUS: 3
+    KRONUS: 2
+    null_generic: 23

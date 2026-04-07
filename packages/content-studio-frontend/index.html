@@ -872,7 +872,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
 .cal-platform-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .cal-platform-instagram { background: #E1306C; }
 .cal-platform-linkedin { background: #0077B5; }
-.cal-platform-facebook { background: #1877F2; }
+.cal-platform-whatsapp { background: #25D366; }
 .cal-platform-youtube { background: #FF0000; }
 
 /* === IMAGE GRID === */
@@ -1998,7 +1998,7 @@ tbody tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
 }
 .phone-frame.instagram { aspect-ratio: auto; }
 .phone-frame.linkedin { width: 340px; border-radius: 12px; }
-.phone-frame.facebook { width: 320px; border-radius: 12px; }
+.phone-frame.whatsapp { width: 320px; border-radius: 12px; }
 .phone-notch { height: 24px; background: #000; border-radius: 0 0 16px 16px; margin: 0 40px; }
 .phone-header {
   display: flex; align-items: center; gap: 8px; padding: 10px 14px;
@@ -3107,18 +3107,19 @@ body.zen-mode .tab-bar { display: none !important; }
 .li-actions { display: flex; justify-content: space-around; padding: 4px 16px 8px; border-top: 1px solid #38434f; }
 .li-action-btn { font-size: 0.75rem; color: rgba(255,255,255,0.6); padding: 8px; cursor: default; }
 
-/* Facebook Preview */
-.fb-preview { background: #242526; color: #e4e6eb; max-width: 500px; font-family: Helvetica, Arial, sans-serif; border-radius: 8px; }
-.fb-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
-.fb-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; flex-shrink: 0; }
-.fb-name { font-size: 0.88rem; font-weight: 700; }
-.fb-time { font-size: 0.72rem; color: #b0b3b8; }
-.fb-body { padding: 0 16px 12px; font-size: 0.88rem; line-height: 1.4; }
-.fb-image { width: 100%; aspect-ratio: 1.91/1; background: #18191a; overflow: hidden; }
-.fb-image img { width: 100%; height: 100%; object-fit: cover; }
-.fb-reactions { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; font-size: 0.78rem; color: #b0b3b8; border-bottom: 1px solid #3e4042; }
-.fb-actions { display: flex; justify-content: space-around; padding: 4px 16px 8px; }
-.fb-action-btn { font-size: 0.82rem; color: #b0b3b8; padding: 8px 12px; cursor: default; }
+/* WhatsApp Preview */
+.wa-preview { background: #0b141a; color: #e9edef; max-width: 500px; font-family: 'Segoe UI', Helvetica, Arial, sans-serif; border-radius: 8px; overflow: hidden; }
+.wa-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #1f2c34; }
+.wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; flex-shrink: 0; color: #fff; }
+.wa-name { font-size: 0.88rem; font-weight: 700; }
+.wa-time { font-size: 0.72rem; color: #8696a0; }
+.wa-body { padding: 8px 16px 6px; }
+.wa-bubble { background: #005c4b; color: #e9edef; padding: 8px 12px; border-radius: 0 8px 8px 8px; display: inline-block; max-width: 85%; font-size: 0.85rem; line-height: 1.4; }
+.wa-bubble-time { font-size: 0.65rem; color: rgba(233,237,239,0.6); text-align: right; margin-top: 2px; }
+.wa-image { width: 100%; max-width: 300px; border-radius: 8px; overflow: hidden; margin: 6px 16px; }
+.wa-image img { width: 100%; height: auto; object-fit: cover; border-radius: 8px; }
+.wa-input { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #1f2c34; }
+.wa-input-box { flex: 1; background: #2a3942; border-radius: 20px; padding: 8px 16px; font-size: 0.82rem; color: #8696a0; }
 
 /* Instagram Grid Preview */
 .ig-grid-preview { max-width: 420px; }
@@ -4167,7 +4168,7 @@ body.zen-mode .tab-bar { display: none !important; }
           <div>
             <div style="font-size: 0.82rem; font-weight: 600;">Plataformas</div>
             <div style="font-size: 0.72rem; color: var(--text-muted);">
-              <template x-for="plat in ['instagram', 'linkedin', 'facebook', 'youtube'].filter(p => pieces.filter(x => x.platform === p).length > 0)">
+              <template x-for="plat in ['linkedin', 'youtube', 'whatsapp', 'instagram', 'email'].filter(p => pieces.filter(x => x.platform === p).length > 0)">
                 <span style="margin-right: 8px;">
                   <span style="text-transform: capitalize;" x-text="plat"></span>: <strong x-text="pieces.filter(x => x.platform === plat).length"></strong>
                 </span>
@@ -4219,8 +4220,9 @@ body.zen-mode .tab-bar { display: none !important; }
       <option value="">Plataformas</option>
       <option value="instagram">Instagram</option>
       <option value="linkedin">LinkedIn</option>
-      <option value="facebook">Facebook</option>
+      <option value="whatsapp">WhatsApp</option>
       <option value="youtube">YouTube</option>
+      <option value="email">Email</option>
     </select>
     <select class="form-select" style="width: 120px;" x-model="boardFormatFilter">
       <option value="">Formatos</option>
@@ -4569,7 +4571,7 @@ body.zen-mode .tab-bar { display: none !important; }
               <option value="instagram_reels">Instagram Reels</option>
               <option value="linkedin">LinkedIn</option>
               <option value="youtube_shorts">YouTube Shorts</option>
-              <option value="facebook">Facebook</option>
+              <option value="whatsapp">WhatsApp</option>
             </select>
           </div>
           <div class="form-group">
@@ -4787,7 +4789,7 @@ body.zen-mode .tab-bar { display: none !important; }
             <span>YouTube Shorts</span><span style="color: var(--accent);">15-60s script</span>
           </div>
           <div style="display: flex; justify-content: space-between; padding: 5px 0;">
-            <span>Facebook</span><span style="color: var(--accent);">200-400 chars</span>
+            <span>WhatsApp</span><span style="color: var(--accent);">max 1000 chars</span>
           </div>
         </div>
       </div>
@@ -5270,7 +5272,7 @@ body.zen-mode .tab-bar { display: none !important; }
       <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
         <label style="font-size: 0.78rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="instagram" x-model="atomizePlatforms"> Instagram</label>
         <label style="font-size: 0.78rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="linkedin" x-model="atomizePlatforms"> LinkedIn</label>
-        <label style="font-size: 0.78rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="facebook" x-model="atomizePlatforms"> Facebook</label>
+        <label style="font-size: 0.78rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="whatsapp" x-model="atomizePlatforms"> WhatsApp</label>
         <label style="font-size: 0.78rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="youtube" x-model="atomizePlatforms"> YouTube</label>
       </div>
       <button class="btn btn-primary" @click="atomizeContent()" :disabled="atomizeLoading || !copyText.trim()">
@@ -5641,7 +5643,7 @@ body.zen-mode .tab-bar { display: none !important; }
     <select class="form-select" style="width: 150px;" x-model="hashtagPlatform" @change="loadHashtags()">
       <option value="instagram">Instagram</option>
       <option value="linkedin">LinkedIn</option>
-      <option value="facebook">Facebook</option>
+      <option value="youtube">YouTube</option>
     </select>
     <span style="font-size: 0.7rem; padding: 3px 10px; border-radius: 12px;"
           :style="selectedHashtags.length >= hashtagMaxForPlatform() ? 'background: var(--red-bg); color: var(--red);' : 'color: var(--text-muted);'">
@@ -5855,15 +5857,15 @@ body.zen-mode .tab-bar { display: none !important; }
       <template x-for="metric_type in ['impressions', 'reach', 'engagement']">
         <div style="background: var(--bg-secondary); border-radius: 8px; padding: 14px;">
           <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px;" x-text="metric_type === 'impressions' ? 'Impressoes' : metric_type === 'reach' ? 'Alcance' : 'Engajamento'"></div>
-          <template x-for="plat in ['instagram', 'linkedin', 'facebook', 'youtube']">
+          <template x-for="plat in ['linkedin', 'youtube', 'whatsapp', 'instagram']">
             <div x-show="metrics.filter(m => m.platform === plat).length > 0" style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
               <div style="width: 65px; font-size: 0.72rem; color: var(--text-secondary); text-transform: capitalize;" x-text="plat"></div>
               <div style="flex: 1; height: 20px; background: var(--bg-darker); border-radius: 4px; overflow: hidden; position: relative;">
                 <div style="height: 100%; border-radius: 4px; transition: width 0.5s ease;" :style="(() => {
                   const vals = metrics.filter(m => m.platform === plat).reduce((s, m) => s + (m[metric_type] || 0), 0);
-                  const maxVal = Math.max(1, ...['instagram','linkedin','facebook','youtube'].map(p => metrics.filter(m => m.platform === p).reduce((s, m) => s + (m[metric_type] || 0), 0)));
+                  const maxVal = Math.max(1, ...['instagram','linkedin','whatsapp','youtube'].map(p => metrics.filter(m => m.platform === p).reduce((s, m) => s + (m[metric_type] || 0), 0)));
                   const pct = Math.round((vals / maxVal) * 100);
-                  const colors = {instagram: 'var(--purple)', linkedin: 'var(--accent)', facebook: 'var(--cyan)', youtube: 'var(--red)'};
+                  const colors = {instagram: 'var(--purple)', linkedin: 'var(--accent)', whatsapp: '#25D366', youtube: 'var(--red)'};
                   return 'width:' + pct + '%; background:' + (colors[plat] || 'var(--accent)');
                 })()"></div>
               </div>
@@ -5880,12 +5882,12 @@ body.zen-mode .tab-bar { display: none !important; }
     <div class="card-title">Engajamento por Plataforma</div>
     <template x-if="metrics.length > 0">
       <div style="display: flex; align-items: flex-end; gap: 16px; height: 140px; padding: 10px 0;">
-        <template x-for="plat in ['instagram', 'linkedin', 'facebook', 'youtube'].filter(p => metrics.filter(m => m.platform === p).length > 0)">
+        <template x-for="plat in ['instagram', 'linkedin', 'whatsapp', 'youtube'].filter(p => metrics.filter(m => m.platform === p).length > 0)">
           <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
             <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-primary);"
                  x-text="metrics.filter(m => m.platform === plat).reduce((a, m) => a + (m.engagement || 0), 0).toLocaleString()"></div>
             <div style="width: 100%; max-width: 60px; border-radius: 4px 4px 0 0; min-height: 8px; transition: height 0.5s;"
-                 :style="'height:' + Math.max(8, (metrics.filter(m => m.platform === plat).reduce((a, m) => a + (m.engagement || 0), 0) / Math.max(1, Math.max(...['instagram','linkedin','facebook','youtube'].map(p => metrics.filter(m => m.platform === p).reduce((a, m) => a + (m.engagement || 0), 0))))) * 110) + 'px; background:' + (plat === 'instagram' ? 'linear-gradient(180deg, #E1306C, #F77737)' : plat === 'linkedin' ? '#0077B5' : plat === 'facebook' ? '#1877F2' : '#FF0000')"></div>
+                 :style="'height:' + Math.max(8, (metrics.filter(m => m.platform === plat).reduce((a, m) => a + (m.engagement || 0), 0) / Math.max(1, Math.max(...['instagram','linkedin','whatsapp','youtube'].map(p => metrics.filter(m => m.platform === p).reduce((a, m) => a + (m.engagement || 0), 0))))) * 110) + 'px; background:' + (plat === 'instagram' ? 'linear-gradient(180deg, #E1306C, #F77737)' : plat === 'linkedin' ? '#0077B5' : plat === 'whatsapp' ? '#25D366' : '#FF0000')"></div>
             <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: capitalize;" x-text="plat"></div>
           </div>
         </template>
@@ -5904,7 +5906,7 @@ body.zen-mode .tab-bar { display: none !important; }
         <div>
           <template x-for="m in [...metrics].sort((a,b) => (b.reach || 0) - (a.reach || 0)).slice(0, 5)">
             <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.75rem;">
-              <div style="width: 6px; height: 6px; border-radius: 50%;" :style="'background:' + (m.platform === 'instagram' ? '#E1306C' : m.platform === 'linkedin' ? '#0077B5' : m.platform === 'facebook' ? '#1877F2' : '#FF0000')"></div>
+              <div style="width: 6px; height: 6px; border-radius: 50%;" :style="'background:' + (m.platform === 'instagram' ? '#E1306C' : m.platform === 'linkedin' ? '#0077B5' : m.platform === 'whatsapp' ? '#25D366' : '#FF0000')"></div>
               <div style="flex: 1; min-width: 0;">
                 <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;" x-text="m.piece_id"></div>
                 <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: capitalize;" x-text="m.platform"></div>
@@ -5924,7 +5926,7 @@ body.zen-mode .tab-bar { display: none !important; }
         <div>
           <template x-for="m in [...metrics].sort((a,b) => (b.saves || 0) - (a.saves || 0)).slice(0, 5)">
             <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.75rem;">
-              <div style="width: 6px; height: 6px; border-radius: 50%;" :style="'background:' + (m.platform === 'instagram' ? '#E1306C' : m.platform === 'linkedin' ? '#0077B5' : '#1877F2')"></div>
+              <div style="width: 6px; height: 6px; border-radius: 50%;" :style="'background:' + (m.platform === 'instagram' ? '#E1306C' : m.platform === 'linkedin' ? '#0077B5' : '#25D366')"></div>
               <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;" x-text="m.piece_id"></div>
               <div style="font-weight: 700; color: var(--green);" x-text="formatNumber(m.saves || 0)"></div>
             </div>
@@ -5951,7 +5953,7 @@ body.zen-mode .tab-bar { display: none !important; }
           <option value="instagram">Instagram</option>
           <option value="linkedin">LinkedIn</option>
           <option value="youtube">YouTube</option>
-          <option value="facebook">Facebook</option>
+          <option value="whatsapp">WhatsApp</option>
         </select>
       </div>
       <div class="form-group">
@@ -6575,7 +6577,7 @@ body.zen-mode .tab-bar { display: none !important; }
       </template>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
-      <template x-for="plat in ['instagram', 'facebook', 'linkedin', 'youtube']" :key="plat">
+      <template x-for="plat in ['instagram', 'whatsapp', 'linkedin', 'youtube']" :key="plat">
         <div class="stat-card">
           <div class="label" style="text-transform: capitalize;" x-text="plat"></div>
           <div class="value" :style="(publishStatus.platforms && publishStatus.platforms[plat] && publishStatus.platforms[plat].connected) ? 'color: var(--green)' : (publishStatus.platforms && publishStatus.platforms[plat] && publishStatus.platforms[plat].configured) ? 'color: var(--amber)' : 'color: var(--text-muted)'"
@@ -6593,10 +6595,10 @@ body.zen-mode .tab-bar { display: none !important; }
   <div class="card" style="margin-bottom: 16px;" x-show="scheduledPieces().length > 0">
     <div class="card-title">Fila de Agendamento (<span x-text="scheduledPieces().length"></span>)</div>
     <div class="schedule-queue">
-      <template x-for="platform in ['instagram', 'linkedin', 'facebook', 'youtube'].filter(p => scheduledPieces().some(x => x.platform === p || (x.publishPlatforms || []).includes(p)))">
+      <template x-for="platform in ['instagram', 'linkedin', 'whatsapp', 'youtube'].filter(p => scheduledPieces().some(x => x.platform === p || (x.publishPlatforms || []).includes(p)))">
         <div class="schedule-lane">
           <div class="lane-header">
-            <span class="lane-icon" x-text="platform === 'instagram' ? '&#128247;' : platform === 'linkedin' ? '&#128188;' : platform === 'facebook' ? '&#128077;' : '&#9654;'"></span>
+            <span class="lane-icon" x-text="platform === 'instagram' ? '&#128247;' : platform === 'linkedin' ? '&#128188;' : platform === 'whatsapp' ? '&#128172;' : '&#9654;'"></span>
             <span style="text-transform: capitalize;" x-text="platform"></span>
             <span style="font-size: 0.68rem; color: var(--text-muted);" x-text="scheduledPieces().filter(p => p.platform === platform || (p.publishPlatforms || []).includes(platform)).length + ' agendadas'"></span>
           </div>
@@ -6632,7 +6634,7 @@ body.zen-mode .tab-bar { display: none !important; }
               </div>
               <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                 <div style="display: flex; gap: 4px;">
-                  <template x-for="plat in ['instagram', 'facebook', 'linkedin', 'youtube'].filter(pl => publishStatus.platforms && publishStatus.platforms[pl] && publishStatus.platforms[pl].connected)">
+                  <template x-for="plat in ['instagram', 'whatsapp', 'linkedin', 'youtube'].filter(pl => publishStatus.platforms && publishStatus.platforms[pl] && publishStatus.platforms[pl].connected)">
                     <label style="display: flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 6px; font-size: 0.68rem; cursor: pointer; border: 1px solid var(--border); transition: all 0.15s;"
                            :style="(p.publishPlatforms || []).includes(plat) ? 'background: var(--accent-dim); border-color: var(--accent); color: var(--accent)' : ''">
                       <input type="checkbox" :value="plat" x-model="p.publishPlatforms" style="display: none;">
@@ -6694,7 +6696,7 @@ body.zen-mode .tab-bar { display: none !important; }
       <div style="display:flex;gap:4px;flex-wrap:wrap;">
         <button class="tab-btn" :class="{ active: previewPlatform === 'instagram' }" @click="previewPlatform = 'instagram'" style="font-size:0.72rem;">Instagram</button>
         <button class="tab-btn" :class="{ active: previewPlatform === 'linkedin' }" @click="previewPlatform = 'linkedin'" style="font-size:0.72rem;">LinkedIn</button>
-        <button class="tab-btn" :class="{ active: previewPlatform === 'facebook' }" @click="previewPlatform = 'facebook'" style="font-size:0.72rem;">Facebook</button>
+        <button class="tab-btn" :class="{ active: previewPlatform === 'whatsapp' }" @click="previewPlatform = 'whatsapp'" style="font-size:0.72rem;">WhatsApp</button>
         <button class="tab-btn" :class="{ active: previewPlatform === 'stories' }" @click="previewPlatform = 'stories'" style="font-size:0.72rem;">Stories</button>
         <button class="tab-btn" :class="{ active: previewPlatform === 'grid' }" @click="previewPlatform = 'grid'" style="font-size:0.72rem;">Grid</button>
       </div>
@@ -6770,28 +6772,28 @@ body.zen-mode .tab-bar { display: none !important; }
       </div>
     </div>
 
-    <!-- Facebook Preview -->
-    <div class="social-preview-container" x-show="previewPlatform === 'facebook'">
-      <div class="fb-preview">
-        <div class="fb-header">
-          <div class="fb-avatar" x-text="(previewBrand || 'S')[0].toUpperCase()"></div>
+    <!-- WhatsApp Preview -->
+    <div class="social-preview-container" x-show="previewPlatform === 'whatsapp'">
+      <div class="wa-preview">
+        <div class="wa-header">
+          <div class="wa-avatar" x-text="(previewBrand || 'S')[0].toUpperCase()"></div>
           <div>
-            <div class="fb-name" x-text="previewBrandName()"></div>
-            <div class="fb-time">Agora &bull; &#x1f310;</div>
+            <div class="wa-name" x-text="previewBrandName()"></div>
+            <div class="wa-time">online</div>
           </div>
         </div>
-        <div class="fb-body" x-text="previewCopyText || 'Texto da copy aparecera aqui...'"></div>
-        <div class="fb-image">
-          <img x-show="previewImageUrl" :src="previewImageUrl" alt="Preview">
+        <div class="wa-body">
+          <div class="wa-bubble">
+            <span x-text="previewCopyText || 'Texto da mensagem aparecera aqui...'"></span>
+            <div class="wa-bubble-time">12:00 &#x2713;&#x2713;</div>
+          </div>
         </div>
-        <div class="fb-reactions">
-          <span>&#x1f44d; &#x2764; 38</span>
-          <span>6 comentarios &bull; 3 compartilhamentos</span>
+        <div class="wa-image" x-show="previewImageUrl">
+          <img :src="previewImageUrl" alt="Preview">
         </div>
-        <div class="fb-actions">
-          <span class="fb-action-btn">&#x1f44d; Curtir</span>
-          <span class="fb-action-btn">&#x1f4ac; Comentar</span>
-          <span class="fb-action-btn">&#x21a9; Compartilhar</span>
+        <div class="wa-input">
+          <div class="wa-input-box">Mensagem</div>
+          <span style="font-size: 1.2rem;">&#x1f3a4;</span>
         </div>
       </div>
     </div>
@@ -8239,7 +8241,7 @@ body.zen-mode .tab-bar { display: none !important; }
         <label class="form-label">Plataforma</label>
         <select class="form-select" x-model="wizardData.platform" style="width:100%; margin-bottom:12px;">
           <option value="instagram_feed">Instagram Feed</option><option value="instagram_stories">Instagram Stories</option>
-          <option value="linkedin">LinkedIn</option><option value="facebook">Facebook</option>
+          <option value="linkedin">LinkedIn</option><option value="whatsapp">WhatsApp</option>
           <option value="youtube">YouTube</option>
         </select>
         <label class="form-label">Objetivo</label>
@@ -8310,7 +8312,7 @@ body.zen-mode .tab-bar { display: none !important; }
         </div>
         <div class="card" style="padding:16px;">
           <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">Plataformas</div>
-          <template x-for="plat in ['instagram','linkedin','facebook','youtube']" :key="plat">
+          <template x-for="plat in ['instagram','linkedin','whatsapp','youtube']" :key="plat">
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:6px;">
               <input type="checkbox" :value="plat" x-model="wizardData.platforms">
               <span style="text-transform:capitalize;" x-text="plat"></span>
@@ -8423,7 +8425,7 @@ body.zen-mode .tab-bar { display: none !important; }
             <option value="instagram_stories">Instagram Stories</option>
             <option value="linkedin">LinkedIn</option>
             <option value="youtube_shorts">YouTube Shorts</option>
-            <option value="facebook">Facebook</option>
+            <option value="whatsapp">WhatsApp</option>
           </select>
         </div>
         <div class="form-group">
@@ -8903,7 +8905,7 @@ body.zen-mode .tab-bar { display: none !important; }
           <select class="form-select" x-model="quickProduce.platform">
             <option value="instagram">Instagram</option>
             <option value="linkedin">LinkedIn</option>
-            <option value="facebook">Facebook</option>
+            <option value="whatsapp">WhatsApp</option>
           </select>
         </div>
         <div class="form-group">
@@ -8984,7 +8986,7 @@ body.zen-mode .tab-bar { display: none !important; }
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="instagram" x-model="abTestConfig.platforms"> Instagram</label>
           <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="linkedin" x-model="abTestConfig.platforms"> LinkedIn</label>
-          <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="facebook" x-model="abTestConfig.platforms"> Facebook</label>
+          <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><input type="checkbox" value="whatsapp" x-model="abTestConfig.platforms"> WhatsApp</label>
         </div>
       </div>
       <div style="display: flex; gap: 10px; margin-top: 8px;">
@@ -9314,7 +9316,7 @@ function studioApp() {
       { title: 'Calendario Editorial', description: 'Planeje conteudo por semana. Preencha slots, gere conteudo automaticamente, e veja a distribuicao temporal das publicacoes.', target: 'calendar' },
       { title: 'Copy Editor', description: 'Escreva e refine textos com assistencia de IA. Use o modo Zen para foco total. A IA sugere copies baseadas no produto e marca selecionados.', target: 'copy' },
       { title: 'Studio NB2', description: 'Gere imagens profissionais com Nano Banana 2. Upload o PNG do produto e descreva o cenario desejado. A IA integra o produto na cena.', target: 'studio' },
-      { title: 'Preview & Publicacao', description: 'Veja como seu post vai ficar no Instagram, LinkedIn e Facebook antes de publicar. Exporte relatorios e acompanhe metricas.', target: 'publish' },
+      { title: 'Preview & Publicacao', description: 'Veja como seu post vai ficar no Instagram, LinkedIn e WhatsApp antes de publicar. Exporte relatorios e acompanhe metricas.', target: 'publish' },
       { title: 'Pronta para comecar!', description: 'Use o Assistente de Producao (botao + Nova Peca) para criar sua primeira peca passo a passo. Boa producao!', target: null },
     ],
 
@@ -9459,7 +9461,7 @@ function studioApp() {
       { name: 'Video Produto OSTUS', icon: '\u{1F3A5}', brand: 'salk', product: 'OSTUS', platform: 'youtube_shorts', pillar: 'produto', format: 'reels', title: 'Video Produto OSTUS - Shorts' },
       { name: 'Stories Engajamento', icon: '\u{2728}', brand: 'salk', product: '', platform: 'instagram_stories', pillar: 'employer_branding', format: 'imagem', title: 'Stories Engajamento Salk' },
       { name: 'LinkedIn Tecnico', icon: '\u{1F4DD}', brand: 'mendel', product: 'KRONUS', platform: 'linkedin', pillar: 'educacional', format: 'texto', title: 'Artigo Tecnico KRONUS - LinkedIn' },
-      { name: 'Facebook Licitacao', icon: '\u{1F4CB}', brand: 'salk', product: '', platform: 'facebook', pillar: 'licitacoes', format: 'texto', title: 'Post Licitacao - Facebook' },
+      { name: 'WhatsApp Licitacao', icon: '\u{1F4CB}', brand: 'salk', product: '', platform: 'whatsapp', pillar: 'licitacoes', format: 'texto', title: 'Post Licitacao - WhatsApp' },
     ],
 
     // New Piece form
@@ -9477,7 +9479,7 @@ function studioApp() {
     copyFormat: 'post',
     copyBriefing: '',
     copyCharCount: 0,
-    copyCharLimits: { instagram: 2200, linkedin: 3000, facebook: 63206, youtube: 5000 },
+    copyCharLimits: { instagram: 2200, linkedin: 3000, whatsapp: 1000, youtube: 5000 },
     copyTone: 'profissional',
     showCopyPreview: false,
     copyClaimFilter: '',
@@ -11640,7 +11642,7 @@ function studioApp() {
     },
 
     hashtagMaxForPlatform() {
-      const limits = { instagram: 11, linkedin: 5, facebook: 3 };
+      const limits = { instagram: 11, linkedin: 5 };
       return limits[this.hashtagPlatform] || 11;
     },
 

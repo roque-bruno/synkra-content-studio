@@ -1,0 +1,209 @@
+# WhatsApp Business — Modelo de Dados
+# Story 15.1 — Epic 15 (Novos Canais + CRM)
+# Autor: @architect (Aria)
+# Data: 2026-04-07
+
+version: "1.0"
+last_updated: "2026-04-07"
+
+# ═══════════════════════════════════════════════════════════════
+# SEQUÊNCIAS DE NURTURING
+# ═══════════════════════════════════════════════════════════════
+
+sequences:
+  schema:
+    id: "string — SEQ-{produto}-{persona}-{fase}"
+    name: "string — nome descritivo"
+    product: "string — LEV | KRATUS | OSTUS | KRONUS | ALL"
+    persona: "string — eng_clinica | compras | equipe_medica | admin"
+    journey_phase: "int — 1 a 7"
+    trigger: "string — manual | crm_event | opt_in | phase_change"
+    steps: "array — SequenceStep[]"
+    status: "string — draft | active | paused | completed"
+    created_at: "datetime"
+    updated_at: "datetime"
+    metrics_id: "string — ref Metric"
+
+  examples:
+    - id: "SEQ-LEV-ENG-F2"
+      name: "LEV Nurturing — Eng. Clínica — Fase 2 (Planejamento)"
+      product: "LEV"
+      persona: "eng_clinica"
+      journey_phase: 2
+      trigger: "crm_event"
+      status: "draft"
+      steps:
+        - step: 1
+          day: 0
+          template_id: "MKT-001"
+          content_type: "document"
+          subject: "Ficha técnica LEV completa"
+          wait_for_reply: false
+        - step: 2
+          day: 2
+          template_id: "MKT-001"
+          content_type: "video_link"
+          subject: "Ra=99 — por que importa (2 min)"
+          wait_for_reply: false
+        - step: 3
+          day: 5
+          template_id: "MKT-001"
+          content_type: "document"
+          subject: "Comparativo técnico vs média de mercado"
+          wait_for_reply: false
+        - step: 4
+          day: 7
+          template_id: "MKT-001"
+          content_type: "text"
+          subject: "CTA — Agendar demonstração"
+          wait_for_reply: true
+          on_reply: "route_to_sales"
+
+    - id: "SEQ-KRA-COMP-F4"
+      name: "KRATUS Nurturing — Compras — Fase 4 (Cotação)"
+      product: "KRATUS"
+      persona: "compras"
+      journey_phase: 4
+      trigger: "crm_event"
+      status: "draft"
+      steps:
+        - step: 1
+          day: 0
+          template_id: "MKT-002"
+          content_type: "document"
+          subject: "Proposta KRATUS + análise TCO"
+          wait_for_reply: false
+        - step: 2
+          day: 3
+          template_id: "MKT-002"
+          content_type: "document"
+          subject: "Documentação para licitação (pregão eletrônico)"
+          wait_for_reply: false
+        - step: 3
+          day: 5
+          template_id: "MKT-005"
+          content_type: "text"
+          subject: "Case: Hospital X — economia de R$18.600/mesa"
+          wait_for_reply: false
+        - step: 4
+          day: 7
+          template_id: "MKT-002"
+          content_type: "text"
+          subject: "Margem de preferência 20% — como funciona"
+          wait_for_reply: true
+          on_reply: "route_to_sales"
+
+# ═══════════════════════════════════════════════════════════════
+# TEMPLATES HSM
+# ═══════════════════════════════════════════════════════════════
+
+templates:
+  schema:
+    id: "string — {categoria}-{número}"
+    name: "string — nome interno"
+    category: "string — utility | marketing | authentication"
+    language: "string — pt_BR"
+    header:
+      type: "string — text | image | video | document"
+      content: "string — texto ou URL do media"
+    body: "string — texto com variáveis {{1}}, {{2}}, etc."
+    footer: "string — texto fixo"
+    buttons:
+      - type: "string — quick_reply | url | phone"
+        text: "string — texto do botão"
+        url: "string — URL (se type=url)"
+    status: "string — draft | submitted | approved | rejected"
+    meta_template_id: "string — ID retornado pela Meta após aprovação"
+    submitted_at: "datetime"
+    approved_at: "datetime"
+
+# ═══════════════════════════════════════════════════════════════
+# CONTATOS
+# ═══════════════════════════════════════════════════════════════
+
+contacts:
+  schema:
+    id: "string — UUID"
+    phone: "string — +55DDDNUMERO (E.164)"
+    name: "string"
+    company: "string — nome do hospital/empresa"
+    persona: "string — eng_clinica | compras | equipe_medica | admin"
+    journey_phase: "int — 1 a 7"
+    products_interest: "array — [LEV, KRATUS, ...]"
+    segments: "array — [prospect, cliente, licitacao, ...]"
+    opt_in: "boolean — consentimento LGPD"
+    opt_in_date: "datetime"
+    source: "string — crm_import | manual | website | evento"
+    crm_id: "string — ID no Bitrix24"
+    last_interaction: "datetime"
+    active_sequences: "array — [SEQ-LEV-ENG-F2, ...]"
+    tags: "array — strings livres"
+    region: "string — estado/cidade"
+    created_at: "datetime"
+
+# ═══════════════════════════════════════════════════════════════
+# MENSAGENS
+# ═══════════════════════════════════════════════════════════════
+
+messages:
+  schema:
+    id: "string — UUID"
+    sequence_id: "string — ref Sequence (null se avulsa)"
+    template_id: "string — ref Template (null se session)"
+    contact_id: "string — ref Contact"
+    direction: "string — outbound | inbound"
+    type: "string — template | session | reply"
+    content: "string — corpo da mensagem"
+    media_url: "string — URL do anexo (se houver)"
+    status: "string — queued | sent | delivered | read | failed"
+    sent_at: "datetime"
+    delivered_at: "datetime"
+    read_at: "datetime"
+    replied_at: "datetime"
+    error_code: "string — código de erro Meta (se failed)"
+    utm_params: "object — {source, medium, campaign, content}"
+    meta_message_id: "string — ID retornado pela Meta"
+
+# ═══════════════════════════════════════════════════════════════
+# MÉTRICAS
+# ═══════════════════════════════════════════════════════════════
+
+metrics:
+  schema:
+    id: "string — UUID"
+    entity_type: "string — sequence | template | campaign"
+    entity_id: "string — ref da entidade"
+    period: "string — daily | weekly | monthly | total"
+    date: "date"
+    sent: "int"
+    delivered: "int"
+    read: "int"
+    replied: "int"
+    clicked: "int — cliques em links/botões"
+    opted_out: "int"
+    failed: "int"
+    conversion_events: "int — ações no CRM atribuídas"
+    delivery_rate: "float — delivered/sent"
+    read_rate: "float — read/delivered"
+    reply_rate: "float — replied/read"
+    click_rate: "float — clicked/delivered"
+    conversion_rate: "float — conversion_events/sent"
+
+# ═══════════════════════════════════════════════════════════════
+# BROADCASTS
+# ═══════════════════════════════════════════════════════════════
+
+broadcasts:
+  schema:
+    id: "string — UUID"
+    name: "string"
+    template_id: "string — ref Template"
+    segment_filter:
+      personas: "array — [eng_clinica, compras, ...]"
+      journey_phases: "array — [1, 2, 3, ...]"
+      products: "array — [LEV, KRATUS, ...]"
+      regions: "array — [PR, SP, ...]"
+    scheduled_at: "datetime"
+    status: "string — draft | scheduled | sending | completed | cancelled"
+    total_recipients: "int"
+    metrics_id: "string — ref Metric"

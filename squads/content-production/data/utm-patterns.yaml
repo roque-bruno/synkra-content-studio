@@ -23,8 +23,8 @@ sources:
     when: "Posts, artigos, PDFs do LinkedIn"
   - value: "youtube"
     when: "Vídeos e Shorts do YouTube"
-  - value: "facebook"
-    when: "Posts e vídeos do Facebook"
+  - value: "whatsapp"
+    when: "Mensagens, broadcasts e sequências WhatsApp"
   - value: "email"
     when: "Newsletters e emails marketing"
 
@@ -71,8 +71,9 @@ templates:
   youtube_description:
     url: "salkmedical.com.br/?utm_source=youtube&utm_medium=social&utm_campaign={campaign}&utm_content={video-id}"
 
-  facebook_post:
-    url: "salkmedical.com.br/?utm_source=facebook&utm_medium=social&utm_campaign={campaign}&utm_content={post-id}"
+  whatsapp_message:
+    url: "salkmedical.com.br/?utm_source=whatsapp&utm_medium=social&utm_campaign={campaign}&utm_content={message-id}"
+    note: "Canal #1 IC — rastreamento de links em sequências de nurturing"
 
 # ═══════════════════════════════════════════════════════════════
 # CTAs PADRÃO COM UTM
@@ -108,5 +109,5 @@ ctas_by_platform:
   instagram: ["Link na bio", "Salve para consultar depois", "Envie para seu engenheiro clínico"]
   linkedin: ["Comente 'FICHA' e envio a especificação completa", "Link no primeiro comentário"]
   youtube: ["Se inscreva para mais conteúdo técnico", "Assista a demo completa no link"]
-  facebook: ["Compartilhe com quem precisa saber", "Comente sua dúvida"]
+  whatsapp: ["Responda SIM para receber", "Clique no link para specs completas", "Fale com consultor"]
   email: ["[Botão] Agendar Demonstração", "[Botão] Baixar Catálogo Técnico"]

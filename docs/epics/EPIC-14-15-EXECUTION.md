@@ -69,14 +69,14 @@ Este documento define 2 epicos com 15 stories para corrigir os 11 issues identif
 
 | Story | Titulo | Executor | Dep. | Prioridade |
 |-------|--------|----------|------|:----------:|
-| 15.1 | Arquitetura WhatsApp Business como canal primario | @architect (Aria) | 14.3 | P0 |
+| 15.1 | Arquitetura WhatsApp Business como canal primario | @architect (Aria) | 14.3 | P0 | **DONE** |
 | 15.2 | Implementar modulo WhatsApp (sequencias, catalogo, templates) | @dev (Dex) | 15.1 | P0 |
-| 15.3 | Arquitetura modulo SEO (blog, landing pages, schema) | @architect (Aria) | 14.2 | P1 |
+| 15.3 | Arquitetura modulo SEO (blog, landing pages, schema) | @architect (Aria) | 14.2 | P1 | **DONE** |
 | 15.4 | Implementar modulo SEO/Blog | @dev (Dex) | 15.3 | P1 |
 | 15.5 | Integrar Bitrix24 CRM (leads por UTM, tracking) | @dev (Dex) + @devops (Gage) | 14.3 | P1 |
 | 15.6 | Dashboard de metricas por fase da jornada | @dev (Dex) | 14.2, 15.5 | P2 |
-| 15.7 | Conteudo pos-venda (tutoriais, manuais, suporte) | @dev (Dex) + @po (Pax) | 14.7 | P2 |
-| 15.8 | Descontinuar Facebook + realocar esforco | @pm (Morgan) | 14.6 | P3 |
+| 15.7 | Conteudo pos-venda (tutoriais, manuais, suporte) | @dev (Dex) + @po (Pax) | 14.7 | P2 | **DONE** (dados) |
+| 15.8 | Descontinuar Facebook + realocar esforco | @pm (Morgan) | 14.6 | P3 | **DONE** |
 
 ### Pre-Requisitos
 
