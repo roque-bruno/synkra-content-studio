@@ -1,10 +1,12 @@
 """
-fal.ai Image Generator — NanoBanana 2 product-in-scene + FLUX fallback.
+fal.ai Image Generator — NB2 SEMPRE como padrão.
 
-Pipeline principal: foto PNG do produto + prompt NB2 → fal.ai NB2 → imagem final
-Fallback: prompt texto → fal.ai FLUX → imagem (sem produto)
+NB2 é o padrão para TODA geração de imagem (com ou sem produto):
+- Com produto: NB2 /edit (PNG do produto + prompt → produto no cenário)
+- Sem produto: NB2 /edit prompt-only (datas comemorativas, institucional)
+FLUX existe apenas como fallback de emergência se NB2 falhar.
 
-Custo: ~$0.08/imagem (NB2), ~$0.04/imagem (FLUX dev)
+Custo: ~$0.08/imagem (NB2), ~$0.04/imagem (FLUX dev fallback)
 """
 
 from __future__ import annotations
@@ -107,12 +109,17 @@ def resolve_product_image(product: str, product_images_dir: Path) -> Optional[Pa
 
 
 class FalImageGenerator:
-    """Cliente para geração de imagens via fal.ai (NB2 + FLUX)."""
+    """Cliente para geração de imagens via fal.ai — NB2 como padrão, FLUX como fallback."""
 
     BASE_URL = "https://fal.run"
 
     MODELS = {
-        "nb2": "fal-ai/nano-banana-2/edit",
+        # NB2 — padrão para tudo
+        "nb2": "fal-ai/nano-banana-2/edit",          # NB2 v2 edit (com ou sem produto)
+        "nb2-generate": "fal-ai/nano-banana-2",       # NB2 v2 text-to-image puro
+        "nb2-pro": "fal-ai/nano-banana-pro/edit",     # NB2 Pro (melhor qualidade, $0.15)
+        "nb1": "fal-ai/nano-banana",                   # NB1 original ($0.039)
+        # FLUX — fallback apenas
         "flux-dev": "fal-ai/flux/dev",
         "flux-pro": "fal-ai/flux-pro/v1.1",
         "flux-schnell": "fal-ai/flux/schnell",
@@ -302,7 +309,7 @@ class FalImageGenerator:
         width: int = 1080,
         height: int = 1350,
         negative_prompt: str = "",
-        model: str = "flux-dev",
+        model: str = "nb2",
         format_preset: str = "",
         num_inference_steps: int = 28,
         guidance_scale: float = 3.5,

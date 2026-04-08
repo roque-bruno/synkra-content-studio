@@ -2310,7 +2310,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     objective = data.get("objective", "")
 
     # Inferir produto se nao especificado (sugestao, nao obrigatorio)
-    # Pilares institucionais NUNCA inferem produto — geram conteudo sem produto (FLUX)
+    # Pilares institucionais NUNCA inferem produto — NB2 gera em modo prompt-only
     inferred_product = ""
     institutional_pillars = ("datas_comemorativas", "institucional")
     if not product and pillar not in institutional_pillars:
@@ -2321,7 +2321,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
             product = inferred_product
             logger.info("Product inferred from context: %s", product)
     elif not product and pillar in institutional_pillars:
-        logger.info("Pillar '%s' is institutional — no product inference, using FLUX", pillar)
+        logger.info("Pillar '%s' is institutional — no product inference, NB2 prompt-only", pillar)
 
     logger.info(
         "produce_single_piece: brand=%s, product=%s (inferred=%s), pillar=%s, platform=%s, objective=%s",
@@ -2673,13 +2673,13 @@ async def list_atomize_platforms():
 
 
 # =========================================================================
-# IMAGE GENERATION (fal.ai FLUX)
+# IMAGE GENERATION (fal.ai NB2)
 # =========================================================================
 
 @app.post("/api/automation/generate-image")
 @limiter.limit("10/minute")
 async def generate_image(request: Request, user: dict = Depends(require_auth)):
-    """Gera imagem via fal.ai — NB2 (com produto) ou FLUX (sem produto)."""
+    """Gera imagem via fal.ai NB2 (padrão para tudo)."""
     svc = get_service()
     if not svc.image_generator or not svc.image_generator.configured:
         raise HTTPException(400, "FAL_API_KEY não configurada. Vá em Configurações.")
@@ -2690,12 +2690,13 @@ async def generate_image(request: Request, user: dict = Depends(require_auth)):
         width=data.get("width", 1080),
         height=data.get("height", 1350),
         negative_prompt=data.get("negative_prompt", "text, logo, watermark, blurry, low quality"),
-        model=data.get("model", "flux-dev"),
+        model=data.get("model", "nb2"),
         format_preset=data.get("format_preset", ""),
         product=product,
     )
-    _create_notification("Imagem gerada", f"Imagem gerada via {'NB2' if product else 'FLUX'}", "success")
-    _log_activity("image_generated", f"Imagem gerada via {'NB2' if product else 'FLUX'}/fal.ai")
+    model_used = result.model_used or "nb2"
+    _create_notification("Imagem gerada", f"Imagem gerada via {model_used.upper()}", "success")
+    _log_activity("image_generated", f"Imagem gerada via {model_used}/fal.ai")
     return result.to_dict()
 
 
@@ -2748,7 +2749,7 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
         format_preset=format_preset,
         negative_prompt=negative,
         product=product,  # usa inferido se peça não tinha
-        model=data.get("model", "flux-dev"),
+        model=data.get("model", "nb2"),
     )
 
     if result.success:
@@ -2931,7 +2932,7 @@ async def run_ab_test(request: Request, background_tasks: BackgroundTasks, user:
                     format_preset="feed",
                     negative_prompt="text, logo, watermark, blurry, low quality, medical equipment other than the target product",
                     product=data.get("product", ""),
-                    model="flux-dev",
+                    model="nb2",
                 )
                 if img_result.success:
                     notes = _json.loads(piece_data["notes"])

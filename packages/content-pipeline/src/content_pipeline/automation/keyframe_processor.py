@@ -81,7 +81,7 @@ class KeyframeProcessor:
                     prompt=variation_prompt,
                     negative_prompt=negative_prompt,
                     width=1920, height=1080,
-                    model="flux-dev",
+                    model="nb2",
                 )
                 if result.success and result.image_path:
                     processed.append(Path(result.image_path))

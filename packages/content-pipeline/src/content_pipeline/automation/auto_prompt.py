@@ -203,10 +203,10 @@ class AutoPromptNB2:
         # Pilares que tipicamente envolvem produto
         if pillar in ("produto", "awareness_produto"):
             return get_hero_product()
-        # Datas comemorativas, institucional = sem produto (FLUX)
+        # Datas comemorativas, institucional = sem produto (NB2 prompt-only)
         if pillar in ("datas_comemorativas", "institucional"):
             return ""
-        # Educacional sem keyword de produto = sem produto (FLUX)
+        # Sem keyword de produto = NB2 prompt-only
         return ""
 
     async def generate_prompt(
