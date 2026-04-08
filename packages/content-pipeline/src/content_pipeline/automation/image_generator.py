@@ -207,24 +207,21 @@ class FalImageGenerator:
         if not self.configured:
             return ImageResult(success=False, error="FAL_API_KEY não configurada")
 
-        # Resolver URL da imagem do produto
-        img_url = product_image_url or await self._get_product_image_url(product)
-        if not img_url:
-            logger.warning("Product '%s' has no image URL — using FLUX text-to-image fallback instead of NB2", product)
-            return await self.generate_image(
-                prompt=prompt, negative_prompt=negative_prompt,
-                width=width, height=height, format_preset=format_preset,
-            )
+        # Resolver URL da imagem do produto (opcional — NB2 funciona só com prompt)
+        img_url = product_image_url or (await self._get_product_image_url(product) if product else None)
 
         start = time.time()
         w, h = self._get_dimensions(format_preset, width, height)
         model_id = self.MODELS["nb2"]
 
         payload = {
-            "image_urls": [img_url],
             "prompt": prompt,
             "image_size": {"width": w, "height": h},
         }
+        if img_url:
+            payload["image_urls"] = [img_url]
+        else:
+            logger.info("NB2 prompt-only mode (no product image) — institutional/commemorative content")
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
 
@@ -313,21 +310,32 @@ class FalImageGenerator:
         product: str = "",
         product_image_url: str = "",
     ) -> ImageResult:
-        """Gera imagem. Se houver produto, usa NB2. Senão, FLUX."""
-        # Se tem produto, tenta NB2 primeiro
-        if product or product_image_url:
-            return await self.generate_nb2(
-                prompt=prompt,
-                product=product,
-                product_image_url=product_image_url,
-                negative_prompt=negative_prompt,
-                width=width,
-                height=height,
-                format_preset=format_preset,
-            )
+        """Gera imagem. NB2 sempre como padrão (com ou sem produto). FLUX só como fallback."""
+        # NB2 é sempre o padrão — funciona com produto (image-to-image) ou sem (prompt-only)
+        return await self.generate_nb2(
+            prompt=prompt,
+            product=product,
+            product_image_url=product_image_url,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            format_preset=format_preset,
+        )
 
-        # Fallback: FLUX text-to-image
-        logger.info("FLUX fallback: no product specified, using text-to-image")
+    async def generate_flux_fallback(
+        self,
+        prompt: str,
+        width: int = 1080,
+        height: int = 1350,
+        negative_prompt: str = "",
+        model: str = "flux-dev",
+        format_preset: str = "",
+        num_inference_steps: int = 28,
+        guidance_scale: float = 3.5,
+        seed: Optional[int] = None,
+    ) -> ImageResult:
+        """FLUX text-to-image — fallback se NB2 falhar."""
+        logger.info("FLUX fallback: using text-to-image")
         if not self.configured:
             return ImageResult(success=False, error="FAL_API_KEY não configurada")
 
