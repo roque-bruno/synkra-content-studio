@@ -3801,10 +3801,6 @@ body.zen-mode .tab-bar { display: none !important; }
       <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px;">Acompanhe o fluxo de conteudo em tempo real</div>
     </div>
     <div style="display: flex; gap: 8px;">
-      <button class="btn btn-primary" @click="showQuickProduce = true" :disabled="quickProducing">
-        <span x-show="!quickProducing">&#9889; Criar Peca Automatica</span>
-        <span x-show="quickProducing">Produzindo...</span>
-      </button>
       <button class="btn btn-ab" @click="showABTest = true" :disabled="abTestRunning">
         <span x-show="!abTestRunning">&#9878; Gerar Variacoes</span>
         <span x-show="abTestRunning">Gerando...</span>
@@ -4253,7 +4249,7 @@ body.zen-mode .tab-bar { display: none !important; }
       &#10005; Limpar Filtros
     </button>
     <div style="flex: 1;"></div>
-    <button class="btn btn-sm btn-primary" @click="batchGenerateCopyFromStage()" x-show="piecesInStage('briefing').length > 0" :disabled="batchProcessing" title="Gerar copy para todas as pecas em briefing">
+    <button class="btn btn-sm btn-primary" @click="batchGenerateCopy()" x-show="piecesInStage('briefing').length > 0" :disabled="batchProcessing" title="Gerar copy para todas as pecas em briefing">
       <span x-show="!batchProcessing">Gerar Copy p/ Briefings (<span x-text="piecesInStage('briefing').length"></span>)</span>
       <span x-show="batchProcessing">Processando...</span>
     </button>
@@ -4273,7 +4269,7 @@ body.zen-mode .tab-bar { display: none !important; }
       <div class="es-icon">&#9776;</div>
       <div class="es-title">Nenhuma peca criada ainda</div>
       <div class="es-desc">Crie sua primeira peca de conteudo para comecar a produzir.</div>
-      <button class="btn btn-primary" @click="showNewPiece = true">+ Criar primeira peca</button>
+      <button class="btn btn-primary" @click="showNewPiece = true">+ Nova Peca</button>
     </div>
   </template>
 
@@ -4421,17 +4417,12 @@ body.zen-mode .tab-bar { display: none !important; }
       <button class="btn btn-sm" @click="exportCalendarCSV()" x-show="calSlots.length > 0" title="Exportar calendario">&#128229; CSV</button>
     <span class="tooltip-wrap" x-show="calSlots.length > 0">
       <button class="btn" style="background: var(--green); color: #000; font-weight: 600;" @click="produceWeek()" :disabled="weekProducing">
-        <span x-show="!weekProducing">Gerar Conteudo da Semana</span>
-        <span x-show="weekProducing">Gerando conteudo...</span>
+        <span x-show="!weekProducing">Produzir Semana</span>
+        <span x-show="weekProducing">Produzindo...</span>
       </button>
       <span class="tooltip-trigger">&#8505;</span>
       <span class="tooltip-content">Gera briefing, copy e prompts visuais para todos os slots planejados da semana. Pecas sao criadas e enviadas para revisao.</span>
     </span>
-    <button class="btn" style="background: var(--purple); color: #fff; font-weight: 600;" @click="generateFullWeek()" :disabled="weekProducing">
-      <span x-show="!weekProducing">Gerar Tudo</span>
-      <span x-show="weekProducing">Gerando...</span>
-    </button>
-    <button class="btn" style="background: var(--cyan); color: #000; font-weight: 600;" @click="smartBriefing()">Smart Briefing</button>
   </div>
   <!-- Enhanced Week Navigator -->
   <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;">
@@ -4505,8 +4496,7 @@ body.zen-mode .tab-bar { display: none !important; }
       <div style="text-align: center; padding: 40px; color: var(--text-muted);">
         <div style="font-size: 2rem; margin-bottom: 12px;">&#128197;</div>
         <div style="font-size: 0.9rem; margin-bottom: 8px;">Calendario vazio</div>
-        <div style="font-size: 0.78rem; opacity: 0.7; margin-bottom: 16px;">Informe a semana acima (ex: 2026-W15) e clique "Nova Semana" para gerar slots automaticamente</div>
-        <button class="btn btn-primary" @click="generateCalendar(); autoFillCalendar()">Gerar Calendario</button>
+        <div style="font-size: 0.78rem; opacity: 0.7; margin-bottom: 16px;">Informe a semana acima (ex: 2026-W15) e clique "Nova Semana" para gerar os slots</div>
       </div>
     </div>
   </template>
@@ -8380,8 +8370,24 @@ body.zen-mode .tab-bar { display: none !important; }
       <button class="modal-close" @click="showNewPiece = false">&times;</button>
     </div>
     <div class="modal-body">
+      <!-- Modo: Manual vs Automatico -->
+      <div style="display: flex; gap: 0; margin-bottom: 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
+        <button style="flex: 1; padding: 10px; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: all 0.15s;"
+                :style="!newPieceAutoMode ? 'background: var(--accent); color: #fff;' : 'background: var(--bg-darker); color: var(--text-secondary);'"
+                @click="newPieceAutoMode = false">
+          &#9998; Manual
+        </button>
+        <button style="flex: 1; padding: 10px; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: all 0.15s;"
+                :style="newPieceAutoMode ? 'background: var(--accent); color: #fff;' : 'background: var(--bg-darker); color: var(--text-secondary);'"
+                @click="newPieceAutoMode = true">
+          &#9889; Automatico
+        </button>
+      </div>
+      <div x-show="newPieceAutoMode" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 12px; padding: 8px 12px; background: var(--bg-darker); border-radius: var(--radius-sm);">
+        Modo automatico: preencha os campos e a IA gera briefing + copy + prompt visual de uma vez.
+      </div>
       <!-- Quick Templates -->
-      <div style="margin-bottom: 12px;">
+      <div style="margin-bottom: 12px;" x-show="!newPieceAutoMode">
         <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Templates Rapidos</div>
         <div class="template-grid">
           <template x-for="tmpl in pieceTemplates" :key="tmpl.name">
@@ -8476,8 +8482,12 @@ body.zen-mode .tab-bar { display: none !important; }
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" @click="showNewPiece = false; newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'post', persona_target: '' }">Cancelar</button>
-      <button class="btn btn-primary" :disabled="!newPiece.title.trim()" @click="createNewPiece()">Criar Peca</button>
+      <button class="btn" @click="showNewPiece = false; newPieceAutoMode = false; newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'post', persona_target: '' }">Cancelar</button>
+      <button class="btn btn-primary" :disabled="!newPiece.title.trim()" @click="createNewPiece()" x-show="!newPieceAutoMode">Criar Peca</button>
+      <button class="btn btn-primary" :disabled="!newPiece.title.trim() || quickProducing" @click="quickProduce = { brand: newPiece.brand, product: newPiece.product, platform: newPiece.platform, pillar: newPiece.pillar, format: newPiece.format, objective: newPiece.objective || newPiece.title }; showNewPiece = false; newPieceAutoMode = false; runQuickProduce()" x-show="newPieceAutoMode">
+        <span x-show="!quickProducing">&#9889; Produzir Tudo</span>
+        <span x-show="quickProducing">Produzindo...</span>
+      </button>
     </div>
   </div>
 </div>
@@ -8860,91 +8870,6 @@ body.zen-mode .tab-bar { display: none !important; }
       <div x-show="pieceJourneyLoading" style="text-align: center; padding: 24px; color: var(--text-muted);">Carregando jornada...</div>
     </div>
 
-  </div>
-</div>
-
-<!-- Quick Produce Modal -->
-<div class="modal-overlay" x-show="showQuickProduce" @click.self="showQuickProduce = false" @keydown.escape.window="showQuickProduce = false" x-cloak role="dialog" aria-modal="true" aria-label="Producao rapida">
-  <div class="modal" style="max-width: 520px;">
-    <div class="modal-header">
-      <h3>Criar Peca Automatica</h3>
-      <button class="modal-close" @click="showQuickProduce = false">&times;</button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px;">Cria uma peca completa automaticamente: briefing, copy e prompt NB2 em um clique.</p>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Marca</label>
-          <select class="form-select" x-model="quickProduce.brand">
-            <option value="salk">Salk Medical</option>
-            <option value="mendel">Mendel Medical</option>
-            <option value="manager">Manager Grupo</option>
-            <option value="dayho">Dayho</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Produto <span style="font-size:0.65rem; color:var(--text-muted); font-weight:400;">(vazio = institucional)</span></label>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
-            <template x-for="p in [{key:'lev', name:'LEV', emoji:''}, {key:'kratus', name:'KRATUS', emoji:''}, {key:'ostus', name:'OSTUS', emoji:''}, {key:'kronus', name:'KRONUS', emoji:''}]">
-              <div style="padding: 8px 4px; border-radius: 8px; text-align: center; cursor: pointer; border: 2px solid var(--border); transition: all 0.15s; font-size: 0.75rem; font-weight: 600;"
-                   :style="quickProduce.product === p.key ? 'border-color: var(--accent); background: var(--accent-dim); color: var(--accent)' : 'background: var(--bg-darker)'"
-                   @click="quickProduce.product = (quickProduce.product === p.key ? '' : p.key)">
-                <span x-text="p.emoji" style="font-size: 1.1rem; display: block; margin-bottom: 2px;"></span>
-                <span x-text="p.name"></span>
-              </div>
-            </template>
-          </div>
-          <div x-show="quickProduce.product" style="font-size: 0.68rem; color: var(--accent); margin-top: 4px;">
-            Imagem usara NB2: produto real renderizado no cenario
-          </div>
-          <div x-show="!quickProduce.product" style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">
-            Sem produto = imagem institucional (cenario sem produto)
-          </div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Plataforma</label>
-          <select class="form-select" x-model="quickProduce.platform">
-            <option value="instagram">Instagram</option>
-            <option value="linkedin">LinkedIn</option>
-            <option value="whatsapp">WhatsApp</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Pilar</label>
-          <select class="form-select" x-model="quickProduce.pillar">
-            <option value="awareness_produto">Awareness Produto</option>
-            <option value="educacional_specs">Educacional / Specs</option>
-            <option value="cases_social_proof">Cases / Social Proof</option>
-            <option value="tco_roi_licitacao">TCO / ROI / Licitacao</option>
-            <option value="pos_venda_suporte">Pos-venda / Suporte</option>
-            <option value="datas_comemorativas">Datas Comemorativas</option>
-            <option value="institucional">Institucional</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Formato</label>
-        <select class="form-select" x-model="quickProduce.format">
-          <option value="post">Post</option>
-          <option value="carousel">Carrossel</option>
-          <option value="reel">Reel/Video</option>
-          <option value="story">Story</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Objetivo / Tema <span style="color: var(--amber); font-size: 0.68rem;">recomendado</span></label>
-        <input class="form-input" x-model="quickProduce.objective" placeholder="ex: Campanha de Pascoa, Hero Shot LEV, Post educacional...">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" @click="showQuickProduce = false; quickProduce = { brand: 'salk', product: '', platform: 'instagram', pillar: 'produto', format: 'post', objective: '' }">Cancelar</button>
-      <button class="btn btn-primary" @click="runQuickProduce()" :disabled="quickProducing">
-        <span x-show="!quickProducing">Produzir Tudo</span>
-        <span x-show="quickProducing" x-text="quickProduce.product ? 'Gerando com NB2: ' + quickProduce.product.toUpperCase() + '...' : 'Gerando conteudo institucional...'"></span>
-      </button>
-    </div>
   </div>
 </div>
 
@@ -9425,6 +9350,7 @@ function studioApp() {
 
     // Modals
     showNewPiece: false,
+    newPieceAutoMode: false,
     showPieceDetail: false,
     drawerTab: 'resumo',
     pieceActionLoading: false,
@@ -10491,26 +10417,23 @@ function studioApp() {
       } catch(e) { this.notify('Erro ao mover peca: ' + e.message, 'error'); }
     },
 
-    // --- Batch operation helper (DRY: Epic 16) ---
-    async _batchApiLoop(pieceIds, apiFn, label) {
-      let done = 0, failed = 0;
-      for (const pid of pieceIds) {
-        try { await apiFn(pid); done++; } catch(e) { failed++; }
-      }
-      await this.loadPieces();
-      return { done, failed, msg: `${done} ${label}${failed ? `, ${failed} falharam` : ''}` };
-    },
-
     async batchMoveStage(fromStage, toStage) {
       const pcs = this.piecesInStage(fromStage);
       if (!pcs.length) return;
       if (!confirm(`Mover ${pcs.length} pecas de "${this.stageLabels[fromStage]}" para "${this.stageLabels[toStage]}"?`)) return;
-      const { msg } = await this._batchApiLoop(
-        pcs.map(p => p.id),
-        pid => this.api(`/api/production/pieces/${pid}/stage`, { method: 'PUT', body: JSON.stringify({ stage: toStage }) }),
-        `pecas movidas para ${this.stageLabels[toStage]}`,
-      );
-      this.notify(msg);
+      let moved = 0;
+      let failed = 0;
+      for (const p of pcs) {
+        try {
+          await this.api(`/api/production/pieces/${p.id}/stage`, {
+            method: 'PUT',
+            body: JSON.stringify({ stage: toStage }),
+          });
+          moved++;
+        } catch (e) { failed++; }
+      }
+      await this.loadPieces();
+      this.notify(`${moved} pecas movidas para ${this.stageLabels[toStage]}${failed ? `, ${failed} falharam` : ''}`);
     },
 
     async runQuickProduce() {
@@ -10554,18 +10477,23 @@ function studioApp() {
       this.quickProducing = false;
     },
 
-    async batchGenerateCopyFromStage() {
+    async batchGenerateCopy() {
       const pcs = this.piecesInStage('briefing');
       if (!pcs.length) return;
       if (!confirm(`Gerar copy automatica para ${pcs.length} pecas em Briefing? Isso usara creditos de IA.`)) return;
       this.batchProcessing = true;
-      const { msg } = await this._batchApiLoop(
-        pcs.map(p => p.id),
-        pid => this.api(`/api/production/pieces/${pid}/generate-copy`, { method: 'POST', body: JSON.stringify({}) }),
-        'copies geradas',
-      );
+      let done = 0, failed = 0;
+      for (const p of pcs) {
+        try {
+          await this.api(`/api/production/pieces/${p.id}/generate-copy`, {
+            method: 'POST', body: JSON.stringify({}),
+          });
+          done++;
+        } catch(e) { failed++; }
+      }
+      await this.loadPieces();
       this.batchProcessing = false;
-      this.notify(msg);
+      this.notify(`${done} copies geradas${failed ? `, ${failed} falharam` : ''}`);
     },
 
     async deletePiece(id) {
@@ -12667,46 +12595,42 @@ function studioApp() {
     async batchChangeStage() {
       const stage = prompt('Novo estagio (briefing, copy, design, review, approved, published):');
       if (!stage) return;
-      const { msg } = await this._batchApiLoop(
-        this.selectedPieces,
-        pid => this.api('/api/production/pieces/' + pid + '/stage', { method: 'PUT', body: JSON.stringify({ stage }) }),
-        'pecas movidas para ' + stage,
-      );
+      for (const pid of this.selectedPieces) {
+        try { await this.api('/api/production/pieces/' + pid + '/stage', { method: 'PUT', body: JSON.stringify({ stage }) }); } catch(e) {}
+      }
       this.selectedPieces = [];
-      this.notify(msg);
+      await this.loadPieces();
+      this.notify('Pecas movidas para ' + stage);
     },
 
     async batchDelete() {
       if (!confirm('Excluir ' + this.selectedPieces.length + ' pecas?')) return;
-      const { msg } = await this._batchApiLoop(
-        this.selectedPieces,
-        pid => this.api('/api/production/pieces/' + pid, { method: 'DELETE' }),
-        'pecas excluidas',
-      );
+      for (const pid of this.selectedPieces) {
+        try { await this.api('/api/production/pieces/' + pid, { method: 'DELETE' }); } catch(e) {}
+      }
       this.selectedPieces = [];
-      this.notify(msg);
+      await this.loadPieces();
+      this.notify('Pecas excluidas');
     },
 
     async batchGenerateCopy() {
       this.notify('Gerando copy para ' + this.selectedPieces.length + ' pecas...');
-      const { msg } = await this._batchApiLoop(
-        this.selectedPieces,
-        pid => this.api('/api/production/pieces/' + pid + '/generate-copy', { method: 'POST', body: JSON.stringify({}) }),
-        'copies geradas',
-      );
+      for (const pid of this.selectedPieces) {
+        try { await this.api('/api/production/pieces/' + pid + '/generate-copy', { method: 'POST', body: JSON.stringify({}) }); } catch(e) {}
+      }
       this.selectedPieces = [];
-      this.notify(msg);
+      await this.loadPieces();
+      this.notify('Copies geradas em batch');
     },
 
     async batchGeneratePrompt() {
       this.notify('Gerando prompts para ' + this.selectedPieces.length + ' pecas...');
-      const { msg } = await this._batchApiLoop(
-        this.selectedPieces,
-        pid => this.api('/api/production/pieces/' + pid + '/generate-prompt', { method: 'POST', body: JSON.stringify({}) }),
-        'prompts gerados',
-      );
+      for (const pid of this.selectedPieces) {
+        try { await this.api('/api/production/pieces/' + pid + '/generate-prompt', { method: 'POST', body: JSON.stringify({}) }); } catch(e) {}
+      }
       this.selectedPieces = [];
-      this.notify(msg);
+      await this.loadPieces();
+      this.notify('Prompts gerados em batch');
     },
 
     formatNumber(n) {
