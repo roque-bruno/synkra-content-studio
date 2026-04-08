@@ -8561,6 +8561,12 @@ body.zen-mode .tab-bar { display: none !important; }
 
   <div class="drawer-body">
 
+    <!-- LOADING BANNER — feedback durante acoes de IA -->
+    <div x-show="pieceActionLoading" x-transition style="margin-bottom: 12px; padding: 12px 16px; background: linear-gradient(135deg, var(--accent-dim), var(--bg-card)); border: 1px solid var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; gap: 10px;">
+      <div style="width: 18px; height: 18px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0;"></div>
+      <div style="font-size: 0.8rem; font-weight: 600; color: var(--accent);">Gerando com IA... aguarde alguns segundos</div>
+    </div>
+
     <!-- NEXT STEP BANNER — guia o usuario pelo fluxo -->
     <div x-show="selectedPiece" style="margin-bottom: 16px; padding: 14px 18px; border-radius: 10px; border-left: 4px solid; display: flex; align-items: center; justify-content: space-between; gap: 12px;"
          :style="selectedPiece?.stage === 'approved' || selectedPiece?.stage === 'published' ? 'background: rgba(16,185,129,0.08); border-color: var(--green);' : 'background: rgba(99,102,241,0.08); border-color: var(--accent);'">
@@ -8781,13 +8787,16 @@ body.zen-mode .tab-bar { display: none !important; }
         <div class="card-title" style="font-size: 0.8rem;">Automacao com IA</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
           <button class="btn btn-primary" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="!selectedPiece?.copy_text">
-            &#9998; Gerar Texto
+            <span x-show="!pieceActionLoading">&#9998; Gerar Texto</span>
+            <span x-show="pieceActionLoading">Gerando...</span>
           </button>
           <button class="btn" @click="generateCopyForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="selectedPiece?.copy_text">
-            &#9998; Regerar Texto
+            <span x-show="!pieceActionLoading">&#9998; Regerar Texto</span>
+            <span x-show="pieceActionLoading">Gerando...</span>
           </button>
           <button class="btn" @click="generatePromptForPiece(selectedPiece?.id)" :disabled="pieceActionLoading">
-            &#127912; Gerar Prompt NB2
+            <span x-show="!pieceActionLoading">&#127912; Gerar Prompt NB2</span>
+            <span x-show="pieceActionLoading">Gerando...</span>
           </button>
           <button class="btn" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple);" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).nb2_prompt">
             &#128248; Gerar Imagem
