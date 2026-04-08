@@ -374,7 +374,7 @@ O CENTRO DA IMAGEM deve estar VAZIO — e onde o produto real sera inserido depo
 === REGRA #6: SEM TEXTO ===
 Nenhuma palavra, letra, numero, placa, tela legivel, label na imagem.
 
-Produto sendo fotografado: {product or 'equipamento cirurgico Salk Medical'} ({brand})
+Produto sendo fotografado: {product or 'NENHUM — conteudo institucional, cenario conceitual sem equipamento'} ({brand})
 {f'Contexto do produto: {product_rules.get("must_include", "")}' if product_rules.get("must_include") else ''}
 {f'NUNCA incluir: {product_rules.get("never_include", "")}' if product_rules.get("never_include") else ''}
 
@@ -397,19 +397,19 @@ INSTALAM e fazem MANUTENCAO de equipamentos em hospitais. Pense como o ICP ve o 
         elif not product:
             system += """
 === CONTEUDO INSTITUCIONAL (sem produto especifico) ===
-- A imagem DEVE estar em CONTEXTO HOSPITALAR/CIRURGICO — NUNCA outro ambiente
-- CENARIOS VALIDOS: centro cirurgico, sala de exames, UTI, sala de equipamentos, area tecnica do hospital
-- CENARIOS PROIBIDOS: corredor, elevador, lobby, recepcao, escritorio, sala de reuniao, estacionamento, area externa
-- A imagem deve contar uma HISTORIA relacionada ao TEMA/OBJETIVO
-- Pode incluir PESSOAS (profissionais de saude) desfocadas ou em silhueta se fizer sentido para o tema
-- Foco: profissionalismo, tecnologia, inovacao, humanidade
+- ZERO EQUIPAMENTOS MEDICOS — a regra #1 se aplica ainda mais aqui
+- Imagem CONCEITUAL e ABSTRATA — representar a IDEIA, nao o equipamento
+- CENARIOS VALIDOS: texturas de aco inox, superficies limpas, luz e sombra em ambiente clean, detalhes arquitetonicos hospitalares (paineis, portas, pisos), maos com luvas trabalhando (sem equipamento visivel)
+- CENARIOS PROIBIDOS: sala cirurgica completa, qualquer equipamento medico visivel, sala de reuniao, escritorio, cenario stock
+- Pode incluir PESSOAS parciais (maos, silhuetas, perfil desfocado) — NUNCA rosto identificavel
+- Foco: conceito, profissionalismo, tecnologia como IDEIA
 
-=== REFERENCIAS POR TIPO DE DATA SAZONAL ===
-- Dia da Engenharia/Engenheiro Biomedico: engenheiro clinico de jaleco inspecionando painel tecnico em sala cirurgica, ferramentas de precisao, tablet com esquema tecnico, maos ajustando equipamento
-- Dia do Medico/Cirurgiao: equipe medica em sala cirurgica, atmosfera de concentracao, luz cirurgica acesa (vista de baixo), maos com luvas estereis
-- Dia do Enfermeiro: profissional organizando instrumental, cuidado com paciente, ambiente limpo e acolhedor
-- Hospitalar Fair/Congresso: sala de demonstracao com equipamentos, publico tecnico, ambiente de inovacao
-- Retrospectiva/Institucional: panorama de centro cirurgico moderno, multiplas salas, tecnologia integrada
+=== ABORDAGEM VISUAL POR TEMA ===
+- Engenharia/Tecnico: maos com luvas sobre superficie de aco inox, ferramentas de precisao (chaves, multimetro), tablet com diagrama tecnico — SEM equipamento medico ao redor
+- Medico/Cirurgiao: maos com luvas estereis em close, luz dramatica, atmosfera de concentracao — SEM sala cirurgica completa
+- Enfermagem/Cuidado: maos cuidando, ambiente limpo e acolhedor, luz suave — SEM equipamento
+- Institucional/Marca: texturas premium (aco escovado, vidro, luz natural), composicao minimalista e elegante
+- REGRA: o fundo deve ser CLEAN e DESFOCADO — nunca uma sala completa com equipamentos visiveis
 """
 
         # Contexto rico do briefing e objetivo
@@ -436,27 +436,34 @@ CRITICO — O prompt descreve SOMENTE o ambiente/cenario:
 TERMINAR o prompt com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2.8, photorealistic, warm neutral tones, no text, no writing, no labels, no medical equipment, empty center"
 """
         else:
-            user_prompt = f"""Crie um prompt para imagem institucional da Salk Medical.
+            user_prompt = f"""Crie um prompt para imagem institucional CONCEITUAL da Salk Medical.
 {context_block}
 Conceito: {concept or 'conteudo institucional premium'}
 Formato: {format_type}
 
-Use a INTELIGENCIA DE MARCA do system prompt para entender quem e o publico,
-qual o tom da marca, e como gerar imagens que RESSOEM com o ICP.
+ABORDAGEM OBRIGATORIA: imagem CONCEITUAL e ABSTRATA.
+NAO e uma foto de sala cirurgica. NAO e uma foto stock de hospital.
+E uma imagem que REPRESENTA o conceito/tema de forma artistica e premium.
 
-O prompt DEVE refletir o TEMA/OBJETIVO acima. Exemplos:
-- "Dia da Engenharia" → engenheiro clinico inspecionando sala cirurgica, checklist tecnico, manutencao preventiva de equipamentos, ferramentas de precisao sobre mesa de aco inox
-- "Dia do Medico" → ambiente cirurgico premium, equipe medica desfocada, atmosfera de excelencia
-- "Inovacao" → sala cirurgica moderna, tecnologia de ponta, design clean e futurista
+EXEMPLOS DE ABORDAGEM CORRETA:
+- "Dia da Engenharia" → close-up de maos com luvas sobre superficie de aco inox escovado, ferramentas de precisao (chave torx, multimetro) ao lado, luz dramatica lateral, fundo completamente desfocado
+- "Dia do Medico" → close-up de maos com luvas estereis em gesto de precisao, luz quente vindo de cima, fundo escuro e limpo
+- "Inovacao" → textura de aco inox com reflexos de luz, composicao minimalista, abstrata
+
+EXEMPLOS DE ABORDAGEM PROIBIDA:
+- Sala cirurgica completa com equipamentos visiveis
+- Pessoa em jaleco em sala cheia de aparelhos
+- Panorama de hospital com mesas, focos, monitores
+- Cenario stock generico
 
 REGRAS:
-- A imagem deve contar uma HISTORIA relacionada ao tema, nao ser uma sala vazia
-- Pode incluir PESSOAS desfocadas ou silhuetas se fizer sentido para o tema
-- Cores QUENTES e NEUTRAS — NUNCA azul monocromatico dominante
-- Nao descreva equipamentos medicos especificos de concorrentes
-- Contexto sempre HOSPITALAR/CIRURGICO, focado no universo do ICP primario
+- ZERO equipamentos medicos visiveis (foco, mesa, monitor, pendente) — NENHUM
+- Pode incluir MAOS ou SILHUETAS — NUNCA rosto identificavel
+- Cores QUENTES e NEUTRAS — NUNCA azul monocromatico
+- Composicao CLOSE-UP ou MACRO — nunca plano aberto de sala
+- Fundo LIMPO, DESFOCADO ou ESCURO
 
-TERMINAR com: "professional DSLR photography, Canon EOS R5, 24-70mm f/2.8, photorealistic, warm neutral tones, no text, no writing, no labels"
+TERMINAR com: "professional DSLR photography, Canon EOS R5, 85mm f/1.4, photorealistic, warm neutral tones, shallow depth of field, no text, no writing, no labels, no medical equipment"
 """
 
         user_prompt += """

@@ -1264,7 +1264,9 @@ async def generate_copy_for_piece(piece_id: str, request: Request, user: dict = 
         if product:
             claims_for_copy = [c for c in all_claims if product.lower() in c.get("produto", "").lower()][:15]
         else:
-            claims_for_copy = all_claims[:10]
+            # Priorizar claims institucionais
+            inst_claims = [c for c in all_claims if c.get("produto", "").lower() == "institucional"]
+            claims_for_copy = inst_claims[:15] if inst_claims else all_claims[:10]
     except Exception:
         pass
 
@@ -2289,7 +2291,8 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
             if product:
                 claims_for_copy = [c for c in all_claims if product.lower() in c.get("produto", "").lower()][:15]
             else:
-                claims_for_copy = all_claims[:10]
+                inst_claims = [c for c in all_claims if c.get("produto", "").lower() == "institucional"]
+                claims_for_copy = inst_claims[:15] if inst_claims else all_claims[:10]
         except Exception:
             pass
 

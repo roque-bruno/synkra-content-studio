@@ -182,7 +182,11 @@ REGRAS OBRIGATORIAS:
 - NAO invente dados tecnicos, especificacoes ou estatisticas — use APENAS informacoes do briefing e claims aprovados
 - NAO invente numeros como "reducao de 40%", "Ra 99", "multas de R$ 50 mil" sem fonte
 - NAO invente datas comemorativas, eventos ou efemerides que NAO estejam no briefing
-- Se o briefing NAO menciona uma data comemorativa, NAO crie uma — foque no produto/tema"""
+- Se o briefing NAO menciona uma data comemorativa, NAO crie uma — foque no produto/tema
+- ZERO EMOJIS no texto — nenhum emoji em nenhuma parte (nem headline, nem corpo, nem CTA, nem hashtags)
+- Evite frases genericas que servem para qualquer empresa (ex: "transformando vidas", "inovacao que transforma")
+- Use linguagem ESPECIFICA da Salk Medical e do universo hospitalar
+- Se houver claims aprovados acima, UTILIZE-OS no texto — eles sao diferencial real"""
 
         result = await self.llm.complete(
             task="copy",
