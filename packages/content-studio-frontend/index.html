@@ -11027,7 +11027,7 @@ function studioApp() {
       if (this.deploying) return;
       this.deploying = true;
       try {
-        const res = await this.api('/api/deploy', 'POST');
+        const res = await this.api('/api/deploy', { method: 'POST' });
         if (res.status === 'ok') {
           this.notify('Deploy OK: ' + (res.stdout || 'Already up to date'), 'success');
         } else {
