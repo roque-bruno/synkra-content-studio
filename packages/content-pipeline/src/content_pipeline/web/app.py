@@ -67,6 +67,7 @@ from content_pipeline.constants import (
     INSTITUTIONAL_PILLARS,
 )
 from content_pipeline.utils import parse_copy_components, parse_piece_notes
+from content_pipeline.automation.post_composer import compose_post
 from content_pipeline.web.services import StudioService
 
 # Logging configuration
@@ -2643,12 +2644,134 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
         notes_data["image_url"] = result.image_url
         notes_data["image_path"] = result.image_path
         notes_data["image_cost_usd"] = result.cost_usd
+
+        # Compor post final (imagem + headline + logo + gradiente)
+        composed_url = ""
+        try:
+            copy_text = piece.get("copy_text", "")
+            headline = ""
+            if copy_text:
+                parsed = parse_copy_components(copy_text)
+                headline = parsed.get("headline", "")
+            brand = piece.get("brand", DEFAULT_BRAND)
+            logo_dir = svc.config.assets_dir / "logomarcas"
+            target_w, target_h = (1080, 1350)
+            presets = {"feed": (1080, 1350), "square": (1080, 1080), "stories": (1080, 1920)}
+            if format_preset in presets:
+                target_w, target_h = presets[format_preset]
+            composed_path = compose_post(
+                image_path=result.image_path,
+                headline=headline,
+                brand=brand,
+                logo_dir=logo_dir,
+                target_size=(target_w, target_h),
+            )
+            # Servir a imagem composta via URL
+            composed_rel = Path(composed_path).name
+            composed_url = f"/output/generated/{composed_rel}"
+            notes_data["composed_path"] = str(composed_path)
+            notes_data["composed_url"] = composed_url
+            logger.info("Post composed: %s", composed_path)
+        except Exception as e:
+            logger.warning("Post composition failed (raw image still available): %s", e)
+
         update_data = {"notes": json.dumps(notes_data)}
         if piece.get("stage") in ("briefing", "copy", "visual"):
             update_data["stage"] = "review"
         svc.update_piece(piece_id, update_data)
 
-    return {**result.to_dict(), "piece_id": piece_id}
+    resp = {**result.to_dict(), "piece_id": piece_id}
+    if composed_url:
+        resp["composed_url"] = composed_url
+    return resp
+
+
+# =========================================================================
+# POST COMPOSITION (imagem + headline + logo + gradiente)
+# =========================================================================
+
+@app.post("/api/automation/compose-post")
+@limiter.limit("20/minute")
+async def compose_post_endpoint(request: Request, user: dict = Depends(require_auth)):
+    """Compoe post final: imagem de fundo + headline + logo + gradiente."""
+    svc = get_service()
+    data = await request.json()
+    image_path = data.get("image_path", "")
+    if not image_path:
+        raise HTTPException(400, "image_path obrigatório")
+    if not Path(image_path).exists():
+        raise HTTPException(404, f"Imagem não encontrada: {image_path}")
+    brand = data.get("brand", DEFAULT_BRAND)
+    headline = data.get("headline", "")
+    spec_line = data.get("spec_line", "")
+    format_preset = data.get("format_preset", "feed")
+    presets = {"feed": (1080, 1350), "square": (1080, 1080), "stories": (1080, 1920)}
+    target_size = presets.get(format_preset, (1080, 1350))
+    logo_dir = svc.config.assets_dir / "logomarcas"
+    composed_path = compose_post(
+        image_path=image_path,
+        headline=headline,
+        brand=brand,
+        logo_dir=logo_dir,
+        spec_line=spec_line,
+        target_size=target_size,
+    )
+    composed_rel = Path(composed_path).name
+    return {
+        "composed_url": f"/output/generated/{composed_rel}",
+        "composed_path": str(composed_path),
+        "width": target_size[0],
+        "height": target_size[1],
+    }
+
+
+@app.post("/api/production/pieces/{piece_id}/compose")
+@limiter.limit("20/minute")
+async def compose_piece_post(piece_id: str, request: Request, user: dict = Depends(require_auth)):
+    """Compoe post final para uma peca existente (imagem + copy headline + logo)."""
+    svc = get_service()
+    piece = svc.get_piece(piece_id)
+    if not piece:
+        raise HTTPException(404, f"Peça não encontrada: {piece_id}")
+    notes_data = parse_piece_notes(piece)
+    image_path = notes_data.get("image_path", "")
+    if not image_path or not Path(image_path).exists():
+        raise HTTPException(400, "Peça não tem imagem gerada. Gere a imagem primeiro.")
+    copy_text = piece.get("copy_text", "")
+    headline = ""
+    if copy_text:
+        parsed = parse_copy_components(copy_text)
+        headline = parsed.get("headline", "")
+    brand = piece.get("brand", DEFAULT_BRAND)
+    platform = piece.get("platform", DEFAULT_PLATFORM)
+    fmt = piece.get("format", "post")
+    format_preset = "feed"
+    if "stories" in platform or fmt in ("reel", "story"):
+        format_preset = "stories"
+    elif fmt == "carousel":
+        format_preset = "square"
+    presets = {"feed": (1080, 1350), "square": (1080, 1080), "stories": (1080, 1920)}
+    target_size = presets.get(format_preset, (1080, 1350))
+    logo_dir = svc.config.assets_dir / "logomarcas"
+    composed_path = compose_post(
+        image_path=image_path,
+        headline=headline,
+        brand=brand,
+        logo_dir=logo_dir,
+        target_size=target_size,
+    )
+    composed_rel = Path(composed_path).name
+    composed_url = f"/output/generated/{composed_rel}"
+    notes_data["composed_path"] = str(composed_path)
+    notes_data["composed_url"] = composed_url
+    svc.update_piece(piece_id, {"notes": json.dumps(notes_data)})
+    return {
+        "composed_url": composed_url,
+        "composed_path": str(composed_path),
+        "width": target_size[0],
+        "height": target_size[1],
+        "piece_id": piece_id,
+    }
 
 
 # =========================================================================

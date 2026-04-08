@@ -4309,7 +4309,7 @@ body.zen-mode .tab-bar { display: none !important; }
                 <input type="checkbox" :value="piece.id" x-model="comparePieces" :disabled="comparePieces.length >= 3 && !comparePieces.includes(piece.id)" style="width: 16px; height: 16px; accent-color: var(--purple);">
               </div>
               <div class="kc-title" x-text="piece.title || piece.id"></div>
-              <img x-show="piece.image_url" :src="piece.image_url" class="kc-image-thumb" loading="lazy" onerror="this.style.display='none'">
+              <img x-show="piece.image_url || parsePieceNotes(piece.notes).composed_url" :src="parsePieceNotes(piece.notes).composed_url || piece.image_url" class="kc-image-thumb" loading="lazy" onerror="this.style.display='none'">
               <div class="kc-meta">
                 <span class="badge" :class="'badge-' + piece.brand" x-text="piece.brand"></span>
                 <span x-show="piece.product" class="kc-product-badge" x-text="piece.product"></span>
@@ -8679,11 +8679,11 @@ body.zen-mode .tab-bar { display: none !important; }
 
       <!-- Preview: Image + Video side by side -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
+        <template x-if="parsePieceNotes(selectedPiece?.notes).composed_url || parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
           <div class="card" style="margin-bottom: 0;">
-            <div class="card-title" style="font-size: 0.75rem;">Imagem</div>
-            <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
-              <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
+            <div class="card-title" style="font-size: 0.75rem;" x-text="parsePieceNotes(selectedPiece?.notes).composed_url ? 'Post Composto' : 'Imagem'"></div>
+            <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).composed_url || parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
+              <img :src="parsePieceNotes(selectedPiece?.notes).composed_url || parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
               <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
             </div>
           </div>
@@ -8755,13 +8755,24 @@ body.zen-mode .tab-bar { display: none !important; }
         </div>
       </template>
 
-      <!-- Image -->
+      <!-- Composed Post (prioridade se existir) -->
+      <template x-if="parsePieceNotes(selectedPiece?.notes).composed_url">
+        <div class="card" style="margin-bottom: 12px; border-left: 3px solid var(--accent-green);">
+          <div class="card-title" style="font-size: 0.75rem; color: var(--accent-green);">Post Composto (pronto para publicar)</div>
+          <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).composed_url, selectedPiece?.title + ' (composto)')">
+            <img :src="parsePieceNotes(selectedPiece?.notes).composed_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+            <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Image raw -->
       <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
         <div class="card" style="margin-bottom: 12px;">
-          <div class="card-title" style="font-size: 0.75rem;">Imagem Gerada</div>
+          <div class="card-title" style="font-size: 0.75rem;">Imagem Original (sem composicao)</div>
           <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
-            <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
-            <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
+            <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
+            <div class="img-click-overlay">&#128269; Ver original</div>
           </div>
         </div>
       </template>
@@ -8800,6 +8811,10 @@ body.zen-mode .tab-bar { display: none !important; }
           </button>
           <button class="btn" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple);" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).nb2_prompt">
             &#128248; Gerar Imagem
+          </button>
+          <button class="btn" style="background: var(--green-bg, #0a2a1a); border-color: var(--accent-green); color: var(--accent-green);" @click="composePiecePost(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).image_path && selectedPiece?.copy_text">
+            <span x-show="!pieceActionLoading">&#127912; Compor Post</span>
+            <span x-show="pieceActionLoading">Compondo...</span>
           </button>
           <button class="btn" style="background: var(--cyan-bg); border-color: var(--cyan); color: var(--cyan);" @click="animatePieceImage(selectedPiece?.id)" :disabled="pieceActionLoading" x-show="parsePieceNotes(selectedPiece?.notes).image_path">
             &#127909; Animar Video
@@ -10251,6 +10266,25 @@ function studioApp() {
         this.showPieceDetail = true;
         this.tab = 'board';
       }
+      this.pieceActionLoading = false;
+    },
+
+    async composePiecePost(pieceId) {
+      if (!pieceId) return;
+      this.pieceActionLoading = true;
+      try {
+        const result = await this.api(`/api/production/pieces/${pieceId}/compose`, {
+          method: 'POST', body: JSON.stringify({}),
+        });
+        if (result.composed_url) {
+          this.notify('Post composto com sucesso!');
+          await this.loadPieces();
+          await this.refreshSelectedPiece(pieceId);
+          this.drawerTab = 'visual';
+        } else {
+          this.notify('Erro ao compor post', 'error');
+        }
+      } catch(e) { this.notify('Erro: ' + e.message, 'error'); }
       this.pieceActionLoading = false;
     },
 

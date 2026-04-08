@@ -20,8 +20,14 @@ from pathlib import Path
 from typing import Optional
 
 import httpx
+from PIL import Image as PILImage
 
 logger = logging.getLogger(__name__)
+
+
+def _snap_to_64(value: int) -> int:
+    """Arredonda para o múltiplo de 64 mais próximo (mínimo 64). fal.ai exige isso."""
+    return max(64, round(value / 64) * 64)
 
 COST_NB2 = 0.08
 COST_FLUX_DEV = 0.04
@@ -146,9 +152,15 @@ class FalImageGenerator:
         return bool(self.api_key)
 
     def _get_dimensions(self, format_preset: str = "", width: int = 0, height: int = 0) -> tuple[int, int]:
+        """Resolve dimensões finais (target exato, sem snap)."""
         if format_preset and format_preset in _get_dimension_presets():
             return _get_dimension_presets()[format_preset]
         return (width or 1080, height or 1350)
+
+    @staticmethod
+    def _get_api_dimensions(w: int, h: int) -> tuple[int, int]:
+        """Snap para múltiplo de 64 (exigência fal.ai/diffusion models)."""
+        return (_snap_to_64(w), _snap_to_64(h))
 
     async def _upload_to_fal_cdn(self, file_path: Path) -> Optional[str]:
         """Upload local file to fal.ai CDN storage, return public URL. Cached."""
@@ -222,6 +234,8 @@ class FalImageGenerator:
 
         start = time.time()
         w, h = self._get_dimensions(format_preset, width, height)
+        # Snap para múltiplo de 64 para a API (fal.ai exige)
+        api_w, api_h = self._get_api_dimensions(w, h)
 
         # /edit exige image_urls — sem produto usa /generate (text-to-image)
         if img_url:
@@ -232,7 +246,7 @@ class FalImageGenerator:
 
         payload = {
             "prompt": prompt,
-            "image_size": {"width": w, "height": h},
+            "image_size": {"width": api_w, "height": api_h},
         }
         if img_url:
             payload["image_urls"] = [img_url]
@@ -240,7 +254,7 @@ class FalImageGenerator:
             payload["negative_prompt"] = negative_prompt
 
         try:
-            logger.info("NB2 generating: %s | product=%s | %dx%d", model_id, product, w, h)
+            logger.info("NB2 generating: %s | product=%s | target=%dx%d api=%dx%d", model_id, product, w, h, api_w, api_h)
             logger.info("NB2 product URL: %s", img_url)
 
             async with httpx.AsyncClient(timeout=180) as client:
@@ -268,7 +282,7 @@ class FalImageGenerator:
             image_info = images[0]
             image_url = image_info.get("url", "") if isinstance(image_info, dict) else str(image_info)
             request_id = str(int(time.time() * 1000))
-            image_path = await self._download(image_url, request_id)
+            image_path = await self._download(image_url, request_id, target_size=(w, h))
 
             elapsed = time.time() - start
 
@@ -375,11 +389,12 @@ class FalImageGenerator:
 
         start = time.time()
         w, h = self._get_dimensions(format_preset, width, height)
+        api_w, api_h = self._get_api_dimensions(w, h)
         model_id = self.MODELS.get(model, model)
 
         payload = {
             "prompt": prompt,
-            "image_size": {"width": w, "height": h},
+            "image_size": {"width": api_w, "height": api_h},
             "num_inference_steps": num_inference_steps,
             "guidance_scale": guidance_scale,
             "num_images": 1,
@@ -411,7 +426,7 @@ class FalImageGenerator:
             image_info = images[0]
             image_url = image_info.get("url", "")
             request_id = str(int(time.time() * 1000))
-            image_path = await self._download(image_url, request_id)
+            image_path = await self._download(image_url, request_id, target_size=(w, h))
 
             cost = COST_FLUX_PRO if "pro" in model else COST_FLUX_DEV
             elapsed = time.time() - start
@@ -454,8 +469,8 @@ class FalImageGenerator:
             logger.error("Erro ao gerar imagem: %s", e, exc_info=True)
             return ImageResult(success=False, error=str(e), elapsed_seconds=time.time() - start, model_used=model)
 
-    async def _download(self, url: str, request_id: str) -> Path:
-        """Baixa imagem gerada."""
+    async def _download(self, url: str, request_id: str, target_size: tuple[int, int] | None = None) -> Path:
+        """Baixa imagem gerada e opcionalmente redimensiona para target_size exato."""
         ext = "png"
         if ".jpg" in url or ".jpeg" in url:
             ext = "jpg"
@@ -469,6 +484,17 @@ class FalImageGenerator:
             resp = await client.get(url)
             resp.raise_for_status()
             out_path.write_bytes(resp.content)
+
+        # Resize para dimensões exatas se a API retornou tamanho diferente (snap de 64)
+        if target_size:
+            try:
+                img = PILImage.open(out_path)
+                if img.size != target_size:
+                    logger.info("Resizing %s: %s → %s", out_path.name, img.size, target_size)
+                    img = img.resize(target_size, PILImage.LANCZOS)
+                    img.save(out_path, quality=95)
+            except Exception as e:
+                logger.warning("Resize failed (keeping original): %s", e)
 
         logger.info("Imagem salva: %s", out_path)
         return out_path
