@@ -2310,14 +2310,18 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     objective = data.get("objective", "")
 
     # Inferir produto se nao especificado (sugestao, nao obrigatorio)
+    # Pilares institucionais NUNCA inferem produto — geram conteudo sem produto (FLUX)
     inferred_product = ""
-    if not product:
+    institutional_pillars = ("datas_comemorativas", "institucional")
+    if not product and pillar not in institutional_pillars:
         inferred_product = svc.auto_prompt.infer_product(
             objective=objective, pillar=pillar, title=data.get("title", ""),
         )
         if inferred_product:
             product = inferred_product
             logger.info("Product inferred from context: %s", product)
+    elif not product and pillar in institutional_pillars:
+        logger.info("Pillar '%s' is institutional — no product inference, using FLUX", pillar)
 
     logger.info(
         "produce_single_piece: brand=%s, product=%s (inferred=%s), pillar=%s, platform=%s, objective=%s",
@@ -2358,7 +2362,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     except Exception as e:
         logger.error("produce_single_piece briefing error: %s", e, exc_info=True)
         result["errors"].append(f"Briefing: {e}")
-        briefing_text = data.get("briefing", f"Post {pillar} sobre {product} para {platform}. {objective}")
+        briefing_text = data.get("briefing", f"Post {pillar} {'sobre ' + product if product else 'institucional'} para {platform}. {objective}")
 
     # Step 3: Copy
     try:
@@ -2399,7 +2403,7 @@ async def produce_single_piece(request: Request, user: dict = Depends(require_au
     # Step 4: NB2 Prompt (com contexto do briefing e objetivo)
     try:
         prompt_result = await svc.auto_prompt.generate_with_llm(
-            product=product or "lev", brand=brand,
+            product=product, brand=brand,
             concept=data.get("concept", ""),
             briefing=briefing_text,
             objective=objective,
