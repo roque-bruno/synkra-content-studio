@@ -734,6 +734,7 @@ tr:hover td { color: var(--text-primary); background: rgba(255,255,255,0.02); }
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+  position: relative;
 }
 
 .modal-header {
@@ -8488,10 +8489,16 @@ body.zen-mode .tab-bar { display: none !important; }
         <textarea class="form-textarea" x-model="newPiece.notes" placeholder="Observacoes adicionais..."></textarea>
       </div>
     </div>
+    <!-- Loading overlay dentro do modal -->
+    <div x-show="quickProducing" x-transition style="position: absolute; inset: 0; background: rgba(0,0,0,0.85); border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
+      <div style="width: 36px; height: 36px; border: 3px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px;"></div>
+      <div style="font-weight: 700; font-size: 0.95rem; color: var(--accent); margin-bottom: 6px;">Produzindo peca...</div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary); text-align: center; max-width: 280px;">Gerando briefing, copy e prompt visual.<br>Isso leva alguns segundos.</div>
+    </div>
     <div class="modal-footer">
-      <button class="btn" @click="showNewPiece = false; newPieceAutoMode = false; newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'post', persona_target: '' }">Cancelar</button>
+      <button class="btn" @click="showNewPiece = false; newPieceAutoMode = false; newPiece = { title: '', brand: 'salk', product: '', pillar: 'produto', platform: 'instagram', format: 'post', persona_target: '' }" :disabled="quickProducing">Cancelar</button>
       <button class="btn btn-primary" :disabled="!newPiece.title.trim()" @click="createNewPiece()" x-show="!newPieceAutoMode">Criar Peca</button>
-      <button class="btn btn-primary" :disabled="!newPiece.title.trim() || quickProducing" @click="quickProduce = { brand: newPiece.brand, product: newPiece.product, platform: newPiece.platform, pillar: newPiece.pillar, format: newPiece.format, objective: newPiece.objective || newPiece.title }; showNewPiece = false; newPieceAutoMode = false; runQuickProduce()" x-show="newPieceAutoMode">
+      <button class="btn btn-primary" :disabled="!newPiece.title.trim() || quickProducing" @click="quickProduce = { brand: newPiece.brand, product: newPiece.product, platform: newPiece.platform, pillar: newPiece.pillar, format: newPiece.format, objective: newPiece.objective || newPiece.title }; runQuickProduce()" x-show="newPieceAutoMode">
         <span x-show="!quickProducing">&#9889; Produzir Tudo</span>
         <span x-show="quickProducing">Produzindo...</span>
       </button>
@@ -10445,12 +10452,16 @@ function studioApp() {
 
     async runQuickProduce() {
       this.quickProducing = true;
-      this.tab = 'board';
+      // Modal fica aberto mostrando loading — fecha so quando terminar
       try {
         const result = await this.api('/api/automation/produce-piece', {
           method: 'POST',
           body: JSON.stringify(this.quickProduce),
         });
+        // Fechar modal e ir pro Board
+        this.showNewPiece = false;
+        this.newPieceAutoMode = false;
+        this.tab = 'board';
         const steps = result.total_steps || 0;
         const errors = (result.errors || []);
         if (errors.length > 0 && steps <= 1) {
@@ -10464,7 +10475,6 @@ function studioApp() {
         // Recarregar pecas e abrir drawer da peca recem-criada
         await this.loadPieces();
         if (result.piece_id) {
-          // Retry: se loadPieces nao trouxe a peca, tentar mais uma vez
           let newPiece = this.pieces.find(p => p.id === result.piece_id);
           if (!newPiece) {
             await new Promise(r => setTimeout(r, 500));
