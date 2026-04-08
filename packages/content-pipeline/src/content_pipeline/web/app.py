@@ -2679,21 +2679,23 @@ async def list_atomize_platforms():
 @app.post("/api/automation/generate-image")
 @limiter.limit("10/minute")
 async def generate_image(request: Request, user: dict = Depends(require_auth)):
-    """Gera imagem via fal.ai FLUX a partir de prompt."""
+    """Gera imagem via fal.ai — NB2 (com produto) ou FLUX (sem produto)."""
     svc = get_service()
     if not svc.image_generator or not svc.image_generator.configured:
         raise HTTPException(400, "FAL_API_KEY não configurada. Vá em Configurações.")
     data = await request.json()
+    product = data.get("product", "") or data.get("product_type", "")
     result = await svc.image_generator.generate_image(
         prompt=data.get("prompt", ""),
         width=data.get("width", 1080),
         height=data.get("height", 1350),
-        negative_prompt=data.get("negative_prompt", ""),
+        negative_prompt=data.get("negative_prompt", "text, logo, watermark, blurry, low quality"),
         model=data.get("model", "flux-dev"),
         format_preset=data.get("format_preset", ""),
+        product=product,
     )
-    _create_notification("Imagem gerada", "Nova imagem NB2 gerada com sucesso", "success")
-    _log_activity("image_generated", "Imagem gerada via NB2/fal.ai")
+    _create_notification("Imagem gerada", f"Imagem gerada via {'NB2' if product else 'FLUX'}", "success")
+    _log_activity("image_generated", f"Imagem gerada via {'NB2' if product else 'FLUX'}/fal.ai")
     return result.to_dict()
 
 

@@ -310,16 +310,40 @@ class FalImageGenerator:
         product: str = "",
         product_image_url: str = "",
     ) -> ImageResult:
-        """Gera imagem. NB2 sempre como padrão (com ou sem produto). FLUX só como fallback."""
-        # NB2 é sempre o padrão — funciona com produto (image-to-image) ou sem (prompt-only)
-        return await self.generate_nb2(
+        """Gera imagem. NB2 para peças com produto, FLUX para institucional/sem produto.
+
+        NB2 /edit requer image_urls — só funciona com produto.
+        Sem produto (datas comemorativas, institucional) → FLUX text-to-image.
+        """
+        # NB2 /edit requer imagem de referência — só usar quando há produto
+        if product or product_image_url:
+            result = await self.generate_nb2(
+                prompt=prompt,
+                product=product,
+                product_image_url=product_image_url,
+                negative_prompt=negative_prompt,
+                width=width,
+                height=height,
+                format_preset=format_preset,
+            )
+            if result.success:
+                return result
+            # NB2 falhou — fallback para FLUX
+            logger.warning("NB2 falhou (%s), tentando FLUX fallback", result.error)
+
+        # Sem produto ou NB2 falhou → FLUX text-to-image
+        if not product and not product_image_url:
+            logger.info("Sem produto — usando FLUX text-to-image (NB2 /edit requer imagem)")
+        return await self.generate_flux_fallback(
             prompt=prompt,
-            product=product,
-            product_image_url=product_image_url,
             negative_prompt=negative_prompt,
+            model=model,
             width=width,
             height=height,
             format_preset=format_preset,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            seed=seed,
         )
 
     async def generate_flux_fallback(
