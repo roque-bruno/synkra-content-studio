@@ -177,8 +177,10 @@ REGRAS OBRIGATORIAS:
 - Inclua CTA consultivo sutil (nao agressivo)
 - Se houver produto especifico, MENCIONE pelo nome e destaque beneficios reais
 - Se houver objetivo/tema, o copy DEVE abordar esse tema (ex: Pascoa, lancamento, etc.)
-- NAO invente dados tecnicos ou estatisticas — use apenas informacoes do briefing
-- NAO invente numeros como "reducao de 40%" ou "multas de R$ 50 mil" sem fonte"""
+- NAO invente dados tecnicos, especificacoes ou estatisticas — use APENAS informacoes do briefing e claims aprovados
+- NAO invente numeros como "reducao de 40%", "Ra 99", "multas de R$ 50 mil" sem fonte
+- NAO invente datas comemorativas, eventos ou efemerides que NAO estejam no briefing
+- Se o briefing NAO menciona uma data comemorativa, NAO crie uma — foque no produto/tema"""
 
         result = await self.llm.complete(
             task="copy",

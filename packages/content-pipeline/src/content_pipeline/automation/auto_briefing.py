@@ -158,9 +158,13 @@ class AutoBriefing:
 {brand_context}
 {claims_context}
 
-IMPORTANTE: O briefing deve ser ESPECIFICO e RELEVANTE ao tema/objetivo informado.
-Se o tema e uma data comemorativa, conecte com o produto de forma natural e inteligente.
-Use claims reais do banco acima. Seja criativo mas preciso.
+REGRAS OBRIGATORIAS:
+- O briefing deve ser ESPECIFICO e RELEVANTE ao tema/objetivo informado.
+- Se uma data comemorativa foi informada no Contexto/Tema, conecte com o produto de forma natural.
+- NUNCA invente datas comemorativas, eventos ou efemérides que NAO foram explicitamente informados acima.
+- NUNCA invente dados tecnicos, especificacoes, numeros ou estatisticas — use SOMENTE os claims aprovados acima.
+- Se nao ha data comemorativa no contexto, foque em conteudo de PRODUTO ou EDUCATIVO do pilar informado.
+- Use claims reais do banco acima. Seja criativo mas preciso.
 
 Gere o briefing completo no formato YAML especificado."""
 
