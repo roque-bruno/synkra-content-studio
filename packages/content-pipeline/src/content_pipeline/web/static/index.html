@@ -10544,7 +10544,8 @@ function studioApp() {
       try {
         await this.api(`/api/production/pieces/${id}`, { method: 'DELETE' });
         this.showPieceDetail = false;
-        this.pieces = this.pieces.filter(p => p.id !== id);
+        this.selectedPiece = null;
+        this.pieces = [...this.pieces.filter(p => p.id !== id)];
         this.notify('Peca excluida');
       } catch(e) { this.notify('Erro ao excluir: ' + e.message, 'error'); }
     },
@@ -12250,7 +12251,9 @@ function studioApp() {
       if (!confirm('Excluir "' + (piece.title || piece.id) + '"?')) return;
       try {
         await this.api('/api/production/pieces/' + piece.id, { method: 'DELETE' });
-        this.pieces = this.pieces.filter(p => p.id !== piece.id);
+        this.pieces = [...this.pieces.filter(p => p.id !== piece.id)];
+        this.showPieceDetail = false;
+        this.selectedPiece = null;
         this.notify('Peca excluida');
       } catch(e) { this.notify('Erro: ' + e.message, 'error'); }
     },
