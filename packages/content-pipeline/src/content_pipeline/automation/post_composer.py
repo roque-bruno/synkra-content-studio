@@ -198,33 +198,34 @@ def compose_post(
     brand_color = BRAND_COLORS.get(brand.lower(), BRAND_COLORS["salk"])
 
     # ════════════════════════════════════════════════════════════
-    # 1. GRADIENTE BOTTOM (so a partir de 65%, curva ** 1.8)
-    #    A foto e protagonista. Gradiente so escurece o terco inferior.
+    # 1. GRADIENTE BOTTOM (Apex: bloco subiu p/ 74%, gradient
+    #    comeca em 45% para cobrir eyebrow tambem)
     # ════════════════════════════════════════════════════════════
     grad = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw_grad = ImageDraw.Draw(grad)
-    grad_start = int(height * 0.55)  # comeca no terco inferior
+    grad_start = int(height * 0.45)  # era 55%
     for y in range(grad_start, height):
         progress = (y - grad_start) / (height - grad_start)
-        alpha = int(210 * (progress ** 1.8))
+        alpha = int(220 * (progress ** 1.6))  # alpha 220, curva 1.6
         draw_grad.line([(0, y), (width, y)], fill=(0, 0, 0, alpha))
     img = Image.alpha_composite(img, grad)
 
     # ════════════════════════════════════════════════════════════
-    # 2. GRADIENTE TOP suave (so para destacar logo em fundos claros)
+    # 2. GRADIENTE TOP (mais forte — Apex: logo precisa ser legivel
+    #    em qualquer foto, fundos claros estavam apagando a marca)
     # ════════════════════════════════════════════════════════════
     grad_top = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw_gt = ImageDraw.Draw(grad_top)
-    top_h = int(height * 0.12)  # 12%
+    top_h = int(height * 0.22)  # 22% (era 12%)
     for y in range(top_h):
-        alpha = int(95 * (1 - y / top_h) ** 1.3)
+        alpha = int(160 * (1 - y / top_h) ** 1.5)  # alpha 160 (era 95)
         draw_gt.line([(0, y), (width, y)], fill=(0, 0, 0, alpha))
     img = Image.alpha_composite(img, grad_top)
 
     # ════════════════════════════════════════════════════════════
-    # 3. LOGO TOP-RIGHT (170px, sem badge — gradiente top resolve)
+    # 3. LOGO TOP-RIGHT (185px — Apex: marca com mais presenca)
     # ════════════════════════════════════════════════════════════
-    logo_w_target = 170
+    logo_w_target = 185
     logo_filename = LOGO_FILES.get(brand.lower(), "logo-salk-white.png")
     logo_path = _STATIC_IMG_DIR / logo_filename
     if not logo_path.exists() and logo_dir:
@@ -240,7 +241,7 @@ def compose_post(
             logo_h = int(logo.height * ratio)
             logo = logo.resize((logo_w_target, logo_h), Image.LANCZOS)
             logo_x = width - margin - logo_w_target
-            logo_y = margin
+            logo_y = margin + 8  # Apex: leve respiro do topo
             img.paste(logo, (logo_x, logo_y), logo)
         except Exception as e:
             logger.warning("Falha ao colocar logo: %s", e)
@@ -261,78 +262,84 @@ def compose_post(
     # Eyebrow vem do split do headline OU do parametro subline (mas split tem prioridade)
     eyebrow_text = eyebrow_from_split if eyebrow_from_split else (subline.strip() if subline else "")
 
-    # Main title: tenta tamanhos decrescentes ate caber em max 3 linhas
+    # Main title: Apex prescreveu tamanhos maiores (84/76/68/60) e
+    # line_spacing 0.92 (era 0.98) — tipografia keynote tight
     main_lines: list[str] = []
     main_total_h = 0
     main_line_h = 0
     font_main = None
     if main_title:
-        for size in (64, 58, 52, 46):
+        for size in (84, 76, 68, 60):
             font_main = _load_font(size, weight="black")
             lines = _wrap_text(main_title.upper(), font_main, text_max_w)
             if len(lines) <= 3:
                 main_lines = lines
-                _, main_total_h, main_line_h = _measure_lines(lines, font_main, line_spacing=0.98)
+                _, main_total_h, main_line_h = _measure_lines(lines, font_main, line_spacing=0.92)
                 break
         else:
-            font_main = _load_font(46, weight="black")
+            font_main = _load_font(60, weight="black")
             main_lines = _wrap_text(main_title.upper(), font_main, text_max_w)[:3]
-            _, main_total_h, main_line_h = _measure_lines(main_lines, font_main, line_spacing=0.98)
+            _, main_total_h, main_line_h = _measure_lines(main_lines, font_main, line_spacing=0.92)
 
-    # Eyebrow: 22pt regular, sem caps, cor cinza claro
+    # Eyebrow: Apex prescreveu 28pt BOLD UPPERCASE accent color (era 22 regular cinza)
+    # Kicker editorial precisa gritar a categoria, nao sussurrar
     eyebrow_lines: list[str] = []
     eyebrow_total_h = 0
     eyebrow_line_h = 0
     font_eyebrow = None
     if eyebrow_text:
-        font_eyebrow = _load_font(22, weight="regular")
+        font_eyebrow = _load_font(28, weight="bold")
+        eyebrow_text = eyebrow_text.upper()
         eyebrow_lines = _wrap_text(eyebrow_text, font_eyebrow, text_max_w)[:2]
         _, eyebrow_total_h, eyebrow_line_h = _measure_lines(eyebrow_lines, font_eyebrow, line_spacing=1.25)
 
-    # CTA link-style
+    # CTA link-style com regua horizontal (Apex: presenca de "link editorial")
     cta_text = _truncate_cta(cta)
     font_cta = None
     cta_w_px = 0
     cta_h_px = 0
     if cta_text:
-        font_cta = _load_font(18, weight="bold")
+        font_cta = _load_font(20, weight="bold")  # 18 -> 20
         bbox = font_cta.getbbox(cta_text)
         cta_w_px = bbox[2] - bbox[0]
         cta_h_px = bbox[3] - bbox[1]
 
     # ────────────────────────────────────────────────────────────
-    # POSICIONAMENTO (de cima para baixo, ancorado em 82% altura)
-    # eyebrow → gap 16px → headline → gap 32px → CTA
+    # POSICIONAMENTO (Apex: baseline 74% — terco inferior real)
+    # eyebrow → gap 24px → headline → gap 44px (com regua) → CTA
     # ────────────────────────────────────────────────────────────
     # Footer: spec_line + anvisa
     footer_reserve = 50 if (spec_line or anvisa_badge) else 20
     footer_y = height - margin - footer_reserve
 
-    # Bloco de texto: posicionado em ~78% e estendendo para baixo
-    # Ancora: baseline do main_title em 82% da altura
-    block_baseline = int(height * 0.82)
+    # Bloco de texto: ancora baseline do main_title em 74% (era 82%)
+    # Libera respiro inferior — terco inferior classico editorial
+    block_baseline = int(height * 0.74)
 
     # Y do main_title (topo)
     main_y = block_baseline - main_total_h
 
-    # Y do eyebrow (acima do main, com gap 16)
-    eyebrow_y = main_y - eyebrow_total_h - 16 if eyebrow_lines else 0
+    # Y do eyebrow (acima do main, com gap 24 — era 16)
+    eyebrow_y = main_y - eyebrow_total_h - 24 if eyebrow_lines else 0
 
-    # Y do CTA (abaixo do main, com gap 32)
-    cta_y = block_baseline + 32
+    # Y do CTA (abaixo do main, com gap 44 — era 32)
+    # A regua sera desenhada 12px acima do texto do CTA
+    cta_y = block_baseline + 44
 
     # Garantir que CTA nao colide com footer
     if cta_text and (cta_y + cta_h_px > footer_y - 10):
         cta_y = footer_y - cta_h_px - 10
 
     # ────────────────────────────────────────────────────────────
-    # DESENHAR: eyebrow (cinza claro, sem caps)
+    # DESENHAR: eyebrow (Apex: accent color bold uppercase)
+    # Kicker editorial colorido — The Economist style
     # ────────────────────────────────────────────────────────────
     if eyebrow_lines and font_eyebrow:
         y = eyebrow_y
+        accent_rgb = brand_color["accent"]
         for line in eyebrow_lines:
             _draw_text_with_blur_shadow(
-                draw, (margin, y), line, font_eyebrow, (220, 220, 220, 240)
+                draw, (margin, y), line, font_eyebrow, accent_rgb + (255,)
             )
             y += eyebrow_line_h
 
@@ -348,10 +355,18 @@ def compose_post(
             y += main_line_h
 
     # ────────────────────────────────────────────────────────────
-    # DESENHAR: CTA link-style (sem box, accent color)
+    # DESENHAR: CTA link-style com regua horizontal accent
+    # (Apex: presenca de "link editorial" tipo Monocle)
     # ────────────────────────────────────────────────────────────
     if cta_text and font_cta:
         accent_rgb = brand_color["accent"]
+        # Regua horizontal 40px / 2px stroke / 12px acima do texto
+        rule_y = cta_y - 12
+        draw.line(
+            [(margin, rule_y), (margin + 40, rule_y)],
+            fill=accent_rgb + (255,),
+            width=2,
+        )
         _draw_text_with_blur_shadow(
             draw,
             (margin, cta_y),
