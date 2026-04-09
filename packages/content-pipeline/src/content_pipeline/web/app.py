@@ -2650,9 +2650,17 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
         try:
             copy_text = piece.get("copy_text", "")
             headline = ""
+            subline = ""
+            cta_txt = ""
             if copy_text:
                 parsed = parse_copy_components(copy_text)
                 headline = parsed.get("headline", "")
+                cta_txt = parsed.get("cta", "")
+                body = parsed.get("body", "")
+                # Subline = primeira frase curta do body (max ~110 chars)
+                if body:
+                    first = body.split("\n")[0].strip()
+                    subline = first[:110] if len(first) > 110 else first
             brand = piece.get("brand", DEFAULT_BRAND)
             logo_dir = svc.config.assets_dir / "logomarcas"
             target_w, target_h = (1080, 1350)
@@ -2662,6 +2670,8 @@ async def generate_image_for_piece(piece_id: str, request: Request, user: dict =
             composed_path = compose_post(
                 image_path=result.image_path,
                 headline=headline,
+                subline=subline,
+                cta=cta_txt,
                 brand=brand,
                 logo_dir=logo_dir,
                 target_size=(target_w, target_h),
@@ -2703,6 +2713,8 @@ async def compose_post_endpoint(request: Request, user: dict = Depends(require_a
         raise HTTPException(404, f"Imagem não encontrada: {image_path}")
     brand = data.get("brand", DEFAULT_BRAND)
     headline = data.get("headline", "")
+    subline = data.get("subline", "")
+    cta_txt = data.get("cta", "")
     spec_line = data.get("spec_line", "")
     format_preset = data.get("format_preset", "feed")
     presets = {"feed": (1080, 1350), "square": (1080, 1080), "stories": (1080, 1920)}
@@ -2711,6 +2723,8 @@ async def compose_post_endpoint(request: Request, user: dict = Depends(require_a
     composed_path = compose_post(
         image_path=image_path,
         headline=headline,
+        subline=subline,
+        cta=cta_txt,
         brand=brand,
         logo_dir=logo_dir,
         spec_line=spec_line,
@@ -2739,9 +2753,16 @@ async def compose_piece_post(piece_id: str, request: Request, user: dict = Depen
         raise HTTPException(400, "Peça não tem imagem gerada. Gere a imagem primeiro.")
     copy_text = piece.get("copy_text", "")
     headline = ""
+    subline = ""
+    cta_txt = ""
     if copy_text:
         parsed = parse_copy_components(copy_text)
         headline = parsed.get("headline", "")
+        cta_txt = parsed.get("cta", "")
+        body = parsed.get("body", "")
+        if body:
+            first = body.split("\n")[0].strip()
+            subline = first[:110] if len(first) > 110 else first
     brand = piece.get("brand", DEFAULT_BRAND)
     platform = piece.get("platform", DEFAULT_PLATFORM)
     fmt = piece.get("format", "post")
@@ -2756,6 +2777,8 @@ async def compose_piece_post(piece_id: str, request: Request, user: dict = Depen
     composed_path = compose_post(
         image_path=image_path,
         headline=headline,
+        subline=subline,
+        cta=cta_txt,
         brand=brand,
         logo_dir=logo_dir,
         target_size=target_size,

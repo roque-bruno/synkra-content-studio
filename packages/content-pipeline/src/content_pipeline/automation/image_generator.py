@@ -261,12 +261,22 @@ class FalImageGenerator:
 
         aspect_ratio = _aspect_for(w, h)
 
+        # Reforco anti-deformidade anatomica (NB2 nao tem negative_prompt)
+        anatomy_guard = (
+            " Anatomically perfect human bodies. Each person has exactly two hands "
+            "with five fingers each, two arms, two legs. No extra limbs, no duplicated "
+            "body parts, no malformed hands, no deformed faces. Photorealistic medical "
+            "professionals with natural posture."
+        )
+        full_prompt = prompt.rstrip(". ") + "." + anatomy_guard
+
         payload = {
-            "prompt": prompt,
+            "prompt": full_prompt,
             "aspect_ratio": aspect_ratio,
             "resolution": "2K",
             "num_images": 1,
             "output_format": "png",
+            "thinking_level": "high",
         }
         if img_url:
             payload["image_urls"] = [img_url]
