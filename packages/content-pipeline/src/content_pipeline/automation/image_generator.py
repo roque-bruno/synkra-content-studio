@@ -244,19 +244,27 @@ class FalImageGenerator:
             model_id = self.MODELS["nb2-generate"]  # fal-ai/nano-banana-2
             logger.info("NB2 prompt-only mode (no product image) — usando endpoint generate")
 
-        # NB2 aceita image_size como string predefinida ou dict {width, height}
-        # Strings predefinidas garantem proporcao correta sem snap-to-64
-        NB2_SIZE_MAP = {
-            (1080, 1350): "portrait_4_3",   # Instagram feed
-            (1080, 1080): "square",          # Instagram square
-            (1080, 1920): "portrait_16_9",   # Stories
-            (1920, 1080): "landscape_16_9",  # Landscape
-        }
-        image_size = NB2_SIZE_MAP.get((w, h), {"width": api_w, "height": api_h})
+        # NB2 (Google Gemini Imagen) usa aspect_ratio, NAO image_size.
+        # Aspect ratios suportados: "1:1", "3:4", "4:3", "9:16", "16:9"
+        # Instagram feed 1080x1350 = 4:5, mais proximo suportado = 3:4 (0.75 vs 0.8)
+        def _aspect_for(w_: int, h_: int) -> str:
+            ratio = w_ / h_
+            # Mapeia para o aspect ratio suportado mais proximo
+            candidates = {
+                "1:1": 1.0,
+                "3:4": 0.75,
+                "4:3": 4/3,
+                "9:16": 9/16,
+                "16:9": 16/9,
+            }
+            return min(candidates.items(), key=lambda kv: abs(kv[1] - ratio))[0]
+
+        aspect_ratio = _aspect_for(w, h)
 
         payload = {
             "prompt": prompt,
-            "image_size": image_size,
+            "aspect_ratio": aspect_ratio,
+            "num_images": 1,
         }
         if img_url:
             payload["image_urls"] = [img_url]
@@ -264,7 +272,7 @@ class FalImageGenerator:
             payload["negative_prompt"] = negative_prompt
 
         try:
-            logger.info("NB2 generating: %s | product=%s | target=%dx%d api=%dx%d", model_id, product, w, h, api_w, api_h)
+            logger.info("NB2 generating: %s | product=%s | target=%dx%d aspect=%s", model_id, product, w, h, aspect_ratio)
             logger.info("NB2 product URL: %s", img_url)
 
             async with httpx.AsyncClient(timeout=180) as client:
@@ -495,13 +503,33 @@ class FalImageGenerator:
             resp.raise_for_status()
             out_path.write_bytes(resp.content)
 
-        # Resize para dimensões exatas se a API retornou tamanho diferente (snap de 64)
+        # Ajusta para target_size SEM distorcer: crop centralizado para igualar
+        # aspect ratio, depois resize proporcional. NUNCA stretch.
         if target_size:
             try:
                 img = PILImage.open(out_path)
                 if img.size != target_size:
-                    logger.info("Resizing %s: %s → %s", out_path.name, img.size, target_size)
-                    img = img.resize(target_size, PILImage.LANCZOS)
+                    tw, th = target_size
+                    sw, sh = img.size
+                    src_ratio = sw / sh
+                    tgt_ratio = tw / th
+                    # Crop centralizado para igualar aspect ratio
+                    if abs(src_ratio - tgt_ratio) > 0.01:
+                        if src_ratio > tgt_ratio:
+                            # Source mais larga: cortar laterais
+                            new_w = int(sh * tgt_ratio)
+                            left = (sw - new_w) // 2
+                            img = img.crop((left, 0, left + new_w, sh))
+                        else:
+                            # Source mais alta: cortar topo/rodape
+                            new_h = int(sw / tgt_ratio)
+                            top = (sh - new_h) // 2
+                            img = img.crop((0, top, sw, top + new_h))
+                        logger.info("Cropped %s: (%d,%d)→(%d,%d) para aspect %.3f", out_path.name, sw, sh, *img.size, tgt_ratio)
+                    # Resize proporcional para target exato
+                    if img.size != target_size:
+                        logger.info("Scaling %s: %s → %s", out_path.name, img.size, target_size)
+                        img = img.resize(target_size, PILImage.LANCZOS)
                     img.save(out_path, quality=95)
             except Exception as e:
                 logger.warning("Resize failed (keeping original): %s", e)
