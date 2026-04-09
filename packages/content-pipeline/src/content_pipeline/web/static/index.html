@@ -8759,24 +8759,22 @@ body.zen-mode .tab-bar { display: none !important; }
       <template x-if="parsePieceNotes(selectedPiece?.notes).composed_url">
         <div class="card" style="margin-bottom: 12px; border-left: 3px solid var(--accent-green);">
           <div class="card-title" style="font-size: 0.75rem; color: var(--accent-green);">Post Composto (pronto para publicar)</div>
-          <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
-            <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).composed_url, selectedPiece?.title + ' (composto)')">
-              <img :src="parsePieceNotes(selectedPiece?.notes).composed_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
-              <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px; min-width: 150px;">
-              <button class="btn btn-sm" style="background: var(--green-bg, #0a2a1a); border-color: var(--accent-green); color: var(--accent-green);" @click="composePiecePost(selectedPiece?.id)" :disabled="pieceActionLoading" title="Refaz so a composicao (mesma imagem IA)">
-                <span x-show="!pieceActionLoading">&#128259; Recompor Post</span>
-                <span x-show="pieceActionLoading">Compondo...</span>
-              </button>
-              <button class="btn btn-sm" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple);" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" title="Gera nova imagem IA + recompoe automaticamente">
-                <span x-show="!pieceActionLoading">&#128260; Nova Imagem IA</span>
-                <span x-show="pieceActionLoading">Gerando...</span>
-              </button>
-              <div style="font-size: 0.65rem; color: var(--text-dim); padding: 4px 0; line-height: 1.3;">
-                Use <strong>Recompor</strong> se a imagem esta boa mas o layout ficou ruim. Use <strong>Nova Imagem</strong> se a foto IA precisa ser gerada de novo.
-              </div>
-            </div>
+          <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).composed_url, selectedPiece?.title + ' (composto)')">
+            <img :src="parsePieceNotes(selectedPiece?.notes).composed_url" style="max-width: 100%; border-radius: 8px; max-height: 400px; object-fit: contain;">
+            <div class="img-click-overlay">&#128269; Ver em alta resolucao</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px;">
+            <button class="btn btn-sm" style="background: var(--green-bg, #0a2a1a); border-color: var(--accent-green); color: var(--accent-green);" @click="composePiecePost(selectedPiece?.id)" :disabled="pieceActionLoading" title="Refaz so a composicao (mesma imagem IA, gratis)">
+              <span x-show="!pieceActionLoading">&#128259; Recompor Post</span>
+              <span x-show="pieceActionLoading">Compondo...</span>
+            </button>
+            <button class="btn btn-sm" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple);" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" title="Gera nova imagem IA + recompoe (custa $0.08)">
+              <span x-show="!pieceActionLoading">&#128260; Nova Imagem IA</span>
+              <span x-show="pieceActionLoading">Gerando...</span>
+            </button>
+          </div>
+          <div style="font-size: 0.65rem; color: var(--text-dim); margin-top: 6px; line-height: 1.3;">
+            <strong>Recompor</strong>: imagem esta boa, layout precisa ajuste (gratis). <strong>Nova Imagem</strong>: refazer a foto IA ($0.08).
           </div>
         </div>
       </template>
@@ -8785,23 +8783,21 @@ body.zen-mode .tab-bar { display: none !important; }
       <template x-if="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url">
         <div class="card" style="margin-bottom: 12px;">
           <div class="card-title" style="font-size: 0.75rem;">Imagem Original (sem composicao)</div>
-          <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
-            <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
-              <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
-              <div class="img-click-overlay">&#128269; Ver original</div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px; min-width: 150px;">
-              <button class="btn btn-sm" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple);" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" title="Gera nova imagem IA">
-                <span x-show="!pieceActionLoading">&#128260; Nova Imagem IA</span>
-                <span x-show="pieceActionLoading">Gerando...</span>
+          <div class="img-click-wrap" @click="openGeneratedImageModal(parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url, selectedPiece?.title)">
+            <img :src="parsePieceNotes(selectedPiece?.notes).image_url || selectedPiece?.image_url" style="max-width: 100%; border-radius: 8px; max-height: 250px; object-fit: contain;">
+            <div class="img-click-overlay">&#128269; Ver original</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px;">
+            <button class="btn btn-sm" style="background: var(--purple-bg); border-color: var(--purple); color: var(--purple);" @click="generateImageForPiece(selectedPiece?.id)" :disabled="pieceActionLoading" title="Gera nova imagem IA">
+              <span x-show="!pieceActionLoading">&#128260; Nova Imagem IA</span>
+              <span x-show="pieceActionLoading">Gerando...</span>
+            </button>
+            <template x-if="selectedPiece?.copy_text">
+              <button class="btn btn-sm" style="background: var(--green-bg, #0a2a1a); border-color: var(--accent-green); color: var(--accent-green);" @click="composePiecePost(selectedPiece?.id)" :disabled="pieceActionLoading" title="Compor post a partir desta imagem">
+                <span x-show="!pieceActionLoading">&#127912; Compor Post</span>
+                <span x-show="pieceActionLoading">Compondo...</span>
               </button>
-              <template x-if="selectedPiece?.copy_text">
-                <button class="btn btn-sm" style="background: var(--green-bg, #0a2a1a); border-color: var(--accent-green); color: var(--accent-green);" @click="composePiecePost(selectedPiece?.id)" :disabled="pieceActionLoading" title="Compor post a partir desta imagem">
-                  <span x-show="!pieceActionLoading">&#127912; Compor Post</span>
-                  <span x-show="pieceActionLoading">Compondo...</span>
-                </button>
-              </template>
-            </div>
+            </template>
           </div>
         </div>
       </template>
